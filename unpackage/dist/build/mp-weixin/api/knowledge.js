@@ -1,0 +1,1 @@
+"use strict";require("../common/vendor.js").defineStore("knowledge",{state:()=>({knowledgeBases:[],fileMap:{}}),getters:{allFiles:e=>e.knowledgeBases.flatMap((s=>e.fileMap[s.id]||[]))},actions:{setKnowledgeBases(e){this.knowledgeBases=e},setFiles(e,s){this.fileMap[e]=s}}});

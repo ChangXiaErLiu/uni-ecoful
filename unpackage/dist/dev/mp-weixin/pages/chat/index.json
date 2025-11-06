@@ -1,0 +1,12 @@
+{
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "uni-popup": "../../uni_modules/uni-popup/components/uni-popup/uni-popup",
+    "app-layout": "../../components/layout/AppLayout",
+    "chat-sidebar": "../../components/chat/ChatSidebar",
+    "chat-header": "../../components/chat/ChatHeader",
+    "chat-message": "../../components/chat/ChatMessage",
+    "chat-input": "../../components/chat/ChatInput"
+  }
+}

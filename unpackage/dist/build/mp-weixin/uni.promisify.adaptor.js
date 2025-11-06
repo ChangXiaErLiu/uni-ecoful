@@ -1,0 +1,1 @@
+"use strict";require("./common/vendor.js").index.addInterceptor({returnValue:e=>!e||"object"!=typeof e&&"function"!=typeof e||"function"!=typeof e.then?e:new Promise(((t,n)=>{e.then((e=>e?e[0]?n(e[0]):t(e[1]):t(e)))}))});
