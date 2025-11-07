@@ -12,6 +12,9 @@ if (!Math) {
   "./pages/profile/index.js";
   "./pages/reports/acceptance/index.js";
   "./pages/reports/eia/index.js";
+  "./pages/reconnoitre/index.js";
+  "./pages/ledger/index.js";
+  "./pages/project/index.js";
   "./pages/auth/login.js";
   "./pages/auth/register.js";
   "./pages/profile/changePhone.js";

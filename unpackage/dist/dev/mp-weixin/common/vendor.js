@@ -7154,7 +7154,7 @@ function isConsoleWritable() {
 function initRuntimeSocketService() {
   const hosts = "100.66.1.1,172.19.112.1,192.168.0.106,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin_yPDozH";
+  const id = "mp-weixin_uXnOgW";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -8763,6 +8763,24 @@ const pages = [
   },
   {
     path: "pages/reports/eia/index",
+    style: {
+      navigationStyle: "custom"
+    }
+  },
+  {
+    path: "pages/reconnoitre/index",
+    style: {
+      navigationStyle: "custom"
+    }
+  },
+  {
+    path: "pages/ledger/index",
+    style: {
+      navigationStyle: "custom"
+    }
+  },
+  {
+    path: "pages/project/index",
     style: {
       navigationStyle: "custom"
     }

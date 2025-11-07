@@ -133,14 +133,34 @@ const cards = ref([
     color: '#06b6d4'
   },
   {
-    id: 'profile',
+    id: 'reconnoitre',
     title: '现场踏查',
     subtitle: '根据建设项目情况及业务要求，生成现场踏勘指引。',
     icon: 'map-pin-ellipse',
-    path: '/pages/profile/index',
+    path: '/pages/reconnoitre/index',
     isTab: true,
     color: '#aa55ff',
 	status: 'beta',
+  },
+  {
+    id: 'ledger',
+    title: '环保台账',
+    subtitle: '企业环境管理的基础，也是环保部门执法检查的重点内容',
+    icon: 'calendar',
+    path: '/pages/ledger/index',
+    isTab: true,
+    color: '#00007f',
+  	status: 'beta',
+  },
+  {
+    id: 'project',
+    title: '项目管理',
+    subtitle: '企业项目管理，包含项目新建、修改等',
+    icon: 'calendar',
+    path: '/pages/project/index',
+    isTab: true,
+    color: '#aaaa00',
+  	status: 'beta',
   },
 ])
 
