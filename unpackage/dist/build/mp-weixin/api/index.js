@@ -1,0 +1,1 @@
+"use strict";const e=require("../common/vendor.js");require("./chat.js"),require("./user.js"),require("./knowledge.js");let r=null;exports.setupStore=function(s){return r||(r=e.createPinia()),s.use(r),r};

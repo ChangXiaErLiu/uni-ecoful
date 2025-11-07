@@ -1,0 +1,1 @@
+<view class="chat-header data-v-07078a8e"><view class="header-left data-v-07078a8e"><view wx:if="{{a}}" class="sidebar-toggle data-v-07078a8e" bindtap="{{c}}"><uni-icons wx:if="{{b}}" class="data-v-07078a8e" u-i="07078a8e-0" bind:__l="__l" u-p="{{b}}"/></view><text class="conversation-title data-v-07078a8e">{{d}}</text></view></view>

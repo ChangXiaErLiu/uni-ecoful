@@ -1,0 +1,54 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/chat/index",
+    "pages/doc-generator/index",
+    "pages/compliance/index",
+    "pages/knowledge/index",
+    "pages/profile/index",
+    "pages/reports/acceptance/index",
+    "pages/reports/eia/index",
+    "pages/auth/login",
+    "pages/auth/register",
+    "pages/profile/changePhone",
+    "pages/profile/changePassword",
+    "pages/profile/devices",
+    "pages/profile/operationLogs",
+    "pages/profile/about",
+    "pages/profile/feedback"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "粤风环保AI系统",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F5F7FA"
+  },
+  "tabBar": {
+    "color": "#64748b",
+    "selectedColor": "#276019",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "position": "bottom",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "/static/tabBarIcos/home.png",
+        "selectedIconPath": "/static/tabBarIcos/home_act.png"
+      },
+      {
+        "pagePath": "pages/knowledge/index",
+        "text": "知识库",
+        "iconPath": "/static/tabBarIcos/kb.png",
+        "selectedIconPath": "/static/tabBarIcos/kb_act.png"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的",
+        "iconPath": "/static/tabBarIcos/person.png",
+        "selectedIconPath": "/static/tabBarIcos/person_act.png"
+      }
+    ]
+  },
+  "usingComponents": {}
+}
