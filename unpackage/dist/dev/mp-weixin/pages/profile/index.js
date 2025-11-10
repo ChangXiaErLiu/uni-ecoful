@@ -42,16 +42,6 @@ const _sfc_main = {
         }
       });
     }
-    function handlePhoto() {
-      common_vendor.index.navigateTo({
-        url: "/pages/profile/operationLogs"
-      });
-    }
-    function handleReport() {
-      common_vendor.index.navigateTo({
-        url: "/pages/profile/changePassword"
-      });
-    }
     function handleChangePassword() {
       common_vendor.index.navigateTo({
         url: "/pages/profile/changePassword"
@@ -131,12 +121,12 @@ const _sfc_main = {
           color: "#64748b"
         }),
         j: common_vendor.p({
-          type: "eye",
+          type: "locked",
           size: "20",
           color: "#276019"
         }),
         k: common_vendor.p({
-          type: "camera",
+          type: "phone",
           size: "18",
           color: "#64748b"
         }),
@@ -145,9 +135,9 @@ const _sfc_main = {
           size: "16",
           color: "#94a3b8"
         }),
-        m: common_vendor.o(handlePhoto),
+        m: common_vendor.o(manageDevices),
         n: common_vendor.p({
-          type: "calendar",
+          type: "list",
           size: "18",
           color: "#64748b"
         }),
@@ -156,25 +146,25 @@ const _sfc_main = {
           size: "16",
           color: "#94a3b8"
         }),
-        p: common_vendor.o(handleReport),
+        p: common_vendor.o(viewLogs),
         q: common_vendor.p({
-          type: "locked",
-          size: "20",
-          color: "#276019"
-        }),
-        r: common_vendor.p({
-          type: "phone",
+          type: "locked-filled",
           size: "18",
           color: "#64748b"
         }),
-        s: common_vendor.p({
+        r: common_vendor.p({
           type: "right",
           size: "16",
           color: "#94a3b8"
         }),
-        t: common_vendor.o(manageDevices),
+        s: common_vendor.o(handleChangePassword),
+        t: common_vendor.p({
+          type: "info",
+          size: "20",
+          color: "#276019"
+        }),
         v: common_vendor.p({
-          type: "list",
+          type: "info",
           size: "18",
           color: "#64748b"
         }),
@@ -183,9 +173,9 @@ const _sfc_main = {
           size: "16",
           color: "#94a3b8"
         }),
-        x: common_vendor.o(viewLogs),
+        x: common_vendor.o(handleAbout),
         y: common_vendor.p({
-          type: "locked-filled",
+          type: "help",
           size: "18",
           color: "#64748b"
         }),
@@ -194,36 +184,9 @@ const _sfc_main = {
           size: "16",
           color: "#94a3b8"
         }),
-        A: common_vendor.o(handleChangePassword),
-        B: common_vendor.p({
-          type: "info",
-          size: "20",
-          color: "#276019"
-        }),
+        A: common_vendor.o(handleFeedback),
+        B: common_vendor.o(handleLogout),
         C: common_vendor.p({
-          type: "info",
-          size: "18",
-          color: "#64748b"
-        }),
-        D: common_vendor.p({
-          type: "right",
-          size: "16",
-          color: "#94a3b8"
-        }),
-        E: common_vendor.o(handleAbout),
-        F: common_vendor.p({
-          type: "help",
-          size: "18",
-          color: "#64748b"
-        }),
-        G: common_vendor.p({
-          type: "right",
-          size: "16",
-          color: "#94a3b8"
-        }),
-        H: common_vendor.o(handleFeedback),
-        I: common_vendor.o(handleLogout),
-        J: common_vendor.p({
           current: "pages/profile/index"
         })
       };

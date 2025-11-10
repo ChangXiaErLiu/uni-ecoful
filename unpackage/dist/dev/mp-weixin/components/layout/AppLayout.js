@@ -167,6 +167,7 @@ const _sfc_main = {
           shadow: false,
           height: "42",
           backgroundColor: "#ffffff",
+          ["left-text"]: showBack.value ? "返回" : "",
           ["left-icon"]: showBack.value ? "left" : ""
         })
       } : {}, {

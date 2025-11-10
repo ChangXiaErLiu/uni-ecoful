@@ -50,8 +50,8 @@ const _sfc_main = {
       },
       {
         id: "acceptance",
-        title: "验收报告",
-        subtitle: "项目验收报告生成",
+        title: "环评竣工验收",
+        subtitle: "环评竣工验收全流程，包含验收报告生成",
         icon: "flag",
         path: "/pages/reports/acceptance/index",
         isTab: false,

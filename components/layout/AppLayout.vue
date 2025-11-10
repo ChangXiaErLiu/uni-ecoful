@@ -3,7 +3,7 @@
 	<view class="AppLayout" :class="layoutClass">
 		<!-- 顶部安全区占位 + 导航（移动端显示） -->
 		<uni-nav-bar :title="navTitle.title" v-if="!isDesktop" statusBar fixed :placeholder="true" :border="false"
-			:shadow="false" height="42" :backgroundColor="'#ffffff'" :left-icon="showBack ? 'left' : ''"
+			:shadow="false" height="42" :backgroundColor="'#ffffff'" :left-text="showBack ? '返回' : ''" :left-icon="showBack ? 'left' : ''"
 			@clickLeft="goBackSafely" style="font-weight: bold;" />
 		<view v-if="isDesktop" class="AppLayout__sider">
 			<NavSider :items="navItemsPc" :current="activePath" @navigate="handleNavigate" />

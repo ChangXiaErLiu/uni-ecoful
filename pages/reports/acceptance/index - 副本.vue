@@ -142,19 +142,19 @@
 									<view class="subsection">
 										<view class="subsection-head">
 											<uni-icons type="list" size="18" color="#fb923c" />
-											<text class="subsection-title">排污标识牌文案</text>
+											<text class="subsection-title">排污标识牌信息（业主确认排污口信息无误）</text>
 										</view>
 
 										<view class="section-actions">
 											<button class="btn btn--primary"
 												@tap="() => { generateSignboard(); showSignboardStep1 = true }">
-												<uni-icons type="gear" size="16" color="#ffffff" />
-												<text>生成标识牌文案</text>
+												<uni-icons type="eye-filled" size="16" color="#ffffff" />
+												<text>生成标识牌信息</text>
 											</button>
-											<button v-if="showSignboardStep1" class="btn btn--ghost"
-												@tap="currentStep = 4">
-												<uni-icons type="right" size="16" color="#5b6b7b" />
-												<text>去“标识牌”步骤</text>
+											<button v-if="showSignboardStep1" class="btn btn--primary"
+												@tap="currentStep = 2">
+												<uni-icons type="redo-filled" size="16" color="#ffffff" />
+												<text>生成检测方案</text>
 											</button>
 										</view>
 
@@ -166,7 +166,7 @@
 															class="table-td table-td--section">{{ sec.block || '未命名' }}</text>
 														<view class="table-td w80">
 															<button class="icon-btn" @tap="() => addSignItem(si)">
-																<uni-icons type="plus" size="16" color="#166534" />
+																<uni-icons type="plus" size="26" color="#166534" />
 															</button>
 														</view>
 													</view>
@@ -202,17 +202,17 @@
 						<view class="section-card">
 							<view class="section-header">
 								<uni-icons type="clipboard" size="20" color="#166534" />
-								<text class="section-title">提资单（需再次提资/需业主核对）</text>
+								<text class="section-title">提资单比对清单</text>
 							</view>
 							<view class="section-body">
 								<view class="section-actions">
 									<button class="btn btn--primary" @tap="generateDatasheet">
 										<uni-icons type="gear" size="16" color="#ffffff" />
-										<text>生成提资单</text>
+										<text>生成比对清单</text>
 									</button>
 									<button class="btn btn--secondary" @tap="exportDatasheet">
 										<uni-icons type="download" size="16" color="#155e3b" />
-										<text>导出提资单</text>
+										<text>导出比对清单</text>
 									</button>
 								</view>
 
@@ -342,7 +342,7 @@
 		isMobile
 	} = usePlatformInfo()
 
-	const stepNames = ['项目基本信息', '提资单比对', '业主比对', '差异比对', '标识牌', '监测方案', '生成竣工验收报告']
+	const stepNames = ['项目基本信息', '提资单比对',  '监测方案', '生成竣工验收报告']
 	const currentStep = ref(0)
 	const stepNamesDisplay = computed(() => stepNames.map((n, i) => stepDone(i) ? (n + ' ✓') : n))
 	const stepSelectOptions = computed(() => stepNames.map((n, i) => ({
@@ -648,9 +648,13 @@
 	function copyExportDraft() {
 		try {
 			/* #ifdef H5 */
-			navigator.clipboard?.writeText?.(draftText.value || '') /* #endif */ /* #ifndef H5 */ uni.setClipboardData({
+			navigator.clipboard?.writeText?.(draftText.value || '');
+			/* #endif */
+			/* #ifndef H5 */
+			uni.setClipboardData({
 				data: draftText.value || ''
-			}) /* #endif */ ;
+			});
+			/* #endif */
 			uni.showToast({
 				title: '已复制',
 				icon: 'none'
@@ -974,6 +978,66 @@
 			title: '已生成文案（示例）',
 			icon: 'none'
 		})
+	}
+
+	// 导出标识牌Word文档
+	function exportSignboardWord() {
+		// 检查是否有内容
+		const hasContent = signboard.sections.some(sec => 
+			sec.items.some(it => it.content && it.content.trim())
+		);
+		
+		if (!hasContent) {
+			uni.showToast({
+				title: '标识牌内容为空，请先填写',
+				icon: 'none'
+			});
+			return;
+		}
+
+		// 构建Word文档内容（简化版，实际需要后端支持）
+		let content = '排污标识牌文案\n\n';
+		signboard.sections.forEach(sec => {
+			content += `【${sec.block}】\n`;
+			sec.items.forEach(it => {
+				if (it.title && it.content) {
+					content += `${it.title}：${it.content}\n`;
+				}
+			});
+			content += '\n';
+		});
+
+		// 这里需要调用后端API生成Word文档
+		// 临时方案：复制到剪贴板或显示提示
+		uni.showModal({
+			title: '导出标识牌Word',
+			content: '此功能需要后端支持。当前可以：\n1. 复制文案到剪贴板\n2. 等待后端接口开发完成',
+			confirmText: '复制文案',
+			cancelText: '取消',
+			success: (res) => {
+				if (res.confirm) {
+					try {
+						/* #ifdef H5 */
+						navigator.clipboard?.writeText?.(content);
+						/* #endif */
+						/* #ifndef H5 */
+						uni.setClipboardData({
+							data: content
+						});
+						/* #endif */
+						uni.showToast({
+							title: '已复制到剪贴板',
+							icon: 'success'
+						});
+					} catch (e) {
+						uni.showToast({
+							title: '复制失败',
+							icon: 'none'
+						});
+					}
+				}
+			}
+		});
 	}
 
 	function addSignItem(i) {
@@ -1706,8 +1770,8 @@
 
 	/* 宽度工具类 */
 	.w80 {
-		min-width: 120rpx;
-		max-width: 120rpx;
+		// min-width: 120rpx;
+		// max-width: 120rpx;
 	}
 
 	.w100 {

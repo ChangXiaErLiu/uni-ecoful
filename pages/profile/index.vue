@@ -54,36 +54,6 @@
         </view>
       </view>
 	  
-	  <!-- 现场踏勘卡片 -->
-	  <view class="profile__card">
-	    <view class="profile__card-header">
-	      <uni-icons type="eye" size="20" color="#276019"></uni-icons>
-	      <text class="profile__card-title">现场踏勘</text>
-	    </view>
-	    <view class="profile__card-content">
-	      <view class="profile__card-row" @tap="handlePhoto">
-	        <view class="profile__card-left">
-	          <uni-icons type="camera" size="18" color="#64748b"></uni-icons>
-	          <text class="profile__card-label">拍照记录</text>
-	        </view>
-	        <view class="profile__card-right">
-	          <uni-icons type="right" size="16" color="#94a3b8"></uni-icons>
-	        </view>
-	      </view>
-	      
-	      <view class="profile__card-row" @tap="handleReport">
-	        <view class="profile__card-left">
-	          <uni-icons type="calendar" size="18" color="#64748b"></uni-icons>
-	          <text class="profile__card-label">核查记录</text>
-	        </view>
-	        <view class="profile__card-right">
-	          <uni-icons type="right" size="16" color="#94a3b8"></uni-icons>
-	        </view>
-	      </view>
-	    </view>
-	  </view>
-
-
       <!-- 安全设置卡片 -->
       <view class="profile__card">
         <view class="profile__card-header">
