@@ -317,6 +317,18 @@
   font-weight: 700;
 }
 
+/* 小标签的样式 */
+.extract-tag.data-v-41308e16 {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  background-color: #52c41a;
+  color: #fff;
+  font-size: 10px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
 /* 标识牌：左侧标题输入，固定宽度以避免与值重叠 */
 .pw-ico.data-v-41308e16 {
   width: 140rpx;

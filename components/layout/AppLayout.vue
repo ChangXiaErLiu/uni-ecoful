@@ -206,12 +206,17 @@
 	// - 桌面端（>=1024）隐藏底部 tabBar，仅显示左侧侧栏
 	// - 移动端显示底部 tabBar
 	watch(() => isDesktop.value, (val) => {
-		try {
-			if (val) uni.hideTabBar()
-			else uni.showTabBar()
-		} catch (e) {}
+	  // 只在 TabBar 页面调用
+	  if (!TAB_PAGES.has(currentUrl.value)) {
+	    return
+	  }
+	  
+	  try {
+	    if (val) uni.hideTabBar()
+	    else uni.showTabBar()
+	  } catch (e) {}
 	}, {
-		immediate: true
+	  immediate: true
 	})
 </script>
 

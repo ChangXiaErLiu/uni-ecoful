@@ -1,9 +1,23 @@
 import { createPinia } from 'pinia'
 
-// 中文注释：导出所有 store，方便在业务模块中按需引用
+/**
+ * API 统一出口
+ * 方便在页面中一次性导入所有接口
+ */
+
+// ai聊天界面相关
 export * from './chat'
-export * from './user'
-export * from './knowledge'
+
+
+
+// 验收报告相关
+export { 
+  uploadFileToBackend, 
+  uploadMultipleFiles, 
+  rebuildIndex, 
+  runTask,
+  transformExtractResult,
+} from './acceptance.js'
 
 let piniaInstance = null
 

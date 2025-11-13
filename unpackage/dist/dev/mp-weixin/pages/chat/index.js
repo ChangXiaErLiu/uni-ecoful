@@ -309,7 +309,7 @@ const _sfc_main = {
         };
         let uiTimer = null;
         let lastSave = 0;
-        cancelGenerate.value = utils_request.chatStream(
+        cancelGenerate.value = utils_request.request.chatStream(
           body,
           (delta) => {
             aiMsg.content += delta;

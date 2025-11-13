@@ -37,44 +37,60 @@ common_vendor.defineStore("chat", {
       const sessionId = this.activeSessionId || "default";
       this.ensureSession(sessionId);
       const userMsg = { role: "user", content, timestamp: Date.now() };
-      const list1 = [...this.messageMap[sessionId] || []];
-      list1.push(userMsg);
-      this.messageMap[sessionId] = list1;
+      this.messageMap[sessionId] = [...this.messageMap[sessionId], userMsg];
       const aiMsg = { role: "assistant", content: "", timestamp: Date.now() };
-      const list2 = [...this.messageMap[sessionId]];
-      const aiIndex = list2.length;
-      list2.push(aiMsg);
-      this.messageMap[sessionId] = list2;
-      const cancel = utils_request.chatStream(
-        {
-          url: "/chat/send",
-          method: "POST",
-          body: {
-            model: "qwen3-max",
-            modelName: "qwen3-max",
-            messages: this.messageMap[sessionId].map((m) => ({ role: m.role, content: m.content })),
-            stream: true
+      const aiIndex = this.messageMap[sessionId].length;
+      this.messageMap[sessionId] = [...this.messageMap[sessionId], aiMsg];
+      try {
+        const cancel = utils_request.request.chatStream(
+          {
+            url: "/chat/stream",
+            // 使用相对路径，会自动拼接 WS_URL
+            method: "POST",
+            body: {
+              model: "qwen3-max",
+              messages: this.messageMap[sessionId].map((m) => ({
+                role: m.role,
+                content: m.content
+              })),
+              stream: true
+            }
+          },
+          // onDelta: 收到数据片段
+          (delta) => {
+            aiMsg.content += delta;
+            const arr = [...this.messageMap[sessionId]];
+            arr[aiIndex] = { ...aiMsg };
+            this.messageMap[sessionId] = arr;
+          },
+          // onError: 流式错误
+          (err) => {
+            aiMsg.content += "\n[流式错误] " + ((err == null ? void 0 : err.message) || err);
+            const arr = [...this.messageMap[sessionId]];
+            arr[aiIndex] = { ...aiMsg };
+            this.messageMap[sessionId] = arr;
+          },
+          // onDone: 流式完成
+          () => {
+            common_vendor.index.__f__("log", "at api/chat.js:86", "[Chat] 流式响应完成");
           }
-        },
-        // onDelta
-        (delta) => {
-          aiMsg.content += delta;
-          const arr = [...this.messageMap[sessionId]];
-          arr[aiIndex] = { ...aiMsg };
-          this.messageMap[sessionId] = arr;
-        },
-        // onError
-        (err) => {
-          aiMsg.content += "\n[错误] " + ((err == null ? void 0 : err.message) || err);
-          const arr = [...this.messageMap[sessionId]];
-          arr[aiIndex] = { ...aiMsg };
-          this.messageMap[sessionId] = arr;
-        },
-        // onDone（可选）
-        () => {
-        }
-      );
-      this._cancel = cancel;
+        );
+        this._cancel = cancel;
+      } catch (error) {
+        aiMsg.content += "\n[连接失败] " + error.message;
+        const arr = [...this.messageMap[sessionId]];
+        arr[aiIndex] = { ...aiMsg };
+        this.messageMap[sessionId] = arr;
+      }
+    },
+    // 新增：中断聊天
+    cancelChat() {
+      if (this._cancel) {
+        this._cancel();
+        this._cancel = null;
+        return true;
+      }
+      return false;
     }
   }
 });

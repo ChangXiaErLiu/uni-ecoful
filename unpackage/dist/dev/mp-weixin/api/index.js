@@ -1,8 +1,7 @@
 "use strict";
 const common_vendor = require("../common/vendor.js");
 require("./chat.js");
-require("./user.js");
-require("./knowledge.js");
+require("../utils/config.js");
 let piniaInstance = null;
 function setupStore(app) {
   if (!piniaInstance) {

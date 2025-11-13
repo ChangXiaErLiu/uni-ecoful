@@ -143,6 +143,9 @@ const _sfc_main = {
       }
     }
     common_vendor.watch(() => isDesktop.value, (val) => {
+      if (!TAB_PAGES.has(currentUrl.value)) {
+        return;
+      }
       try {
         if (val)
           common_vendor.index.hideTabBar();

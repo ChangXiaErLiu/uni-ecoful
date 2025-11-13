@@ -1,4 +1,4 @@
-<!-- ai问答界面 -->
+﻿<!-- ai问答界面 -->
 <template>
   <!-- 中文注释：聊天页自行管理滚动，因此关闭 AppLayout 外层滚动（非 H5 有效） -->
   <AppLayout current="pages/chat/index" :content-scroll="false">
@@ -160,7 +160,7 @@
 </template>
 
 <script setup>
-import { chatStream } from '@/utils/request.js'
+import { request } from '@/utils/request.js'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { usePlatformInfo } from '@/utils/platform'
 import { useSafeArea } from '@/utils/safe-area'
@@ -594,7 +594,7 @@ async function generateAIResponse(conv, userMsg) {
       }
     }
 
-    cancelGenerate.value = chatStream(
+    cancelGenerate.value = request.chatStream(
       body,
       (delta) => {               // onDelta
         aiMsg.content += delta

@@ -27,15 +27,6 @@ if (!Math) {
 const _sfc_main = {
   __name: "App",
   setup(__props) {
-    common_vendor.onLaunch(() => {
-      common_vendor.index.__f__("log", "at App.vue:6", "应用启动");
-    });
-    common_vendor.onShow(() => {
-      common_vendor.index.__f__("log", "at App.vue:10", "应用进入前台");
-    });
-    common_vendor.onHide(() => {
-      common_vendor.index.__f__("log", "at App.vue:14", "应用进入后台");
-    });
     return () => {
     };
   }

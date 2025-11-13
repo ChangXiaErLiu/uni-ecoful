@@ -1,0 +1,240 @@
+/**
+ * api/acceptance.js
+ * 验收报告页面，各个方法总结
+ */
+
+import {
+	BASE_URL
+} from '@/utils/config.js'
+import {
+	request
+} from '@/utils/request.js'
+
+//---------- 文件上传、文件处理方法----------------//
+/**
+ * 上传单个文件到后端
+ * @param {Object} file - uni-file-picker返回的文件对象
+ * @returns {Promise} 上传结果
+ */
+export async function uploadFileToBackend(file) {
+	return new Promise((resolve, reject) => {
+		// 获取文件路径
+		const filePath = file.url || file.path || file.tempFilePath
+		const fileName = file.name || '环评报告.pdf'
+
+		if (!filePath) {
+			reject(new Error('文件路径无效'))
+			return
+		}
+
+		uni.uploadFile({
+			url: BASE_URL + '/api/v1/documents/upload',
+			filePath: filePath,
+			name: 'file',
+			formData: {
+				category: 'eia_report' // 标记为环评报告
+			},
+			success: (res) => {
+				try {
+					const data = JSON.parse(res.data)
+					if (res.statusCode === 200) {
+						resolve({
+							success: true,
+							document_id: data.document_id,
+							filename: data.filename,
+							size_bytes: data.size_bytes,
+							upload_time: data.upload_time
+						})
+
+					} else {
+						reject(new Error(data.detail || '上传失败'))
+					}
+				} catch (e) {
+					reject(new Error('解析响应失败'))
+				}
+			},
+			fail: (error) => {
+				reject(new Error('网络请求失败'))
+			}
+		})
+	})
+}
+
+/**
+ * 批量上传文件
+ * @param {Array} files - 文件数组
+ * @returns {Promise} 上传结果数组
+ */
+export async function uploadMultipleFiles(files) {
+	if (!files || files.length === 0) {
+		throw new Error('没有选择文件')
+	}
+
+	const uploadPromises = files.map(file => uploadFileToBackend(file))
+	return await Promise.all(uploadPromises)
+}
+
+/**
+ * 临时测试构建向量方案：硬编码 source_dir，后端需要优化
+ * @param {Object} options - 选项
+ * @param {boolean} options.hideLoading - 是否隐藏 loading（默认 false）
+ */
+export async function rebuildIndex(options = {}) {
+	const {
+		hideLoading = false
+	} = options;
+
+	const TEST_SOURCE_DIR = './storage/project_completion_and_acceptance/uploads'
+
+	return request.post('/api/v1/index/build', {
+		source_dir: TEST_SOURCE_DIR,
+		split_by_heading: true
+	}, {
+		hideLoading,
+		timeout: 900000 // 增加：15分钟超时（900秒）
+	});
+}
+
+/**
+ * 执行任务（提取项目信息）
+ * @param {string} taskName - 任务名称（如 'task1'）
+ * @param {Object} options - 选项
+ * @param {boolean} options.hideLoading - 是否隐藏 loading
+ * @param {number} options.timeout - 超时时间（毫秒）
+ * @returns {Promise<Object>} 任务执行结果
+ */
+export async function runTask(taskName, options = {}) {
+	const {
+		hideLoading = false,
+			timeout = 600000 // 默认10分钟
+	} = options
+
+	try {
+		const result = await request.get(`/api/v1/tasks/${taskName}/run`, {
+			timeout,
+			hideLoading
+		})
+
+		// ✅ 数据校验
+		if (!result || result.status !== 'success') {
+			throw new Error(result?.message || '任务执行失败')
+		}
+
+		if (!result.result || Object.keys(result.result).length === 0) {
+			throw new Error('未提取到任何项目信息，请检查文件内容是否完整')
+		}
+
+		return result
+	} catch (error) {
+		// ✅ 错误分类处理
+		if (error.code === 'NETWORK_ERROR' && error.message.includes('timeout')) {
+			throw new Error('提取超时：文档过大或网络不稳定，请稍后重试')
+		} else if (error.code === 'HTTP_ERROR' && error.message.includes('404')) {
+			throw new Error(`任务 ${taskName} 不存在，请联系管理员配置`)
+		} else {
+			throw error
+		}
+	}
+}
+
+/**
+ * 转换后端提取结果为 baseTable 格式（支持嵌套对象）
+ * @param {Object} result - 后端返回的 result 对象
+ * @returns {Array} baseTable 格式的数组
+ */
+export function transformExtractResult(result) {
+  // ✅ 完整的字段映射表：后端中文 key -> 英文 id + 显示标签
+  const FIELD_MAP = {
+    // 基本信息
+    '建设项目名称': { id: 'project_name', label: '项目名称' },
+    '建设单位名称': { id: 'company_name', label: '建设单位' },
+    '建设地点': { id: 'project_address', label: '项目地址' },
+    '建设项目性质': { id: 'project_type', label: '建设性质' },
+    
+    // 投资信息
+    '投资总概算(万元)': { id: 'investment', label: '投资总额(万元)' },
+    '环保投资总概算(万元)': { id: 'env_investment', label: '环保投资(万元)' },
+    '比例': { id: 'env_investment_ratio', label: '环保投资占比' },
+    
+    // 审批信息
+    '环评报告表审批部门': { id: 'assessment_department', label: '审批部门' },
+    '环评报告表编制单位': { id: 'assessment_unit', label: '编制单位' },
+    
+    // 建设内容
+    '主要建设内容': { id: 'construction_content', label: '建设内容' },
+    '产品及产能': { id: 'product_scale', label: '产品规模' },
+    
+    // 污染物
+    '生产工艺': { id: 'production_process', label: '生产工艺' },
+    '固体废物产生情况': { id: 'solid_waste', label: '固废情况' },
+    '噪声执行标准': { id: 'noise_standard', label: '噪声标准' }
+  }
+
+  const baseTable = []
+
+  // ✅ 遍历 result 对象
+  Object.entries(result).forEach(([chineseKey, value]) => {
+    // 如果有映射，按映射显示
+    if (FIELD_MAP[chineseKey]) {
+      baseTable.push({
+        id: FIELD_MAP[chineseKey].id,
+        label: FIELD_MAP[chineseKey].label,
+        value: formatValue(value),
+        source: 'extracted'
+      })
+    } 
+    // 如果是嵌套对象（如"污染物产排情况"），展开显示
+    else if (typeof value === 'object' && value !== null) {
+      Object.entries(value).forEach(([subKey, subValue]) => {
+        baseTable.push({
+          id: `${chineseKey}_${subKey}`,
+          label: `${chineseKey} - ${subKey}`,
+          value: formatValue(subValue),
+          source: 'extracted'
+        })
+      })
+    }
+    // 如果没有映射，直接显示
+    else {
+      baseTable.push({
+        id: chineseKey,
+        label: chineseKey,
+        value: formatValue(value),
+        source: 'extracted'
+      })
+    }
+  })
+
+  // ✅ 按顺序排序（让重要信息在前面）
+  const ORDER = ['project_name', 'company_name', 'project_address', 'investment', 'env_investment']
+  return baseTable.sort((a, b) => {
+    const aIndex = ORDER.indexOf(a.id)
+    const bIndex = ORDER.indexOf(b.id)
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+    if (aIndex !== -1) return -1
+    if (bIndex !== -1) return 1
+    return 0
+  })
+}
+
+// 格式化值的辅助函数（处理数组、对象等）
+function formatValue(value) {
+  // 如果是数组，转成字符串
+  if (Array.isArray(value)) {
+    return value.length > 0 ? JSON.stringify(value, null, 2) : '-'
+  }
+  // 如果是对象，转成字符串
+  if (typeof value === 'object' && value !== null) {
+    return JSON.stringify(value, null, 2)
+  }
+  // 如果是数字，直接返回
+  if (typeof value === 'number') {
+    return value
+  }
+  // 如果是字符串，去掉首尾空格
+  if (typeof value === 'string') {
+    return value.trim() || '-'
+  }
+  // 其他情况
+  return value || ''
+}

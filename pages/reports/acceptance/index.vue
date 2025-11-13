@@ -33,15 +33,15 @@
 					<view v-show="currentStep === 0" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
-								<uni-icons type="cloud-upload" size="20" color="#166534" />
+								<uni-icons type="cloud-upload" size="9" color="#166534" />
 								<text class="section-title">资料上传</text>
 							</view>
 							<view class="section-body">
 								<view class="form-group">
 									<text class="form-label">请上传环评报告书/报告表/批复文件/其他资料等</text>
-									<text class="form-tip">支持 PDF、Word、图片等格式，最多 20 个文件</text>
+									<text class="form-tip">支持 PDF、Word、图片等格式，单次上传最多 9 个文件</text>
 									<uni-file-picker v-model="eiaFiles" fileMediatype="all" :auto-upload="false"
-										:limit="20">
+										:limit="100" @select="handleFileSelect" @delete="handleFileDelete">
 									</uni-file-picker>
 								</view>
 
@@ -80,14 +80,21 @@
 
 									<!-- 响应式表单：PC 两列，移动端单列 -->
 									<view class="form-grid form-grid--base">
-										<view class="form-item" v-for="(r, idx) in baseTable" :key="r.id">
+										<view class="form-item" v-for="(item, idx) in baseTable" :key="item.id">
 											<view class="form-item__row">
-												<text class="form-item__label">{{ r.label }}</text>
-												<uni-easyinput class="form-item__input" v-model="r.value"
-													placeholder="请输入具体的值" />
+												<text class="form-item__label">
+													{{ item.label }}
+													<!--  如果是提取的数据，显示绿色小标签 -->
+													<text v-if="item.source === 'extracted'"
+														class="extract-tag">已提取</text>
+												</text>
+
+												<uni-easyinput class="form-item__input" v-model="item.value"
+													placeholder="请输入具体的值" :clearable="true" />
+
 												<view v-if="selectMode" class="form-item__select">
-													<checkbox :checked="selectedIds.includes(r.id)"
-														@tap="() => toggleSelected(r.id)" />
+													<checkbox :checked="selectedIds.includes(item.id)"
+														@tap="() => toggleSelected(item.id)" />
 												</view>
 											</view>
 										</view>
@@ -106,11 +113,13 @@
 												<uni-icons type="eye-filled" size="16" color="#ffffff" />
 												<text>标识牌信息</text>
 											</button>
-											<button v-if="showSignboardStep1" class="btn btn--primary" @tap="downBiaoShi">
+											<button v-if="showSignboardStep1" class="btn btn--primary"
+												@tap="downBiaoShi">
 												<uni-icons type="download-filled" size="16" color="#ffffff" />
 												<text>下载</text>
 											</button>
-											<button v-if="showSignboardStep1" class="btn btn--primary" @tap="currentStep = 3">
+											<button v-if="showSignboardStep1" class="btn btn--primary"
+												@tap="currentStep = 1">
 												<uni-icons type="redo-filled" size="16" color="#ffffff" />
 												<text>生成检测方案</text>
 											</button>
@@ -122,12 +131,12 @@
 													<view class="table-row table-row--simple">
 														<text
 															class="table-td table-td--section">{{ sec.block || '未命名' }}
-																			
+
 														</text>
 														<button class="pw-ico icon-btn" @tap="() => addSignItem(si)">
 															<uni-icons type="plus" size="16" color="#166534" />
-														    <text>新增</text>
-														</button>	
+															<text>新增</text>
+														</button>
 													</view>
 													<view class="form-grid form-grid--base">
 														<view class="form-item" v-for="(it, ii) in sec.items"
@@ -474,34 +483,6 @@
 		</view>
 	</app-layout>
 
-	<!-- 草稿导入/导出弹窗 -->
-	<uni-popup ref="draftPopup" type="center" background-color="rgba(0,0,0,0.5)">
-		<view class="modal">
-			<view class="modal-header">
-				<text class="modal-title">{{ draftMode === 'export' ? '导出草稿' : '导入草稿' }}</text>
-				<button class="modal-close" @tap="closeDraftPopup">
-					<uni-icons type="close" size="20" color="#5b6b7b" />
-				</button>
-			</view>
-			<view class="modal-body">
-				<text class="modal-description">
-					{{ draftMode === 'export' ? '复制以下 JSON 数据以保存草稿' : '粘贴 JSON 数据以导入草稿' }}
-				</text>
-				<textarea class="draft-textarea" v-model="draftText" placeholder="在此处粘贴/查看 JSON 数据..."
-					:readonly="draftMode === 'export'" />
-			</view>
-			<view class="modal-actions">
-				<button class="btn btn--ghost" @tap="closeDraftPopup">取消</button>
-				<button v-if="draftMode==='import'" class="btn btn--primary" @tap="confirmImportDraft">
-					确认导入
-				</button>
-				<button v-else class="btn btn--primary" @tap="copyExportDraft">
-					复制到剪贴板
-				</button>
-			</view>
-		</view>
-	</uni-popup>
-
 	<!-- 新增信息弹窗 -->
 	<uni-popup ref="fieldPopup" type="center">
 		<view class="modal">
@@ -537,16 +518,468 @@
 	import {
 		navTitleStore
 	} from '@/stores/navTitle.js'
+	import {
+		uploadFileToBackend,
+		rebuildIndex,
+		runTask,
+		transformExtractResult,
+	} from '@/api/acceptance.js'
 
+	//手机端头部页面标题
 	const navTitle = navTitleStore()
 	onShow(() => navTitle.setTitle('验收报告'))
 
+	//手机页面规定
 	const {
 		isMobile
 	} = usePlatformInfo()
 
+	// 以下提取项目基本信息模块的方法--------------------------
+	// 限制文件格式
+	const ALLOWED_EXTS = [
+		'pdf', 'doc', 'docx', 'txt', 'md',
+		'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'
+	]
+
+	// 最大上传个数
+	const MAX_FILES = 100
+
+	// 上传文件与提取信息
+	const eiaFiles = ref([])
+	const uploadedDocuments = ref([]) // 存储已上传的文档ID
+	const extracting = ref(false) // 提取状态
+	const extractError = ref('') // 提取错误状态
+
+	// 文件类型检查
+	function checkFileType(fileName) {
+		const ext = (fileName || '').split('.').pop().toLowerCase()
+		return {
+			isSupported: ALLOWED_EXTS.includes(ext), // 是否支持解析
+			ext,
+			displayName: fileName
+		}
+	}
+
+	// 统一提示逻辑
+	function showUploadResult({
+		successCount,
+		failCount,
+		supported,
+		nonSupported,
+		total
+	}) {
+		const hasSupported = supported > 0
+		const hasNonSupported = nonSupported > 0
+
+		if (failCount === 0 && successCount === total) {
+			//  修复：根据是否有可解析文件显示不同提示
+			let title = `全部上传成功 (${successCount}个)`
+			if (hasSupported) {
+				title = `上传成功: ${supported}个文档已解析, ${nonSupported}个附件`
+			} else if (hasNonSupported) {
+				title = `${successCount}个文件已上传（暂不支持自动解析）`
+			}
+
+			uni.showToast({
+				title,
+				icon: hasSupported ? 'success' : 'none',
+				duration: 2500
+			})
+		} else if (failCount === total) {
+			uni.showToast({
+				title: `全部上传失败 (${failCount}个)`,
+				icon: 'none'
+			})
+		} else {
+			uni.showToast({
+				title: `完成: 成功${successCount}, 失败${failCount}`,
+				icon: 'none'
+			})
+		}
+	}
+
+	// 进度条提示
+	let uploadProgressTimer = null
+	let currentUploadPercent = 0
+	let sprintTimer = null
+	let progressDone = false
+
+	/**
+	 * 启动假进度条
+	 * totalSlowTime: 缓慢增长的总时间（ms）
+	 */
+	function startUploadFakeProgress(totalSlowTime = 60000) {
+		currentUploadPercent = 0
+		progressDone = false
+
+		const step = 99 / (totalSlowTime / 200) // 每200ms一步，终点99%
+
+		uploadProgressTimer = setInterval(() => {
+			if (progressDone) {
+				clearInterval(uploadProgressTimer)
+				uploadProgressTimer = null
+				return
+			}
+
+			currentUploadPercent += step
+			if (currentUploadPercent >= 99) {
+				currentUploadPercent = 99
+				clearInterval(uploadProgressTimer)
+				uploadProgressTimer = null
+			}
+
+			uni.showLoading({
+				title: `正在解析文档… ${Math.floor(currentUploadPercent)}%`,
+				mask: true
+			})
+		}, 200)
+	}
+
+	/**
+	 * 冲刺到100%并完成
+	 */
+	function sprintToComplete() {
+		progressDone = true
+
+		// 清除之前的假进度计时器
+		if (uploadProgressTimer) {
+			clearInterval(uploadProgressTimer)
+			uploadProgressTimer = null
+		}
+
+		// 2秒内从当前进度冲到100%
+		const startPercent = currentUploadPercent
+		const targetPercent = 100
+		const duration = 2000 // 2秒
+		const stepTime = 10 // 每10ms更新一次
+		const totalSteps = duration / stepTime
+		const stepValue = (targetPercent - startPercent) / totalSteps
+
+		let currentStep = 0
+		sprintTimer = setInterval(() => {
+			currentStep++
+			currentUploadPercent = startPercent + (stepValue * currentStep)
+
+			if (currentUploadPercent >= 100) {
+				currentUploadPercent = 100
+				clearInterval(sprintTimer)
+				sprintTimer = null
+
+				// 显示100%并停留1秒
+				uni.showLoading({
+					title: `文件解析成功，解析进度：100%`,
+					mask: true
+				})
+
+				setTimeout(() => {
+					uni.hideLoading()
+					// 可选：显示成功提示
+					uni.showToast({
+						title: '文档解析完成',
+						icon: 'success',
+						duration: 1500
+					})
+				}, 1000)
+
+				return
+			}
+
+			uni.showLoading({
+				title: `正在解析文档，请稍等：${Math.floor(currentUploadPercent)}%`,
+				mask: true
+			})
+		}, stepTime)
+	}
+
+
+	// 上传文件并解析
+	async function handleFileSelect(e) {
+		const selectedFiles = e.tempFiles || (e.tempFile ? [e.tempFile] : [])
+		if (!selectedFiles?.length) return
+
+		const remaining = MAX_FILES - eiaFiles.value.length
+		if (remaining <= 0) {
+			uni.showToast({
+				title: `最多只能上传${MAX_FILES}个文件`,
+				icon: 'none'
+			})
+			return
+		}
+
+		const unsupportedFiles = []
+		const supportedFiles = selectedFiles
+			.filter(file => {
+				const ext = (file.name || file.filename || '').split('.').pop().toLowerCase()
+				const isAllowed = ALLOWED_EXTS.includes(ext)
+				if (!isAllowed) unsupportedFiles.push(file.name || file.filename)
+				return isAllowed
+			})
+			.slice(0, remaining)
+
+		if (unsupportedFiles.length > 0) {
+			const names = unsupportedFiles.slice(0, 3).join(', ')
+			const more = unsupportedFiles.length > 3 ? ` 等${unsupportedFiles.length}个` : '文件'
+			uni.showModal({
+				title: '不支持的文件格式',
+				content: `以下${more}不支持上传：\n${names}${unsupportedFiles.length > 3 ? '...' : ''}`,
+				showCancel: false,
+				confirmText: '知道了'
+			})
+		}
+
+		if (supportedFiles.length > 0) {
+			eiaFiles.value = [...eiaFiles.value, ...supportedFiles]
+		}
+		if (supportedFiles.length === 0) return
+
+		// ✅ 启动假进度（2.5分钟）
+		startUploadFakeProgress(150000)
+
+		const stats = {
+			successCount: 0,
+			failCount: 0,
+			supported: 0,
+			nonSupported: 0,
+			total: supportedFiles.length
+		}
+
+		for (let i = 0; i < supportedFiles.length; i++) {
+			const file = supportedFiles[i]
+			try {
+				const result = await uploadFileToBackend(file)
+				uploadedDocuments.value.push(result.document_id)
+				stats.successCount++
+
+				const ext = (result.filename || file.name || '').split('.').pop().toLowerCase()
+				const parseableExts = ['pdf', 'doc', 'docx', 'txt', 'md',
+					'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'
+				]
+				if (parseableExts.includes(ext)) {
+					stats.supported++
+					console.log(`文件已上传并支持解析: ${result.filename}`)
+				} else {
+					stats.nonSupported++
+					console.log(`文件已上传（暂不支持解析）: ${result.filename}`)
+				}
+			} catch (error) {
+				stats.failCount++
+				console.error(`❌ 文件 ${i + 1} 上传失败:`, error)
+
+				// 失败时清除进度条
+				progressDone = true
+				if (uploadProgressTimer) {
+					clearInterval(uploadProgressTimer)
+					uploadProgressTimer = null
+				}
+				if (sprintTimer) {
+					clearInterval(sprintTimer)
+					sprintTimer = null
+				}
+				uni.hideLoading()
+
+				if (supportedFiles.length === 1) {
+					uni.showToast({
+						title: error.message || '上传失败',
+						icon: 'none'
+					})
+					return
+				}
+			}
+		}
+
+		// 显示上传结果
+		showUploadResult(stats)
+
+		// 如果有支持解析的文件，开始自动索引
+		if (stats.supported > 0) {
+			console.log(`[AutoIndex] 检测到 ${stats.supported} 个可解析文件，开始自动索引...`)
+			await handleAutoIndexBuild(stats.supported)
+		} else {
+			// 没有可解析文件时，直接完成进度
+			progressDone = true
+			if (uploadProgressTimer) {
+				clearInterval(uploadProgressTimer)
+				uploadProgressTimer = null
+			}
+			uni.hideLoading()
+		}
+	}
+
+	// 抽离的索引构建函数
+	async function handleAutoIndexBuild(supportedCount) {
+		try {
+			const result = await rebuildIndex({
+				hideLoading: true
+			})
+
+			console.log('[AutoIndex] 成功:', result)
+
+			// ✅ 收到后端成功响应，开始冲刺到100%
+			sprintToComplete()
+
+		} catch (error) {
+			console.error('[AutoIndex] 失败:', error)
+
+			// 失败时清除所有进度条
+			progressDone = true
+			if (uploadProgressTimer) {
+				clearInterval(uploadProgressTimer)
+				uploadProgressTimer = null
+			}
+			if (sprintTimer) {
+				clearInterval(sprintTimer)
+				sprintTimer = null
+			}
+			uni.hideLoading()
+
+			uni.showModal({
+				title: '自动解析失败',
+				content: '文档已上传，但索引构建失败。\n\n错误：' + (error.message || '未知错误'),
+				showCancel: false,
+				confirmText: '知道了'
+			})
+		}
+	}
+
+	// 同步删除两个列表
+	function handleFileDelete(e) {
+		const {
+			index,
+			tempFile
+		} = e // uni-file-picker 会返回 index 和 tempFile
+
+		// 从 uploadedDocuments 删除对应文档ID
+		if (uploadedDocuments.value[index]) {
+			uploadedDocuments.value.splice(index, 1)
+		}
+
+		// 同时从 eiaFiles 删除（保持 v-model 同步）
+		if (eiaFiles.value[index]) {
+			eiaFiles.value.splice(index, 1)
+		}
+	}
+
+
+	/* 提取信息的进度条 */
+	// 1. 先声明一个计时器句柄
+	let progressTimer = null
+	let currentPercent = 0
+
+	// 2. 开始"假进度"
+	function startFakeProgress() {
+		currentPercent = 0
+		progressTimer = setInterval(() => {
+			currentPercent += 2 // 每 80ms +2%，50 次后 100%
+			if (currentPercent >= 100) {
+				clearInterval(progressTimer)
+				progressTimer = null
+				return
+			}
+			// ✅ 关键：实时改 loading 文字
+			uni.showLoading({
+				title: `正在提取项目信息，提取进度： ${currentPercent}%`,
+				mask: true
+			})
+		}, 200)
+	}
+
+
+	// 提取信息到项目基本表
+	async function simulateExtract() {
+		// 1. 前置检查：没上传文件直接弹窗
+		if (uploadedDocuments.value.length === 0) {
+			uni.showModal({
+				title: '提示',
+				content: '请先上传环评报告文件',
+				showCancel: false,
+				confirmText: '知道了'
+			})
+			return
+		}
+
+		extracting.value = true // 开始提取，按钮显示loading
+		startFakeProgress()
+		// 2. 显示loading，带预估时间（大文件用户不慌张）
+		uni.showLoading({
+			title: '请稍作等待，正在提取项目信息，预计2~3分钟哦',
+			mask: true
+		})
+
+		try {
+			// 3. 调用后端，超时设为15分钟（900000毫秒），避免大文件超时
+			const result = await runTask('task1', {
+				hideLoading: true, // 我们用uni.showLoading，所以这里隐藏
+				timeout: 900000 // 15分钟，足够解析100页PDF
+			})
+
+			uni.hideLoading()
+
+			// 4. 数据校验：确保后端真的返回了数据
+			if (result?.status !== 'success' || !result.result) { // ✅ 修复：用 !==
+				throw new Error(result?.message || '提取失败：后端未返回有效数据')
+			}
+
+			// 5. 转换数据并填充表格（核心操作）
+			baseTable.value = transformExtractResult(result.result)
+
+			// 6. 成功提示
+			uni.showToast({
+				title: `成功提取 ${Object.keys(result.result).length} 条信息`,
+				icon: 'success',
+				duration: 2500
+			})
+
+			// 7. 缓存到本地（关键！刷新页面不丢失）
+			uni.setStorageSync('project_base_info', JSON.stringify(baseTable.value))
+
+			console.log('[Extract] 提取成功:', result)
+			console.log('[Debug] baseTable:', baseTable.value) // ✅ 调试日志
+
+		} catch (error) {
+			uni.hideLoading()
+
+			// 8. 错误分类处理，给用户看得懂的提示
+			console.error('[Extract] 提取失败:', error)
+
+			if (error.message.includes('超时')) {
+				uni.showModal({
+					title: '提取超时',
+					content: '文档过大或网络较慢，建议：\n1. 拆分成多个文件上传\n2. 检查网络连接\n3. 联系管理员',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			} else if (error.message.includes('未提取到')) {
+				uni.showModal({
+					title: '提取失败',
+					content: '文档中未找到项目信息，请检查：\n1. 文件是否为完整的环评报告\n2. 文件内容是否清晰可读',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			} else {
+				uni.showModal({
+					title: '提取失败',
+					content: error.message || '无法从文档中提取项目信息，请稍后重试',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			}
+		} finally {
+			extracting.value = false // 无论成功失败，都要结束loading状态
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
 	// 步骤定义 - 按照验收流程
-	const stepNames = ['资料上传与基本信息', '提资单比对', '现场踏勘比对', '监测方案', '竣工验收报告']
+	const stepNames = ['资料上传与基本信息', '监测方案', '提资单比对', '现场踏勘比对', '竣工验收报告']
 	const currentStep = ref(0)
 	const stepNamesDisplay = computed(() => stepNames.map((n, i) => stepDone(i) ? (n + ' ✓') : n))
 	const stepSelectOptions = computed(() => stepNames.map((n, i) => ({
@@ -567,222 +1000,6 @@
 		if (currentStep.value < stepNames.length - 1) currentStep.value += 1
 	}
 
-	// 0. 上传与提取
-	const eiaFiles = ref([])
-
-	function simulateExtract() {
-		const now = Date.now()
-		baseTable.value = [
-			// 基本信息
-			{
-				id: now + 101,
-				section: '基本信息',
-				label: '建设项目名称',
-				value: '',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 102,
-				section: '基本信息',
-				label: '建设单位名称',
-				value: '',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 103,
-				section: '基本信息',
-				label: '建设项目性质',
-				value: '新建 / 改扩建 / 技改 / 迁建（勾选其一）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 104,
-				section: '基本信息',
-				label: '建设地点',
-				value: 'XX（中心经纬度：）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 105,
-				section: '基本信息',
-				label: '经度',
-				value: '',
-				unit: '°',
-				source: 'extract',
-				required: false,
-				status: 'pending'
-			},
-			{
-				id: now + 106,
-				section: '基本信息',
-				label: '纬度',
-				value: '',
-				unit: '°',
-				source: 'extract',
-				required: false,
-				status: 'pending'
-			},
-
-			// 产品与能力
-			{
-				id: now + 201,
-				section: '产品及产能',
-				label: '产品及产能',
-				value: '（可直接使用环评中的产品产能表粘贴）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-
-			// 审批及编制信息
-			{
-				id: now + 301,
-				section: '环评信息',
-				label: '环评报表审批部门',
-				value: '广州市生态环境局',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 302,
-				section: '环评信息',
-				label: '环评报告表编制单位',
-				value: '',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-
-			// 投资概算
-			{
-				id: now + 401,
-				section: '投资概算',
-				label: '投资总概算',
-				value: '',
-				unit: '万元',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 402,
-				section: '投资概算',
-				label: '环保投资总概算',
-				value: '',
-				unit: '万元',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 403,
-				section: '投资概算',
-				label: '环保投资比例',
-				value: '',
-				unit: '%',
-				source: 'extract',
-				required: false,
-				status: 'pending'
-			},
-
-			// 建设内容与工艺
-			{
-				id: now + 501,
-				section: '建设内容',
-				label: '主要建设内容',
-				value: '（可将环评内主要建设内容段落复制粘贴）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 502,
-				section: '建设内容',
-				label: '改扩建项目变动情况',
-				value: '（改扩建前后工程组成、产能变化的总览）',
-				unit: '',
-				source: 'extract',
-				required: false,
-				status: 'pending'
-			},
-			{
-				id: now + 503,
-				section: '建设内容',
-				label: '生产工艺',
-				value: '（可粘贴简化工艺流程/文字说明）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-
-			// 污染物产生情况（按你图中提示，允许直接粘贴表格）
-			{
-				id: now + 601,
-				section: '污染物产生情况',
-				label: '水污染物（产生环节/污染物名/治理措施/排放去向/执行标准）',
-				value: '（可将环评里的水污染物表格粘贴在此）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 602,
-				section: '污染物产生情况',
-				label: '大气污染物（产生环节/污染物名/治理措施/排放去向/执行标准）',
-				value: '（可将环评里的大气污染物表格粘贴在此）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-
-			// 噪声与固废
-			{
-				id: now + 701,
-				section: '环境标准',
-				label: '噪声执行标准',
-				value: '（填写相应标准，如 GB 12348 等，并注明类别限值）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-			{
-				id: now + 702,
-				section: '固体废物',
-				label: '固体废物产生情况',
-				value: '（可将环评里的固体废物表格粘贴过来）',
-				unit: '',
-				source: 'extract',
-				required: true,
-				status: 'pending'
-			},
-		]
-		extractionOk.value = true
-		uni.showToast({
-			title: `提取完成（示例 ${baseTable.value.length} 项）`,
-			icon: 'success'
-		})
-	}
 	const extractionOk = ref(false)
 	const showSignboardStep1 = ref(false)
 
@@ -804,13 +1021,6 @@
 		}
 	}
 
-	// 草稿管理
-	function saveDraft() {
-		uni.showToast({
-			title: '草稿已保存',
-			icon: 'success'
-		})
-	}
 	const draftPopup = ref(null)
 	const draftMode = ref('export')
 	const draftText = ref('')
@@ -841,21 +1051,6 @@
 
 	function closeDraftPopup() {
 		draftPopup.value?.close?.()
-	}
-
-	function confirmImportDraft() {
-		try {
-			draftPopup.value?.close?.();
-			uni.showToast({
-				title: '导入完成',
-				icon: 'success'
-			})
-		} catch (e) {
-			uni.showToast({
-				title: 'JSON 不合法',
-				icon: 'none'
-			})
-		}
 	}
 
 	function copyExportDraft() {
@@ -934,7 +1129,7 @@
 		fieldPopup.value?.close?.()
 	}
 
-	// 1. 信息表/提资单
+	// 1. 信息表/提资单------------
 	const verifyOptions = [{
 		text: '待核对',
 		value: 'pending'
@@ -1041,7 +1236,7 @@
 		})
 	}
 
-	// 2. 现场踏勘比对
+	// 2. 现场踏勘比对------------------------
 	const fieldworkRecord = ref('')
 	const fieldworkComparison = ref([])
 
@@ -1352,7 +1547,18 @@
 		return Math.round((completedSteps / totalSteps) * 100)
 	})
 
-	onLoad(() => {})
+	// 在页面加载时，恢复基本信息表缓存
+	onLoad(() => {
+		const cached = uni.getStorageSync('project_base_info')
+		if (cached) {
+			try {
+				baseTable.value = JSON.parse(cached)
+				console.log('[Cache] 恢复缓存的项目信息，共', baseTable.value.length, '条')
+			} catch (e) {
+				console.warn('[Cache] 缓存数据解析失败:', e)
+			}
+		}
+	})
 </script>
 
 <style lang="scss" scoped>
@@ -1709,6 +1915,18 @@
 		font-weight: 700;
 	}
 
+	/* 小标签的样式 */
+	.extract-tag {
+		display: inline-block;
+		margin-left: 8px;
+		padding: 2px 6px;
+		background-color: #52c41a;
+		color: #fff;
+		font-size: 10px;
+		border-radius: 3px;
+		vertical-align: middle;
+	}
+
 	/* 标识牌：左侧标题输入，固定宽度以避免与值重叠 */
 	.pw-ico {
 		width: 140rpx;
@@ -1722,7 +1940,8 @@
 		margin-left: -100rpx;
 		margin-top: 24rpx;
 	}
-	.pw-ico text{
+
+	.pw-ico text {
 		font-size: 22rpx;
 	}
 
@@ -2007,18 +2226,19 @@
 		.pw-ico {
 			width: 140rpx;
 			height: 64rpx;
-			border: none; 
+			border: none;
 			display: flex;
 			align-items: center;
 			justify-content: center;
 			background: $white;
 			margin: 5rpx 0 0rpx 0;
-			
+
 		}
-		.pw-ico text{
+
+		.pw-ico text {
 			font-size: 22rpx;
 		}
-		
+
 		.toolbar-content {
 			flex-direction: column;
 			gap: 16rpx;

@@ -2,17 +2,17 @@
 import { onHide, onLaunch, onShow } from '@dcloudio/uni-app'
 
 // 应用生命周期中记录关键节点，后续可接入埋点
-onLaunch(() => {
-  console.log('应用启动')
-})
+// onLaunch(() => {
+//   console.log('应用启动')
+// })
 
-onShow(() => {
-  console.log('应用进入前台')
-})
+// onShow(() => {
+//   console.log('应用进入前台')
+// })
 
-onHide(() => {
-  console.log('应用进入后台')
-})
+// onHide(() => {
+//   console.log('应用进入后台')
+// })
 </script>
 
 <style lang="scss">

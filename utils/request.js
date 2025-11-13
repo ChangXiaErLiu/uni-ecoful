@@ -1,180 +1,269 @@
-// request.js（UTF-8，中文注释）
-// 说明：统一请求与流式请求封装；基础地址从 utils/config.js 注入
-import { BASE_URL, WS_URL } from './config.js'
-
-// 统一请求（函数式工厂，保留灵活性）
-export function createRequest(options = {}) {
-  return function request(config) {
-    const { url, method = 'GET', data = {}, header = {} } = config
-    return new Promise((resolve, reject) => {
-      uni.request({
-        url: url.startsWith('http') ? url : (BASE_URL + url),
-        method,
-        data,
-        header: {
-          'Content-Type': 'application/json',
-          ...options.header,
-          ...header
-        },
-        success: (res) => {
-          console.log('请求成功:', res.data)
-          resolve(res.data)
-        },
-        fail: (error) => {
-          console.error('请求失败:', error)
-          reject(error)
-        }
-      })
-    })
-  }
-}
-
-export const request = createRequest()
+import {
+	BASE_URL
+} from './config.js'
 
 /**
- * 聊天流式接口（H5 使用 SSE；小程序使用 WebSocket）
- * @param {Object} chatRequest - { model/modelName, messages:[{role,content}], stream:true }
- * @param {function(string)} onDelta - 每段增量回调
- * @param {function()} onDone - 完成回调
- * @param {function(Error)} onError - 出错回调
- * @returns {function} cancel - 取消函数
+ * 请求拦截器类
+ * 统一处理：token、loading、错误提示、超时
+ * 包含了普通的http请求和WebSocket请求
  */
+class Request {
+	constructor(options = {}) {
+		this.baseOptions = options
+		// 请求队列（用于控制 loading）
+		this.requestQueue = []
+	}
 
-// chatStream：跨端流式实现
-export function chatStream(
-  chatRequest,
-  onDelta = () => {},
-  onDone  = () => {},
-  onError = () => {}
-) {
-  let cancelled = false
-  let aborter = null
+	/**
+	 * 核心请求方法
+	 * @param {Object} config - 请求配置
+	 * @returns {Promise}
+	 */
+	async request(config) {
+		const {
+			url,
+			method = 'GET',
+			data = {},
+			header = {},
+			hideLoading = false,
+			timeout = 30000,
+			showError = true
+		} = config
 
-  // #ifdef MP
-  // 小程序端：使用 WebSocket 实现
-  try {
-    // 若未使用 wss 提示（在发布前请确保为 wss:// 且配置合法域名）
-    // #ifdef MP
-    try {
-      if (typeof WS_URL === 'string' && /^ws:\/\//i.test(WS_URL)) {
-        console.warn('当前为 ws://，小程序需使用 wss:// 且配置合法域名:', WS_URL)
-      }
-    } catch(e) {}
-    // #endif
-    const socketTask = uni.connectSocket({ url: WS_URL, protocols: [], tcpNoDelay: true })
-    let opened = false
+		const token = uni.getStorageSync('token')
+		if (token) header.Authorization = `Bearer ${token}`
 
-    socketTask.onOpen(() => {
-      opened = true
-      try {
-        socketTask.send({ data: JSON.stringify(chatRequest) })
-      } catch (e) {
-        onError && onError(e)
-      }
-    })
+		// 只在不是第一个请求时显示 loading
+		if (!hideLoading) {
+			this.showLoading()
+		}
 
-    socketTask.onMessage((evt) => {
-      if (cancelled) return
-      try {
-        // 约定：服务端每条消息为一段纯文本，收到 "[DONE]" 表示结束
-        const data = (evt?.data ?? '')
-        if (!data) return
-        if (data === '[DONE]') {
-          onDone && onDone()
-          return
-        }
-        onDelta && onDelta(String(data))
-      } catch (err) {
-        onError && onError(err)
-      }
-    })
+		const requestId = Date.now()
+		this.requestQueue.push(requestId)
 
-    socketTask.onError((err) => {
-      if (!cancelled) onError && onError(err)
-    })
+		// ✅ 关键：手动封装 Promise，避免 H5 平台混用
+		return new Promise((resolve, reject) => {
+			uni.request({
+				url: url.startsWith('http') ? url : (BASE_URL + url),
+				method,
+				data,
+				header: {
+					'Content-Type': 'application/json',
+					...this.baseOptions.header,
+					...header
+				},
+				timeout,
+				success: (res) => {
+					this.hideLoading(requestId)
 
-    socketTask.onClose(() => {
-      if (!cancelled) onDone && onDone()
-    })
+					if (!res) {
+						reject(new Error('响应为空'))
+						return
+					}
 
-    return () => {
-      cancelled = true
-      try { socketTask?.close?.() } catch (e) {}
-    }
-  } catch (err) {
-    onError && onError(err)
-  }
-  // #endif
+					if (res.statusCode >= 200 && res.statusCode < 300) {
+						resolve(res.data)
+					} else {
+						const error = {
+							code: res.statusCode,
+							message: res.data?.detail || '请求失败',
+							data: res.data
+						}
+						if (showError) {
+							uni.showToast({
+								title: error.message,
+								icon: 'none',
+								duration: 2000
+							})
+						}
+						reject(error)
+					}
+				},
+				fail: (error) => {
+					this.hideLoading(requestId)
+					const netError = {
+						code: 'NETWORK_ERROR',
+						message: error.errMsg || '网络请求失败',
+						originalError: error
+					}
+					if (showError) {
+						uni.showToast({
+							title: netError.message,
+							icon: 'none',
+							duration: 2000
+						})
+					}
+					reject(netError)
+				}
+			})
+		})
+	}
+	/**
+	 * 显示 loading
+	 */
+	showLoading() {
+		if (this.requestQueue.length === 1) { // 第一个请求才显示
+			uni.showLoading({
+				title: '加载中...',
+				mask: true
+			})
+		}
+	}
 
-  // #ifdef H5
-  ;(async () => {
-    try {
-      const controller = new AbortController()
-      aborter = controller
-      
-      // H5 使用 fetch + SSE（服务端需返回 text/event-stream）
-      const res = await fetch(BASE_URL + '/chat/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'text/event-stream'
-        },
-        body: JSON.stringify(chatRequest),
-        signal: controller.signal,
-        mode: 'cors',
-      })
-      
-      if (!res.ok || !res.body) throw new Error(`流式请求失败: ${res.status}`)
+	/**
+	 * 隐藏 loading
+	 */
+	hideLoading(requestId) {
+		// 从队列中移除当前请求
+		const index = this.requestQueue.indexOf(requestId)
+		if (index > -1) {
+			this.requestQueue.splice(index, 1)
+		}
 
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder('utf-8')
+		// 队列为空时隐藏 loading
+		if (this.requestQueue.length === 0) {
+			uni.hideLoading()
+		}
+	}
 
-      while (true) {
-        const { value, done } = await reader.read()
-        
-        // 读取结束
-        if (done) {
-          onDone && onDone()
-          break
-        }
 
-        const chunk = decoder.decode(value, { stream: true })
-        
-        const lines = chunk.replace(/\r/g, '').split('\n')
+	/**
+	 * 流式请求（用于 AI 聊天、大文本生成等场景）
+	 * @param {Object} config - 请求配置 { url, method, body }
+	 * @param {Function} onDelta - 收到数据片段的回调
+	 * @param {Function} onError - 错误回调
+	 * @param {Function} onDone - 完成回调
+	 * @returns {Function} cancel - 取消请求的函数
+	 */
+	chatStream(config, onDelta, onError, onDone) {
+		const {
+			url,
+			method = 'POST',
+			body = {}
+		} = config
 
-        for (const raw of lines) {
-          const line = raw.trim()
-          if (!line) continue
+		// 1. 构建完整 URL（使用 WS_URL 基础地址）
+		const fullUrl = (url.startsWith('ws') || url.startsWith('http')) ?
+			url.replace(/^https?/, 'ws') // 自动转换 http/https 为 ws/wss
+			:
+			WS_URL + url // 使用相对路径
 
-          let payload = ''
-          if (line.startsWith('data:')) payload = line.slice(5).trim()
-          else payload = line
+		// 2. 建立 WebSocket 连接
+		const socket = uni.connectSocket({
+			url: fullUrl,
+			method,
+			header: {
+				'Content-Type': 'application/json',
+				// 传递 token（如果需要）
+				...(uni.getStorageSync('token') ? {
+					Authorization: `Bearer ${uni.getStorageSync('token')}`
+				} : {}),
+				...this.baseOptions.header
+			},
+			success: () => {
+				console.log('[WebSocket] 连接成功:', fullUrl)
+			},
+			fail: (err) => {
+				console.error('[WebSocket] 连接失败:', err)
+				onError?.(new Error('WebSocket 连接失败: ' + err.errMsg))
+			}
+		})
 
-          if (!payload) continue
-          if (payload === '[DONE]') {
-            console.log('收到 [DONE]，触发 onDone')
-            onDone && onDone()
-            continue
-          }
-          
-          onDelta && onDelta(payload)
-        }
-      }
-    } catch (err) {
-      console.error('流式请求错误:', err)
-      if (!cancelled) onError(err)
-    }
-  })()
-  // #endif
+		// 3. 监听消息接收
+		socket.onMessage((res) => {
+			try {
+				// 假设后端返回格式：{ type: 'delta', data: '...' } 或 { type: 'error', message: '...' }
+				const message = JSON.parse(res.data)
 
-  // #ifndef H5
-  console.error('当前平台不支持流式请求（仅 H5 / 小程序）')
-  onError(new Error('当前平台不支持流式请求（仅 H5 / 小程序）'))
-  // #endif
+				switch (message.type) {
+					case 'delta':
+						onDelta?.(message.data)
+						break
+					case 'error':
+						onError?.(new Error(message.message || 'Stream error'))
+						break
+					case 'done':
+						onDone?.()
+						socket.close()
+						break
+					default:
+						// 兼容纯文本格式
+						if (typeof res.data === 'string') {
+							onDelta?.(res.data)
+						}
+				}
+			} catch (e) {
+				// 解析失败，按纯文本处理
+				onDelta?.(res.data)
+			}
+		})
 
-  return () => {
-    cancelled = true
-    try { aborter && aborter.abort() } catch (e) {}
-  }
+		// 4. 监听错误
+		socket.onError((err) => {
+			console.error('[WebSocket] 错误:', err)
+			onError?.(new Error('WebSocket 错误: ' + err.errMsg))
+		})
+
+		// 5. 监听连接关闭
+		socket.onClose((res) => {
+			console.log('[WebSocket] 连接关闭:', res.code, res.reason)
+			if (res.code !== 1000) { // 1000 是正常关闭
+				onError?.(new Error('连接异常关闭: ' + res.reason))
+			}
+		})
+
+		// 6. 连接打开后发送请求体
+		socket.onOpen(() => {
+			socket.send({
+				data: JSON.stringify(body)
+			})
+		})
+
+		// 7. 返回取消函数
+		const cancel = () => {
+			console.log('[WebSocket] 主动取消请求')
+			socket.close()
+		}
+
+		return cancel
+	}
+
+
+	// 快捷请求方法
+	get(url, config = {}) {
+		return this.request({
+			...config,
+			url,
+			method: 'GET'
+		})
+	}
+
+	post(url, data = {}, config = {}) {
+		return this.request({
+			...config,
+			url,
+			method: 'POST',
+			data
+		})
+	}
+
+	put(url, data = {}, config = {}) {
+		return this.request({
+			...config,
+			url,
+			method: 'PUT',
+			data
+		})
+	}
+
+	delete(url, config = {}) {
+		return this.request({
+			...config,
+			url,
+			method: 'DELETE'
+		})
+	}
 }
 
+// 导出单例
+export const request = new Request()
