@@ -243,14 +243,14 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           ];
           if (parseableExts.includes(ext)) {
             stats.supported++;
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:920", `文件已上传并支持解析: ${result.filename}`);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:924", `文件已上传并支持解析: ${result.filename}`);
           } else {
             stats.nonSupported++;
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:923", `文件已上传（暂不支持解析）: ${result.filename}`);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:927", `文件已上传（暂不支持解析）: ${result.filename}`);
           }
         } catch (error) {
           stats.failCount++;
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:927", `❌ 文件 ${i + 1} 上传失败:`, error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:931", `❌ 文件 ${i + 1} 上传失败:`, error);
           progressDone = true;
           if (uploadProgressTimer) {
             clearInterval(uploadProgressTimer);
@@ -272,7 +272,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
       }
       showUploadResult(stats);
       if (stats.supported > 0) {
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:956", `[AutoIndex] 检测到 ${stats.supported} 个可解析文件，开始自动索引...`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:960", `[AutoIndex] 检测到 ${stats.supported} 个可解析文件，开始自动索引...`);
         await handleAutoIndexBuild(stats.supported);
       } else {
         progressDone = true;
@@ -288,10 +288,10 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         const result = await api_acceptance.rebuildIndex({
           hideLoading: true
         });
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:976", "[AutoIndex] 成功:", result);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:980", "[AutoIndex] 成功:", result);
         sprintToComplete();
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:982", "[AutoIndex] 失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:986", "[AutoIndex] 失败:", error);
         progressDone = true;
         if (uploadProgressTimer) {
           clearInterval(uploadProgressTimer);
@@ -417,8 +417,8 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         }
         baseTable.value = api_acceptance.transformExtractResult(result.result);
         common_vendor.index.setStorageSync("project_base_info", JSON.stringify(baseTable.value));
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1159", "[Extract] 提取成功:", result);
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1160", "[Debug] baseTable:", baseTable.value.水污染物);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1163", "[Extract] 提取成功:", result);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1164", "[Debug] baseTable:", baseTable.value.水污染物);
       } catch (error) {
         extractProgressDone = true;
         if (extractProgressTimer) {
@@ -430,7 +430,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           extractSprintTimer = null;
         }
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1176", "[Extract] 提取失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1180", "[Extract] 提取失败:", error);
         if (error.message.includes("超时")) {
           common_vendor.index.showModal({
             title: "提取超时",
@@ -643,18 +643,26 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
       ];
       sec.items.push(...group);
     }
-    function confirmRemoveGroup(sectionIdx) {
-      const sec = signboard.sections[sectionIdx];
-      const codeItem = sec.items.find((it) => it.title === "排放口编号");
+    function groupItems(items) {
+      const groups = [];
+      for (let i = 0; i < items.length; i += 3) {
+        groups.push(items.slice(i, i + 3));
+      }
+      return groups;
+    }
+    function removeGroup(section, groupIndex) {
+      const start = groupIndex * 3;
+      const codeItem = section.items.slice(start, start + 3).find((it) => it.title === "排放口编号");
       const code = (codeItem == null ? void 0 : codeItem.content) || "未知编号";
       common_vendor.index.showModal({
-        title: "提示",
+        title: "永久删除",
         content: `确定删除排污口 ${code} 吗？`,
         confirmText: "确定",
-        cancelText: "取消"
-      }).then((res) => {
-        if (res.confirm) {
-          sec.items.splice(0, 3);
+        cancelText: "取消",
+        success: (res) => {
+          if (res.confirm) {
+            section.items.splice(start, 3);
+          }
         }
       });
     }
@@ -976,10 +984,10 @@ ${head}${tail}`;
       if (cached) {
         try {
           baseTable.value = JSON.parse(cached);
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1825", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1826", "baseTable项目信息，", baseTable.value);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1840", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1841", "baseTable项目信息，", baseTable.value);
         } catch (e) {
-          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1828", "[Cache] 缓存数据解析失败:", e);
+          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1843", "[Cache] 缓存数据解析失败:", e);
         }
       }
     });
@@ -1170,63 +1178,65 @@ ${head}${tail}`;
             a: common_vendor.t(sec.block),
             b: "41308e16-14-" + i0 + ",41308e16-0",
             c: common_vendor.o(() => addSignItem(si), "s" + si),
-            d: common_vendor.f(sec.items, (it, ii, i1) => {
-              return common_vendor.e({
-                a: "41308e16-15-" + i0 + "-" + i1 + ",41308e16-0",
-                b: common_vendor.o(($event) => it.title = $event, "r" + si + "-" + ii),
-                c: common_vendor.p({
-                  placeholder: "内容标题",
-                  modelValue: it.title
+            d: common_vendor.f(groupItems(sec.items), (group, gi, i1) => {
+              return {
+                a: common_vendor.f(group, (it, ii, i2) => {
+                  return {
+                    a: "41308e16-15-" + i0 + "-" + i1 + "-" + i2 + ",41308e16-0",
+                    b: common_vendor.o(($event) => it.title = $event, "r" + si + "-" + gi + "-" + ii),
+                    c: common_vendor.p({
+                      placeholder: "内容标题",
+                      modelValue: it.title
+                    }),
+                    d: "41308e16-16-" + i0 + "-" + i1 + "-" + i2 + ",41308e16-0",
+                    e: common_vendor.o(($event) => it.content = $event, "r" + si + "-" + gi + "-" + ii),
+                    f: common_vendor.p({
+                      placeholder: "请输入具体的值",
+                      modelValue: it.content
+                    }),
+                    g: "r" + si + "-" + gi + "-" + ii
+                  };
                 }),
-                d: "41308e16-16-" + i0 + "-" + i1 + ",41308e16-0",
-                e: common_vendor.o(($event) => it.content = $event, "r" + si + "-" + ii),
-                f: common_vendor.p({
-                  placeholder: "请输入具体的值",
-                  modelValue: it.content
-                })
-              }, sec.items.length ? {
-                g: "41308e16-17-" + i0 + "-" + i1 + ",41308e16-0",
-                h: common_vendor.p({
-                  type: "trash",
-                  size: "16",
-                  color: "#d92d20"
-                }),
-                i: common_vendor.o(() => confirmRemoveGroup(si), "r" + si + "-" + ii)
-              } : {}, {
-                j: "r" + si + "-" + ii
-              });
+                b: "41308e16-17-" + i0 + "-" + i1 + ",41308e16-0",
+                c: common_vendor.o(() => removeGroup(sec, gi), "g" + si + "-" + gi),
+                d: "g" + si + "-" + gi
+              };
             }),
-            e: sec.items.length,
-            f: "s" + si
+            e: "s" + si
           };
         }),
         K: common_vendor.p({
           type: "plus",
           size: "16",
           color: "#166534"
+        }),
+        L: common_vendor.p({
+          type: "trash",
+          size: "16",
+          color: "#d92d20"
         })
       } : {}) : {}, {
-        L: currentStep.value === 0,
-        M: common_vendor.p({
+        M: currentStep.value === 0,
+        N: common_vendor.p({
           type: "clipboard",
           size: "20",
           color: "#166534"
         }),
-        N: common_vendor.p({
+        O: common_vendor.p({
           type: "gear",
           size: "16",
           color: "#ffffff"
         }),
-        O: common_vendor.o(generateDatasheet),
-        P: common_vendor.p({
+        P: common_vendor.o(generateDatasheet),
+        Q: common_vendor.p({
           type: "download",
           size: "16",
           color: "#155e3b"
         }),
-        Q: common_vendor.o(exportDatasheet),
-        R: datasheet.value.length
+        R: common_vendor.o(exportDatasheet),
+        S: datasheet.value.length
       }, datasheet.value.length ? {
-        S: common_vendor.f(datasheet.value, (d, i, i0) => {
+        T: common_vendor.f(datasheet.value, (d, i, i0) => {
           return {
             a: "41308e16-21-" + i0 + ",41308e16-0",
             b: common_vendor.o(($event) => d.label = $event, d.id),
@@ -1259,46 +1269,46 @@ ${head}${tail}`;
             o: d.id
           };
         }),
-        T: common_vendor.p({
+        U: common_vendor.p({
           type: "trash",
           size: "16",
           color: "#d92d20"
         })
       } : {
-        U: common_vendor.p({
+        V: common_vendor.p({
           type: "document",
           size: "48",
           color: "#cbd5e1"
         })
       }, {
-        V: currentStep.value === 1,
-        W: common_vendor.p({
+        W: currentStep.value === 1,
+        X: common_vendor.p({
           type: "map-pin-ellipse",
           size: "20",
           color: "#166534"
         }),
-        X: fieldworkRecord.value,
-        Y: common_vendor.o(($event) => fieldworkRecord.value = $event.detail.value),
-        Z: common_vendor.p({
+        Y: fieldworkRecord.value,
+        Z: common_vendor.o(($event) => fieldworkRecord.value = $event.detail.value),
+        aa: common_vendor.p({
           type: "list",
           size: "18",
           color: "#166534"
         }),
-        aa: common_vendor.p({
+        ab: common_vendor.p({
           type: "gear",
           size: "16",
           color: "#ffffff"
         }),
-        ab: common_vendor.o(generateFieldworkComparison),
-        ac: common_vendor.p({
+        ac: common_vendor.o(generateFieldworkComparison),
+        ad: common_vendor.p({
           type: "plus",
           size: "16",
           color: "#155e3b"
         }),
-        ad: common_vendor.o(addComparisonItem),
-        ae: fieldworkComparison.value.length
+        ae: common_vendor.o(addComparisonItem),
+        af: fieldworkComparison.value.length
       }, fieldworkComparison.value.length ? {
-        af: common_vendor.f(fieldworkComparison.value, (item, index, i0) => {
+        ag: common_vendor.f(fieldworkComparison.value, (item, index, i0) => {
           return {
             a: "41308e16-31-" + i0 + ",41308e16-0",
             b: common_vendor.o(($event) => item.project = $event, item.id),
@@ -1329,52 +1339,52 @@ ${head}${tail}`;
             o: item.id
           };
         }),
-        ag: common_vendor.p({
+        ah: common_vendor.p({
           type: "trash",
           size: "16",
           color: "#d92d20"
         })
       } : {
-        ah: common_vendor.p({
+        ai: common_vendor.p({
           type: "map-pin-ellipse",
           size: "48",
           color: "#cbd5e1"
         })
       }, {
-        ai: common_vendor.p({
+        aj: common_vendor.p({
           type: "refresh",
           size: "18",
           color: "#166534"
         }),
-        aj: common_vendor.o(($event) => updateBaseInfo(false)),
-        ak: common_vendor.o(($event) => updateBaseInfo(true)),
-        al: currentStep.value === 2,
-        am: common_vendor.p({
+        ak: common_vendor.o(($event) => updateBaseInfo(false)),
+        al: common_vendor.o(($event) => updateBaseInfo(true)),
+        am: currentStep.value === 2,
+        an: common_vendor.p({
           type: "eye",
           size: "20",
           color: "#166534"
         }),
-        an: common_vendor.p({
+        ao: common_vendor.p({
           type: "magic",
           size: "16",
           color: "#ffffff"
         }),
-        ao: common_vendor.o(recommendPlan),
-        ap: common_vendor.p({
+        ap: common_vendor.o(recommendPlan),
+        aq: common_vendor.p({
           type: "plus",
           size: "16",
           color: "#155e3b"
         }),
-        aq: common_vendor.o(addPlanItem),
-        ar: common_vendor.p({
+        ar: common_vendor.o(addPlanItem),
+        as: common_vendor.p({
           type: "download",
           size: "16",
           color: "#5b6b7b"
         }),
-        as: common_vendor.o(downloadMonitorTemplate),
-        at: plan.value.length
+        at: common_vendor.o(downloadMonitorTemplate),
+        av: plan.value.length
       }, plan.value.length ? {
-        av: common_vendor.f(plan.value, (item, index, i0) => {
+        aw: common_vendor.f(plan.value, (item, index, i0) => {
           return {
             a: "41308e16-42-" + i0 + ",41308e16-0",
             b: common_vendor.o(($event) => item.factor = $event, item.id),
@@ -1425,46 +1435,46 @@ ${head}${tail}`;
             D: item.id
           };
         }),
-        aw: common_vendor.p({
+        ax: common_vendor.p({
           type: "copy",
           size: "16",
           color: "#166534"
         }),
-        ax: common_vendor.p({
+        ay: common_vendor.p({
           type: "arrow-up",
           size: "16",
           color: "#166534"
         }),
-        ay: common_vendor.p({
+        az: common_vendor.p({
           type: "arrow-down",
           size: "16",
           color: "#166534"
         }),
-        az: common_vendor.p({
+        aA: common_vendor.p({
           type: "trash",
           size: "16",
           color: "#d92d20"
         })
       } : {
-        aA: common_vendor.p({
+        aB: common_vendor.p({
           type: "eye",
           size: "48",
           color: "#cbd5e1"
         })
       }, {
-        aB: common_vendor.p({
+        aC: common_vendor.p({
           type: "checkmark",
           size: "16",
           color: "#ffffff"
         }),
-        aC: common_vendor.o(saveMonitorPlan),
-        aD: currentStep.value === 3,
-        aE: common_vendor.p({
+        aD: common_vendor.o(saveMonitorPlan),
+        aE: currentStep.value === 3,
+        aF: common_vendor.p({
           type: "document",
           size: "20",
           color: "#166534"
         }),
-        aF: common_vendor.f(reportTypes, (type, k0, i0) => {
+        aG: common_vendor.f(reportTypes, (type, k0, i0) => {
           return {
             a: type.value,
             b: reportType.value === type.value,
@@ -1472,81 +1482,81 @@ ${head}${tail}`;
             d: type.value
           };
         }),
-        aG: common_vendor.o(onReportTypeChange),
-        aH: reportType.value === "withData"
+        aH: common_vendor.o(onReportTypeChange),
+        aI: reportType.value === "withData"
       }, reportType.value === "withData" ? {
-        aI: common_vendor.o(($event) => testReportFiles.value = $event),
-        aJ: common_vendor.p({
+        aJ: common_vendor.o(($event) => testReportFiles.value = $event),
+        aK: common_vendor.p({
           fileMediatype: "all",
           ["auto-upload"]: false,
           limit: 3,
           modelValue: testReportFiles.value
         })
       } : {}, {
-        aK: common_vendor.p({
+        aL: common_vendor.p({
           type: "gear",
           size: "16",
           color: "#ffffff"
         }),
-        aL: common_vendor.o(generateAcceptanceReport),
-        aM: common_vendor.p({
+        aM: common_vendor.o(generateAcceptanceReport),
+        aN: common_vendor.p({
           type: "eye",
           size: "16",
           color: "#155e3b"
         }),
-        aN: common_vendor.o(previewReport),
-        aO: !reportGenerated.value,
-        aP: common_vendor.p({
+        aO: common_vendor.o(previewReport),
+        aP: !reportGenerated.value,
+        aQ: common_vendor.p({
           type: "download",
           size: "16",
           color: "#5b6b7b"
         }),
-        aQ: common_vendor.o(exportReport),
-        aR: !reportGenerated.value,
-        aS: reportGenerated.value
+        aR: common_vendor.o(exportReport),
+        aS: !reportGenerated.value,
+        aT: reportGenerated.value
       }, reportGenerated.value ? common_vendor.e({
-        aT: common_vendor.p({
+        aU: common_vendor.p({
           type: "checkmark-circle",
           size: "18",
           color: "#166534"
         }),
-        aU: reportType.value === "withData"
+        aV: reportType.value === "withData"
       }, reportType.value === "withData" ? {} : {}) : {
-        aV: common_vendor.p({
+        aW: common_vendor.p({
           type: "document",
           size: "48",
           color: "#cbd5e1"
         })
       }, {
-        aW: currentStep.value === 4,
-        aX: common_vendor.p({
+        aX: currentStep.value === 4,
+        aY: common_vendor.p({
           type: "left",
           size: "16",
           color: "#5b6b7b"
         }),
-        aY: currentStep.value === 0,
-        aZ: common_vendor.o(prevStep),
-        ba: common_vendor.p({
+        aZ: currentStep.value === 0,
+        ba: common_vendor.o(prevStep),
+        bb: common_vendor.p({
           type: "right",
           size: "16",
           color: "#ffffff"
         }),
-        bb: currentStep.value === stepNames.length - 1,
-        bc: common_vendor.o(nextStep),
-        bd: common_vendor.p({
+        bc: currentStep.value === stepNames.length - 1,
+        bd: common_vendor.o(nextStep),
+        be: common_vendor.p({
           current: "pages/reports/acceptance/index"
         }),
-        be: common_vendor.o(($event) => newBaseInfoLabel.value = $event),
-        bf: common_vendor.p({
+        bf: common_vendor.o(($event) => newBaseInfoLabel.value = $event),
+        bg: common_vendor.p({
           placeholder: "如：项目名称/单位名称",
           modelValue: newBaseInfoLabel.value
         }),
-        bg: common_vendor.o(closeBaseInfo),
-        bh: common_vendor.o(confirmAddBaseInfo),
-        bi: common_vendor.sr(newBaseInfoPopup, "41308e16-63", {
+        bh: common_vendor.o(closeBaseInfo),
+        bi: common_vendor.o(confirmAddBaseInfo),
+        bj: common_vendor.sr(newBaseInfoPopup, "41308e16-63", {
           "k": "newBaseInfoPopup"
         }),
-        bj: common_vendor.p({
+        bk: common_vendor.p({
           type: "center"
         })
       });

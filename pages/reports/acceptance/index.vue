@@ -244,27 +244,31 @@
 														</button>
 													</view>
 													<view class="form-grid form-grid--base">
-														<view class="form-item" v-for="(it, ii) in sec.items"
-															:key="'r'+si+'-'+ii">
-															<view class="form-item__row">
-																<uni-easyinput class="form-item__title"
-																	v-model="it.title" placeholder="内容标题" />
-																<uni-easyinput class="form-item__input"
-																	v-model="it.content" placeholder="请输入具体的值" />
-
-																<!-- 每组一个删除按钮 → 放在最后一行 -->
-																<view class="form-item" v-if="sec.items.length">
-																	<view class="form-item__row"
-																		style="justify-content: flex-end;">
-																		<button class="icon-btn icon-btn--danger"
-																			@tap="() => confirmRemoveGroup(si)">
-																			<uni-icons type="trash" size="16"
-																				color="#d92d20" />
-																		</button>
-																	</view>
+														<!-- 按组渲染，每组 3 条 -->
+														<template v-for="(group, gi) in groupItems(sec.items)"
+															:key="'g'+si+'-'+gi">
+															<view class="form-item" v-for="(it, ii) in group"
+																:key="'r'+si+'-'+gi+'-'+ii">
+																<view class="form-item__row">
+																	<uni-easyinput class="form-item__title"
+																		v-model="it.title" placeholder="内容标题" />
+																	<uni-easyinput class="form-item__input"
+																		v-model="it.content" placeholder="请输入具体的值" />
 																</view>
 															</view>
-														</view>
+
+															<!-- 每组尾部放删除按钮 -->
+															<view class="form-item" style="margin-bottom:12px;">
+																<view class="form-item__row"
+																	style="justify-content:flex-end;">
+																	<button class="icon-btn icon-btn--danger"
+																		@tap="() => removeGroup(sec, gi)">
+																		<uni-icons type="trash" size="16"
+																			color="#d92d20" />
+																	</button>
+																</view>
+															</view>
+														</template>
 													</view>
 												</template>
 											</view>
@@ -1416,24 +1420,35 @@
 		/* ---------- 追加到当前块 ---------- */
 		sec.items.push(...group);
 	}
-
-	// 弹出确认框并删除整组（3 条信息）
-	function confirmRemoveGroup(sectionIdx) {
-		const sec = signboard.sections[sectionIdx];
-		const codeItem = sec.items.find(it => it.title === '排放口编号');
-		const code = codeItem?.content || '未知编号';
-
-		uni.showModal({
-			title: '提示',
-			content: `确定删除排污口 ${code} 吗？`,
-			confirmText: '确定',
-			cancelText: '取消'
-		}).then(res => {
-			if (res.confirm) {
-				// 直接删掉这 3 条
-				sec.items.splice(0, 3);
-			}
-		});
+	
+	// 把 flat 的 items 按 3 条一组切开
+	function groupItems(items) {
+	  const groups = [];
+	  for (let i = 0; i < items.length; i += 3) {
+	    groups.push(items.slice(i, i + 3));
+	  }
+	  return groups;
+	}
+	
+	// 删除指定组（3 条）
+	function removeGroup(section, groupIndex) {
+	  // 取本组排放口编号用于提示
+	  const start   = groupIndex * 3;
+	  const codeItem = section.items.slice(start, start + 3)
+	                                .find(it => it.title === '排放口编号');
+	  const code     = codeItem?.content || '未知编号';
+	
+	  uni.showModal({
+	    title: '永久删除',
+	    content: `确定删除排污口 ${code} 吗？`,
+	    confirmText: '确定',
+	    cancelText: '取消',
+	    success: (res) => {
+	      if (res.confirm) {
+	        section.items.splice(start, 3);
+	      }
+	    }
+	  });
 	}
 
 	function findBaseValue(label) {
