@@ -52,7 +52,7 @@
 									</button>
 								</view>
 
-								<!-- 项目信息表 -->
+								<!-- 项目信息表和标识牌信息 -->
 								<view v-if="baseTable.length" class="subsection">
 									<view class="subsection-head">
 										<uni-icons type="list" size="18" color="#166534" />
@@ -60,7 +60,7 @@
 									</view>
 
 									<view class="section-actions">
-										<button class="btn btn--ghost" @tap="openAddField">
+										<button class="btn btn--ghost" @tap="openAddBase">
 											<uni-icons type="plus" size="16" color="#166534" />
 											<text>新增</text>
 										</button>
@@ -78,10 +78,116 @@
 										</button>
 									</view>
 
-									<!-- 响应式表单：PC 两列，移动端单列 -->
+									<!-- 项目信息表 -->
 									<view class="form-grid form-grid--base">
 										<view class="form-item" v-for="(item, idx) in baseTable" :key="item.id">
-											<view class="form-item__row">
+											<!-- 污染物表格特殊渲染 -->
+											<view v-if="item.id === 'pollutants_emission' && item.type === 'table'"
+												class="pollutants-container">
+												<view class="pollutants_baseinfo_row">
+													<text class="form-item__label">
+														{{ item.label }}
+														<text v-if="item.source === 'extracted'"
+															class="extract-tag">已提取</text>
+													</text>
+												</view>
+
+												<!-- 污染物表格 -->
+												<view class="pollutants-table">
+													<!-- 表格头部 -->
+													<view class="pollutants-header">
+														<view class="pollutants-col pollutants-col--type">污染物类型</view>
+														<view class="pollutants-col pollutants-col--link">产生环节</view>
+														<view class="pollutants-col pollutants-col--name">污染物名称</view>
+														<view class="pollutants-col pollutants-col--measure">污染治理措施
+														</view>
+														<view class="pollutants-col pollutants-col--direction">排放去向
+														</view>
+														<view class="pollutants-col pollutants-col--standard">执行标准
+														</view>
+													</view>
+
+													<!-- 表格内容 -->
+													<view class="pollutants-body">
+														<!-- 水污染物 -->
+														<view v-if="item.value.水污染物 && item.value.水污染物.length"
+															v-for="(water, index) in item.value.水污染物"
+															:key="'water-' + index" class="pollutants-row">
+															<view class="pollutants-col pollutants-col--type">水污染物
+															</view>
+															<view class="pollutants-col pollutants-col--link">
+																{{ water.产生环节 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ water.污染物名称 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--measure">
+																{{ water.污染治理措施 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--direction">
+																{{ water.排放去向 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--standard">
+																{{ water.执行标准 || '-' }}
+															</view>
+														</view>
+
+														<!-- 大气污染物 -->
+														<view v-if="item.value.大气污染物 && item.value.大气污染物.length"
+															v-for="(air, index) in item.value.大气污染物"
+															:key="'air-' + index" class="pollutants-row">
+															<view class="pollutants-col pollutants-col--type">大气污染物
+															</view>
+															<view class="pollutants-col pollutants-col--link">
+																{{ air.产生环节 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ air.污染物名称 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--measure">
+																{{ air.污染治理措施 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--direction">
+																{{ air.排放去向 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--standard">
+																{{ air.执行标准 || '-' }}
+															</view>
+														</view>
+
+														<!-- 噪声 -->
+														<view v-if="item.value.噪声 && item.value.噪声.length"
+															v-for="(noise, index) in item.value.噪声"
+															:key="'noise-' + index" class="pollutants-row">
+															<view class="pollutants-col pollutants-col--type">噪声</view>
+															<view class="pollutants-col pollutants-col--link">
+																{{ noise.产生环节 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ noise.污染物名称 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--measure">
+																{{ noise.污染治理措施 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--direction">
+																{{ noise.排放去向 || '-' }}
+															</view>
+															<view class="pollutants-col pollutants-col--standard">
+																{{ noise.执行标准 || '-' }}
+															</view>
+														</view>
+													</view>
+												</view>
+
+												<!-- 选择模式下的复选框 -->
+												<view v-if="selectMode" class="pollutants-select">
+													<checkbox :checked="selectedIds.includes(item.id)"
+														@tap="() => toggleSelected(item.id)" />
+												</view>
+											</view>
+
+
+											<view v-else class="baseinfo__row">
 												<text class="form-item__label">
 													{{ item.label }}
 													<!--  如果是提取的数据，显示绿色小标签 -->
@@ -100,37 +206,36 @@
 										</view>
 									</view>
 
-									<!-- 标识牌生成 -->
+									<!-- 标识牌信息生成 -->
 									<view class="subsection">
 										<view class="subsection-head">
 											<uni-icons type="list" size="18" color="#fb923c" />
-											<text class="subsection-title">排污标识牌信息（业主确认排污口信息无误）</text>
+											<text class="subsection-title">排污标识牌（下载与业主确认排污口信息）</text>
 										</view>
 
 										<view class="section-actions">
 											<button class="btn btn--primary"
-												@tap="() => { generateSignboard(); showSignboardStep1 = true }">
+												@tap="() => { generateSignboard(); showSignboard = true }">
 												<uni-icons type="eye-filled" size="16" color="#ffffff" />
 												<text>标识牌信息</text>
 											</button>
-											<button v-if="showSignboardStep1" class="btn btn--primary"
-												@tap="downBiaoShi">
+											<button v-if="showSignboard" class="btn btn--primary" @tap="downBiaoShi">
 												<uni-icons type="download-filled" size="16" color="#ffffff" />
 												<text>下载</text>
 											</button>
-											<button v-if="showSignboardStep1" class="btn btn--primary"
+											<button v-if="showSignboard" class="btn btn--primary"
 												@tap="currentStep = 1">
 												<uni-icons type="redo-filled" size="16" color="#ffffff" />
 												<text>生成检测方案</text>
 											</button>
 										</view>
 
-										<view v-if="showSignboardStep1" class="data-table">
+										<!-- 标识牌信息列表 -->
+										<view v-if="showSignboard" class="data-table">
 											<view class="table-body">
 												<template v-for="(sec, si) in signboard.sections" :key="'s'+si">
 													<view class="table-row table-row--simple">
-														<text
-															class="table-td table-td--section">{{ sec.block || '未命名' }}
+														<text class="table-td table-td--section">{{ sec.block }}
 
 														</text>
 														<button class="pw-ico icon-btn" @tap="() => addSignItem(si)">
@@ -146,12 +251,17 @@
 																	v-model="it.title" placeholder="内容标题" />
 																<uni-easyinput class="form-item__input"
 																	v-model="it.content" placeholder="请输入具体的值" />
-																<view class="form-item__select">
-																	<button class="icon-btn icon-btn--danger"
-																		@tap="() => removeSignItem(si, ii)">
-																		<uni-icons type="trash" size="16"
-																			color="#d92d20" />
-																	</button>
+
+																<!-- 每组一个删除按钮 → 放在最后一行 -->
+																<view class="form-item" v-if="sec.items.length">
+																	<view class="form-item__row"
+																		style="justify-content: flex-end;">
+																		<button class="icon-btn icon-btn--danger"
+																			@tap="() => confirmRemoveGroup(si)">
+																			<uni-icons type="trash" size="16"
+																				color="#d92d20" />
+																		</button>
+																	</view>
 																</view>
 															</view>
 														</view>
@@ -483,19 +593,19 @@
 		</view>
 	</app-layout>
 
-	<!-- 新增信息弹窗 -->
-	<uni-popup ref="fieldPopup" type="center">
+	<!-- 新增项目基本信息弹窗 -->
+	<uni-popup ref="newBaseInfoPopup" type="center">
 		<view class="modal">
 			<view class="modal-header">
 				<text class="modal-title">新增项目基本信息</text>
 			</view>
 			<view class="modal-body">
 				<text class="modal-description">请在下方输入信息名称</text>
-				<uni-easyinput v-model="newFieldLabel" placeholder="如：项目名称/单位名称" />
+				<uni-easyinput v-model="newBaseInfoLabel" placeholder="如：项目名称/单位名称" />
 			</view>
 			<view class="modal-actions">
-				<button class="btn btn--ghost" @tap="closeFieldPopup">取消</button>
-				<button class="btn btn--primary" @tap="confirmAddField">确定</button>
+				<button class="btn btn--ghost" @tap="closeBaseInfo">取消</button>
+				<button class="btn btn--primary" @tap="confirmAddBaseInfo">确定</button>
 			</view>
 		</view>
 	</uni-popup>
@@ -527,12 +637,63 @@
 
 	//手机端头部页面标题
 	const navTitle = navTitleStore()
-	onShow(() => navTitle.setTitle('验收报告'))
+	onShow(() => navTitle.setTitle('环评项目竣工验收'))
 
 	//手机页面规定
 	const {
 		isMobile
 	} = usePlatformInfo()
+
+
+	// 每个步骤定义--------------------------
+	// 步骤标题
+	const stepNames = ['资料上传与基本信息', '监测方案', '提资单比对', '现场踏勘比对', '竣工验收报告']
+
+	// 默认从第一步开始(0)
+	const currentStep = ref(0)
+
+	// 手机端步骤选择
+	const stepNamesDisplay = computed(() => stepNames.map((n, i) => stepDone(i) ? (n + ' ✓') : n))
+	const stepSelectOptions = computed(() => stepNames.map((n, i) => ({
+		text: stepDone(i) ? (n + ' ✓') : n,
+		value: i
+	})))
+
+	// 步骤更改时
+	function onStepChange(e) {
+		const idx = Number(e?.currentIndex ?? e?.detail?.currentIndex ?? 0);
+		if (!Number.isNaN(idx)) currentStep.value = idx
+	}
+
+	// 上一步按钮
+	function prevStep() {
+		if (currentStep.value > 0) currentStep.value -= 1
+	}
+	// 下一步按钮
+	function nextStep() {
+		if (currentStep.value < stepNames.length - 1) currentStep.value += 1
+	}
+
+	// 步骤完成值
+	const extractionOk = ref(false)
+
+	// 所有步骤的完成度
+	function stepDone(i) {
+		switch (i) {
+			case 0:
+				return extractionOk.value;
+			case 1:
+				return datasheet.value.length > 0;
+			case 2:
+				return fieldworkComparison.value.length > 0;
+			case 3:
+				return plan.value.length > 0;
+			case 4:
+				return reportGenerated.value;
+			default:
+				return false
+		}
+	}
 
 	// 以下提取项目基本信息模块的方法--------------------------
 	// 限制文件格式
@@ -685,7 +846,7 @@
 			}
 
 			uni.showLoading({
-				title: `正在解析文档，请稍等：${Math.floor(currentUploadPercent)}%`,
+				title: `正在解析文档，请稍等，解析进度：${Math.floor(currentUploadPercent)}%`,
 				mask: true
 			})
 		}, stepTime)
@@ -841,7 +1002,7 @@
 		}
 	}
 
-	// 同步删除两个列表
+	// 删除上传的文件
 	function handleFileDelete(e) {
 		const {
 			index,
@@ -861,28 +1022,94 @@
 
 
 	/* 提取信息的进度条 */
-	// 1. 先声明一个计时器句柄
-	let progressTimer = null
-	let currentPercent = 0
+	// 1. 先声明计时器句柄和状态变量
+	let extractProgressTimer = null
+	let extractCurrentPercent = 0
+	let extractSprintTimer = null
+	let extractProgressDone = false
 
-	// 2. 开始"假进度"
-	function startFakeProgress() {
-		currentPercent = 0
-		progressTimer = setInterval(() => {
-			currentPercent += 2 // 每 80ms +2%，50 次后 100%
-			if (currentPercent >= 100) {
-				clearInterval(progressTimer)
-				progressTimer = null
+	// 2. 开始"假进度" - 2分30秒到99%
+	function startExtractFakeProgress(totalTime = 150000) { // 2分30秒
+		extractCurrentPercent = 0
+		extractProgressDone = false
+
+		// 计算步长：99% / (总时间/间隔时间)
+		const step = 99 / (totalTime / 200) // 每200ms更新一次
+
+		extractProgressTimer = setInterval(() => {
+			if (extractProgressDone) {
+				clearInterval(extractProgressTimer)
+				extractProgressTimer = null
 				return
 			}
-			// ✅ 关键：实时改 loading 文字
+
+			extractCurrentPercent += step
+			if (extractCurrentPercent >= 99) {
+				extractCurrentPercent = 99
+				clearInterval(extractProgressTimer)
+				extractProgressTimer = null
+			}
+
 			uni.showLoading({
-				title: `正在提取项目信息，提取进度： ${currentPercent}%`,
+				title: `正在提取项目信息，提取进度：${Math.floor(extractCurrentPercent)}%`,
 				mask: true
 			})
 		}, 200)
 	}
 
+	// 3. 冲刺到100%并完成
+	function sprintExtractToComplete() {
+		extractProgressDone = true
+
+		// 清除假进度计时器
+		if (extractProgressTimer) {
+			clearInterval(extractProgressTimer)
+			extractProgressTimer = null
+		}
+
+		// 2秒内从当前进度冲到100%
+		const startPercent = extractCurrentPercent
+		const targetPercent = 100
+		const duration = 2000 // 2秒
+		const stepTime = 10 // 每10ms更新一次
+		const totalSteps = duration / stepTime
+		const stepValue = (targetPercent - startPercent) / totalSteps
+
+		let currentStep = 0
+		extractSprintTimer = setInterval(() => {
+			currentStep++
+			extractCurrentPercent = startPercent + (stepValue * currentStep)
+
+			if (extractCurrentPercent >= 100) {
+				extractCurrentPercent = 100
+				clearInterval(extractSprintTimer)
+				extractSprintTimer = null
+
+				// 显示100%并停留1秒
+				uni.showLoading({
+					title: `提取成功，提取进度：100%`,
+					mask: true
+				})
+
+				setTimeout(() => {
+					uni.hideLoading()
+					// 显示提取成功弹窗
+					uni.showToast({
+						title: '信息提取完成',
+						icon: 'success',
+						duration: 2000
+					})
+				}, 1000)
+
+				return
+			}
+
+			uni.showLoading({
+				title: `正在提取项目信息，提取进度：${Math.floor(extractCurrentPercent)}%`,
+				mask: true
+			})
+		}, stepTime)
+	}
 
 	// 提取信息到项目基本表
 	async function simulateExtract() {
@@ -898,47 +1125,54 @@
 		}
 
 		extracting.value = true // 开始提取，按钮显示loading
-		startFakeProgress()
-		// 2. 显示loading，带预估时间（大文件用户不慌张）
+
+		// 2. 启动假进度条（2分30秒到99%）
+		startExtractFakeProgress(150000)
+
+		// 3. 显示初始loading
 		uni.showLoading({
 			title: '请稍作等待，正在提取项目信息，预计2~3分钟哦',
 			mask: true
 		})
 
 		try {
-			// 3. 调用后端，超时设为15分钟（900000毫秒），避免大文件超时
+			// 4. 调用后端，超时设为15分钟（900000毫秒），避免大文件超时
 			const result = await runTask('task1', {
 				hideLoading: true, // 我们用uni.showLoading，所以这里隐藏
 				timeout: 900000 // 15分钟，足够解析100页PDF
 			})
 
-			uni.hideLoading()
+			// 5. 收到后端成功响应，开始冲刺到100%
+			sprintExtractToComplete()
 
-			// 4. 数据校验：确保后端真的返回了数据
-			if (result?.status !== 'success' || !result.result) { // ✅ 修复：用 !==
+			// 6. 数据校验：确保后端真的返回了数据
+			if (result?.status !== 'success' || !result.result) {
 				throw new Error(result?.message || '提取失败：后端未返回有效数据')
 			}
 
-			// 5. 转换数据并填充表格（核心操作）
+			// 7. 转换数据并填充表格（核心操作）
 			baseTable.value = transformExtractResult(result.result)
 
-			// 6. 成功提示
-			uni.showToast({
-				title: `成功提取 ${Object.keys(result.result).length} 条信息`,
-				icon: 'success',
-				duration: 2500
-			})
-
-			// 7. 缓存到本地（关键！刷新页面不丢失）
+			// 8. 缓存到本地（关键！刷新页面不丢失）
 			uni.setStorageSync('project_base_info', JSON.stringify(baseTable.value))
 
 			console.log('[Extract] 提取成功:', result)
-			console.log('[Debug] baseTable:', baseTable.value) // ✅ 调试日志
+			console.log('[Debug] baseTable:', baseTable.value.水污染物)
 
 		} catch (error) {
+			// 错误时清除所有进度条
+			extractProgressDone = true
+			if (extractProgressTimer) {
+				clearInterval(extractProgressTimer)
+				extractProgressTimer = null
+			}
+			if (extractSprintTimer) {
+				clearInterval(extractSprintTimer)
+				extractSprintTimer = null
+			}
 			uni.hideLoading()
 
-			// 8. 错误分类处理，给用户看得懂的提示
+			// 9. 错误分类处理，给用户看得懂的提示
 			console.error('[Extract] 提取失败:', error)
 
 			if (error.message.includes('超时')) {
@@ -968,149 +1202,21 @@
 		}
 	}
 
+	// 新增项目基本信息弹窗
+	const newBaseInfoPopup = ref(null)
 
+	// 新增项目基本信息的标题
+	const newBaseInfoLabel = ref('')
 
-
-
-
-
-
-
-
-
-	// 步骤定义 - 按照验收流程
-	const stepNames = ['资料上传与基本信息', '监测方案', '提资单比对', '现场踏勘比对', '竣工验收报告']
-	const currentStep = ref(0)
-	const stepNamesDisplay = computed(() => stepNames.map((n, i) => stepDone(i) ? (n + ' ✓') : n))
-	const stepSelectOptions = computed(() => stepNames.map((n, i) => ({
-		text: stepDone(i) ? (n + ' ✓') : n,
-		value: i
-	})))
-
-	function onStepChange(e) {
-		const idx = Number(e?.currentIndex ?? e?.detail?.currentIndex ?? 0);
-		if (!Number.isNaN(idx)) currentStep.value = idx
+	// 新增项目基本信息
+	function openAddBase() {
+		newBaseInfoLabel.value = '';
+		newBaseInfoPopup.value?.open?.()
 	}
 
-	function prevStep() {
-		if (currentStep.value > 0) currentStep.value -= 1
-	}
-
-	function nextStep() {
-		if (currentStep.value < stepNames.length - 1) currentStep.value += 1
-	}
-
-	const extractionOk = ref(false)
-	const showSignboardStep1 = ref(false)
-
-	// 校验与完成度
-	function stepDone(i) {
-		switch (i) {
-			case 0:
-				return extractionOk.value;
-			case 1:
-				return datasheet.value.length > 0;
-			case 2:
-				return fieldworkComparison.value.length > 0;
-			case 3:
-				return plan.value.length > 0;
-			case 4:
-				return reportGenerated.value;
-			default:
-				return false
-		}
-	}
-
-	const draftPopup = ref(null)
-	const draftMode = ref('export')
-	const draftText = ref('')
-
-	const fieldPopup = ref(null)
-	const newFieldLabel = ref('')
-
-	function openExportDraft() {
-		try {
-			draftMode.value = 'export';
-			draftText.value = JSON.stringify({
-				step: currentStep.value
-			}, null, 2);
-			draftPopup.value?.open?.()
-		} catch (e) {
-			uni.showToast({
-				title: '导出失败',
-				icon: 'none'
-			})
-		}
-	}
-
-	function openImportDraft() {
-		draftMode.value = 'import';
-		draftText.value = '';
-		draftPopup.value?.open?.()
-	}
-
-	function closeDraftPopup() {
-		draftPopup.value?.close?.()
-	}
-
-	function copyExportDraft() {
-		try {
-			/* #ifdef H5 */
-			navigator.clipboard?.writeText?.(draftText.value || '');
-			/* #endif */
-			/* #ifndef H5 */
-			uni.setClipboardData({
-				data: draftText.value || ''
-			});
-			/* #endif */
-			uni.showToast({
-				title: '已复制',
-				icon: 'none'
-			});
-			draftPopup.value?.close?.()
-		} catch (e) {
-			uni.showToast({
-				title: '复制失败',
-				icon: 'none'
-			})
-		}
-	}
-
-	function clearDraft() {
-		eiaFiles.value = [];
-		extractionOk.value = false;
-		currentStep.value = 0;
-		uni.showToast({
-			title: '已清空',
-			icon: 'none'
-		})
-	}
-
-	function exportDocx() {
-		uni.showToast({
-			title: '导出Word（占位）',
-			icon: 'none'
-		})
-	}
-
-	function exportPdf() {
-		uni.showToast({
-			title: '导出PDF（占位）',
-			icon: 'none'
-		})
-	}
-
-	function openAddField() {
-		newFieldLabel.value = '';
-		fieldPopup.value?.open?.()
-	}
-
-	function closeFieldPopup() {
-		fieldPopup.value?.close?.()
-	}
-
-	function confirmAddField() {
-		const label = (newFieldLabel.value || '').trim();
+	// 确认新增项目基本信息
+	function confirmAddBaseInfo() {
+		const label = (newBaseInfoLabel.value || '').trim();
 		if (!label) {
 			uni.showToast({
 				title: '请输入字段名称',
@@ -1126,8 +1232,223 @@
 			source: 'manual',
 			required: false,
 		});
-		fieldPopup.value?.close?.()
+		newBaseInfoPopup.value?.close?.()
 	}
+
+	// 关闭新增项目基本信息弹窗
+	function closeBaseInfo() {
+		newBaseInfoPopup.value?.close?.()
+	}
+
+	// 以下标识牌模块的方法--------------------------
+	//展示标识牌列表
+	const showSignboard = ref(false)
+
+	// 标识牌模块名称以及列表信息
+	const signboard = reactive({
+		sections: [{
+				block: '废水',
+				items: [{
+					title: '',
+					content: ''
+				}]
+			},
+			{
+				block: '废气',
+				items: [{
+					title: '',
+					content: ''
+				}]
+			},
+			{
+				block: '噪声',
+				items: [{
+					title: '',
+					content: ''
+				}]
+			}, {
+				block: '危险污染物',
+				items: [{
+					title: '',
+					content: ''
+				}]
+			}
+		]
+	})
+
+	// 生成标识牌信息(从项目基本信息提取)
+	function generateSignboard() {
+		const unitName = findBaseValue('建设单位名称') || findBaseValue('单位名称') || '';
+		const emissionData = baseTable.value.find(x => x.id === 'pollutants_emission')?.value;
+
+		if (!emissionData || typeof emissionData !== 'object') {
+			uni.showToast({
+				title: '未提取到污染物信息',
+				icon: 'none'
+			});
+			return;
+		}
+
+		// 清空旧数据
+		signboard.sections.forEach(sec => (sec.items = []));
+
+		// 废水
+		const waterList = emissionData['水污染物'] || [];
+		waterList.forEach((w, index) => {
+			const code = `DW${String(index + 1).padStart(3, '0')}`;
+			signboard.sections.find(s => s.block === '废水').items.push({
+				title: '单位名称',
+				content: unitName
+			}, {
+				title: '排放口编号',
+				content: code
+			}, {
+				title: '污染物种类',
+				content: w['污染物名称']
+			});
+		});
+
+		// 废气
+		const gasList = emissionData['大气污染物'] || [];
+		gasList.forEach((g, index) => {
+			const code = `DA${String(index + 1).padStart(3, '0')}`;
+			signboard.sections.find(s => s.block === '废气').items.push({
+				title: '单位名称',
+				content: unitName
+			}, {
+				title: '排放口编号',
+				content: code
+			}, {
+				title: '污染物种类',
+				content: g['污染物名称']
+			});
+		});
+
+		// 噪声
+		const noiseList = emissionData['噪声'] || [];
+		noiseList.forEach((n, index) => {
+			const code = `ZS-${String(index + 1).padStart(2, '0')}`;
+			signboard.sections.find(s => s.block === '噪声').items.push({
+				title: '单位名称',
+				content: unitName
+			}, {
+				title: '排放口编号',
+				content: code
+			}, {
+				title: '污染物种类',
+				content: '设备噪声'
+			});
+		});
+
+		// 危险废物
+		const WFItems = [{
+				title: '主要成分',
+				content: 'HW49其他废物'
+			},
+			{
+				title: '化学名称',
+				content: '实验室废弃物、实验室废水污泥、医疗废物、废活性炭'
+			},
+			{
+				title: '危险情况',
+				content: '毒性/腐蚀性'
+			},
+			{
+				title: '安全措施',
+				content: '接触时佩戴个人防护用品（全面罩/丁晴手套）'
+			},
+			{
+				title: '废物产生单位',
+				content: unitName
+			},
+			{
+				title: '地址',
+				content: findBaseValue('建设地点') || '-'
+			},
+			{
+				title: '电话',
+				content: ''
+			},
+			{
+				title: '联系人',
+				content: ''
+			},
+		];
+		signboard.sections.find(s => s.block === '危险污染物').items = WFItems;
+
+		uni.showToast({
+			title: '已生成标识牌',
+			icon: 'success'
+		});
+	}
+
+	// 添加标识牌信息
+	// 添加一组（3 项）排污标识牌
+	function addSignItem(sectionIdx) {
+		const sec = signboard.sections[sectionIdx];
+		const block = sec.block; // 废水 / 废气 / 噪声
+		const unitName = findBaseValue('建设单位名称') || findBaseValue('单位名称') || '';
+
+		/* ---------- 计算下一个排放口编号 ---------- */
+		// 先统计当前块里已经有几组（每 3 项算 1 组）
+		const groupCount = Math.floor(sec.items.length / 3) + 1;
+
+		let code = '';
+		if (block === '废水') code = `DW${String(groupCount).padStart(3,'0')}`;
+		else if (block === '废气') code = `DA${String(groupCount).padStart(3,'0')}`;
+		else if (block === '噪声') code = `ZS-${String(groupCount).padStart(2,'0')}`;
+
+		/* ---------- 组装一组 ---------- */
+		const group = [{
+				title: '单位名称',
+				content: unitName
+			},
+			{
+				title: '排放口编号',
+				content: code
+			},
+			{
+				title: '污染物种类',
+				content: block === '噪声' ? '设备噪声' : ''
+			}
+		];
+
+		/* ---------- 追加到当前块 ---------- */
+		sec.items.push(...group);
+	}
+
+	// 弹出确认框并删除整组（3 条信息）
+	function confirmRemoveGroup(sectionIdx) {
+		const sec = signboard.sections[sectionIdx];
+		const codeItem = sec.items.find(it => it.title === '排放口编号');
+		const code = codeItem?.content || '未知编号';
+
+		uni.showModal({
+			title: '提示',
+			content: `确定删除排污口 ${code} 吗？`,
+			confirmText: '确定',
+			cancelText: '取消'
+		}).then(res => {
+			if (res.confirm) {
+				// 直接删掉这 3 条
+				sec.items.splice(0, 3);
+			}
+		});
+	}
+
+	function findBaseValue(label) {
+		const r = baseTable.value.find(x => x.label === label);
+		return r ? (r.value || '') : ''
+	}
+
+
+
+
+
+
+
+
+
 
 	// 1. 信息表/提资单------------
 	const verifyOptions = [{
@@ -1477,65 +1798,7 @@
 		})
 	}
 
-	// 标识牌相关
-	const signboard = reactive({
-		sections: [{
-				block: '废水',
-				items: [{
-					title: '单位名称',
-					content: ''
-				}]
-			},
-			{
-				block: '废气',
-				items: [{
-					title: '单位名称',
-					content: ''
-				}]
-			},
-			{
-				block: '噪声',
-				items: [{
-					title: '单位名称',
-					content: ''
-				}]
-			}, {
-				block: '危险污染物',
-				items: [{
-					title: '单位名称',
-					content: ''
-				}]
-			}
-		]
-	})
 
-	function generateSignboard() {
-		const unit = findBaseValue('单位名称') || findBaseValue('项目名称') || '';
-		signboard.sections.forEach(sec => {
-			const item = sec.items.find(i => i.title.includes('单位名称'));
-			if (item) item.content = unit
-		});
-		uni.showToast({
-			title: '已生成标识牌文案',
-			icon: 'success'
-		})
-	}
-
-	function addSignItem(i) {
-		signboard.sections[i].items.push({
-			title: '',
-			content: ''
-		})
-	}
-
-	function removeSignItem(i, j) {
-		signboard.sections[i].items.splice(j, 1)
-	}
-
-	function findBaseValue(label) {
-		const r = baseTable.value.find(x => x.label === label);
-		return r ? (r.value || '') : ''
-	}
 
 	// 完成度计算
 	const completionPercent = computed(() => {
@@ -1547,6 +1810,12 @@
 		return Math.round((completedSteps / totalSteps) * 100)
 	})
 
+
+
+
+
+
+
 	// 在页面加载时，恢复基本信息表缓存
 	onLoad(() => {
 		const cached = uni.getStorageSync('project_base_info')
@@ -1554,6 +1823,7 @@
 			try {
 				baseTable.value = JSON.parse(cached)
 				console.log('[Cache] 恢复缓存的项目信息，共', baseTable.value.length, '条')
+				console.log('baseTable项目信息，', baseTable.value)
 			} catch (e) {
 				console.warn('[Cache] 缓存数据解析失败:', e)
 			}
@@ -1893,10 +2163,26 @@
 	}
 
 	/* 基本信息表：响应式行 */
+
 	.form-grid--base {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		// grid-template-columns: 1fr 1fr;
 		gap: 12rpx 16rpx;
+	}
+
+	.pollutants_baseinfo_row {
+		padding: 14rpx;
+		border-bottom: 1rpx solid #e7ecf2;
+	}
+
+	.baseinfo__row {
+		display: flex;
+		align-items: center;
+		gap: 10rpx;
+		background: $white;
+		border: 1rpx solid #e7ecf2;
+		border-radius: $radius;
+		padding: 14rpx;
 	}
 
 	.form-item__row {
@@ -1914,6 +2200,97 @@
 		color: #334155;
 		font-weight: 700;
 	}
+
+	/* 污染物表格样式 */
+	.pollutants-container {
+		width: 100%;
+		margin-bottom: 24rpx;
+		border: 1rpx solid #e7ecf2;
+		border-radius: $radius;
+		overflow: hidden;
+		grid-column: 1 / -1;
+		/* 让表格占据整行 */
+	}
+
+	.pollutants-table {
+		width: 100%;
+		background: #fff;
+	}
+
+	/* 表格头部 */
+	.pollutants-header {
+		display: flex;
+		background: #f8fafc;
+		border-bottom: 1px solid #e5e7eb;
+		font-weight: 600;
+		font-size: 26rpx;
+		color: #374151;
+	}
+
+	/* 表格行 */
+	.pollutants-row {
+		display: flex;
+		border-bottom: 1px solid #f3f4f6;
+	}
+
+	.pollutants-row:last-child {
+		border-bottom: none;
+	}
+
+	/* 表格列 */
+	.pollutants-col {
+		padding: 20rpx 12rpx;
+		word-break: break-word;
+		line-height: 1.5;
+		font-size: 26rpx;
+		border-right: 1px solid #f3f4f6;
+	}
+
+	.pollutants-col:last-child {
+		border-right: none;
+	}
+
+	/* 列宽度分配 */
+	.pollutants-col--type {
+		flex: 0.8;
+		min-width: 120rpx;
+		background: #f0f9ff;
+		color: #0369a1;
+		font-weight: 500;
+	}
+
+	.pollutants-col--link {
+		flex: 1.2;
+		min-width: 150rpx;
+	}
+
+	.pollutants-col--name {
+		flex: 1;
+		min-width: 140rpx;
+	}
+
+	.pollutants-col--measure {
+		flex: 1.5;
+		min-width: 180rpx;
+	}
+
+	.pollutants-col--direction {
+		flex: 1;
+		min-width: 140rpx;
+	}
+
+	.pollutants-col--standard {
+		flex: 1.2;
+		min-width: 160rpx;
+	}
+
+	/* 表格选择框 */
+	.pollutants-select {
+		padding: 20rpx;
+		border-top: 1px solid #e5e7eb;
+		background: #fafafa;
+	}
+
 
 	/* 小标签的样式 */
 	.extract-tag {
@@ -2223,6 +2600,33 @@
 
 	/* 响应式（小屏） */
 	@media (max-width: 768px) {
+
+		// 项目基本信息表
+		.baseinfo__row {
+			display: block;
+			width: 50%;
+		}
+
+		.pollutants-container {
+			margin-bottom: 20rpx;
+			width: 52.2%;
+		}
+
+		.pollutants-table {
+			overflow-x: auto;
+		}
+
+		.pollutants-header,
+		.pollutants-row {
+			min-width: 1200rpx;
+			/* 保证表格有足够宽度可以横向滚动 */
+		}
+
+		.pollutants-col {
+			padding: 16rpx 10rpx;
+			font-size: 24rpx;
+		}
+
 		.pw-ico {
 			width: 140rpx;
 			height: 64rpx;
