@@ -323,3 +323,50 @@ function formatValue(value) {
 	// 其他情况
 	return value || ''
 }
+
+/**
+ * 纯前端数据 → 后端生成 Word
+ * @param {Object} signboard  
+ * @returns {Promise<ArrayBuffer>}
+ */
+export function downloadSignboardWord(signboard) {
+  const payload = {
+    sections: signboard.sections.map(sec => ({
+      block: sec.block,
+      items: sec.items.map(it => ({ title: it.title, content: it.content }))
+    }))
+  };
+
+  // #ifdef H5
+  // H5 用 fetch 保证 arrayBuffer
+  return fetch(BASE_URL + '/api/v1/download/signageborad', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(res => {
+    if (!res.ok) throw new Error('生成失败');
+    return res.arrayBuffer();   // 浏览器原生一定返回 ArrayBuffer
+  });
+  // #endif
+
+  // #ifndef H5
+  // 小程序、App 用 uni.request
+  return new Promise((resolve, reject) => {
+    uni.request({
+      url: BASE_URL + '/api/v1/download/signageborad',
+      method: 'POST',
+      data: payload,
+      header: { 'Content-Type': 'application/json' },
+      responseType: 'arraybuffer',
+      success: (res) => {
+        if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
+          resolve(res.data);
+        } else {
+          reject(new Error('空文件'));
+        }
+      },
+      fail: reject
+    });
+  });
+  // #endif
+}

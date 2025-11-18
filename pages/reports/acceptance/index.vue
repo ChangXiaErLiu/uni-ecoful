@@ -278,9 +278,95 @@
 							</view>
 						</view>
 					</view>
-
-					<!-- 步骤2: 信息表/提资单 -->
+					
+					<!-- 步骤1: 监测方案 -->
 					<view v-show="currentStep === 1" class="content-section">
+						<view class="section-card">
+							<view class="section-header">
+								<uni-icons type="eye" size="20" color="#166534" />
+								<text class="section-title">监测方案</text>
+							</view>
+							<view class="section-body">
+								<view class="section-actions">
+									<button class="btn btn--primary" @tap="recommendPlan">
+										<uni-icons type="magic" size="16" color="#ffffff" />
+										<text>智能推荐方案</text>
+									</button>
+									<button class="btn btn--secondary" @tap="addPlanItem">
+										<uni-icons type="plus" size="16" color="#155e3b" />
+										<text>新增监测项</text>
+									</button>
+									<button class="btn btn--ghost" @tap="downloadMonitorTemplate">
+										<uni-icons type="download" size="16" color="#5b6b7b" />
+										<text>下载模板</text>
+									</button>
+								</view>
+					
+								<view v-if="plan.length" class="data-table">
+									<view class="table-header">
+										<text class="table-th w120">监测因子</text>
+										<text class="table-th w120">监测点位</text>
+										<text class="table-th w140">监测方法</text>
+										<text class="table-th w120">监测频次</text>
+										<text class="table-th w100">质控要求</text>
+										<text class="table-th">备注</text>
+										<text class="table-th w120">操作</text>
+									</view>
+									<view class="table-body">
+										<view class="table-row" v-for="(item, index) in plan" :key="item.id">
+											<uni-easyinput class="table-td w120" v-model="item.factor"
+												placeholder="监测因子" />
+											<uni-easyinput class="table-td w120" v-model="item.point"
+												placeholder="监测点位" />
+											<uni-easyinput class="table-td w140" v-model="item.method"
+												placeholder="监测方法" />
+											<uni-easyinput class="table-td w120" v-model="item.frequency"
+												placeholder="监测频次" />
+											<uni-easyinput class="table-td w100" v-model="item.qaqc"
+												placeholder="质控要求" />
+											<uni-easyinput class="table-td" v-model="item.remark" placeholder="备注" />
+											<view class="table-td w120">
+												<view class="action-buttons">
+													<button class="icon-btn" @tap="() => duplicatePlanItem(index)">
+														<uni-icons type="copy" size="16" color="#166534" />
+													</button>
+													<button class="icon-btn" @tap="() => movePlanItem(index, -1)"
+														:disabled="index === 0">
+														<uni-icons type="arrow-up" size="16" color="#166534" />
+													</button>
+													<button class="icon-btn" @tap="() => movePlanItem(index, 1)"
+														:disabled="index === plan.length - 1">
+														<uni-icons type="arrow-down" size="16" color="#166534" />
+													</button>
+													<button class="icon-btn icon-btn--danger"
+														@tap="() => removePlanItem(index)">
+														<uni-icons type="trash" size="16" color="#d92d20" />
+													</button>
+												</view>
+											</view>
+										</view>
+									</view>
+								</view>
+					
+								<view v-else class="empty-state">
+									<uni-icons type="eye" size="48" color="#cbd5e1" />
+									<text class="empty-text">尚未制定监测方案</text>
+									<text class="empty-tip">点击上方按钮智能推荐或新增监测项</text>
+								</view>
+					
+								<view class="action-row">
+									<button class="btn btn--primary" @tap="saveMonitorPlan">
+										<uni-icons type="checkmark" size="16" color="#ffffff" />
+										<text>保存监测方案</text>
+									</button>
+								</view>
+							</view>
+						</view>
+					</view>
+					
+
+					<!-- 步骤2: 提资单比对 -->
+					<view v-show="currentStep === 2" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
 								<uni-icons type="clipboard" size="20" color="#166534" />
@@ -334,7 +420,7 @@
 					</view>
 
 					<!-- 步骤3: 现场踏勘比对 -->
-					<view v-show="currentStep === 2" class="content-section">
+					<view v-show="currentStep === 3" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
 								<uni-icons type="map-pin-ellipse" size="20" color="#166534" />
@@ -422,91 +508,7 @@
 						</view>
 					</view>
 
-					<!-- 步骤4: 监测方案 -->
-					<view v-show="currentStep === 3" class="content-section">
-						<view class="section-card">
-							<view class="section-header">
-								<uni-icons type="eye" size="20" color="#166534" />
-								<text class="section-title">监测方案</text>
-							</view>
-							<view class="section-body">
-								<view class="section-actions">
-									<button class="btn btn--primary" @tap="recommendPlan">
-										<uni-icons type="magic" size="16" color="#ffffff" />
-										<text>智能推荐方案</text>
-									</button>
-									<button class="btn btn--secondary" @tap="addPlanItem">
-										<uni-icons type="plus" size="16" color="#155e3b" />
-										<text>新增监测项</text>
-									</button>
-									<button class="btn btn--ghost" @tap="downloadMonitorTemplate">
-										<uni-icons type="download" size="16" color="#5b6b7b" />
-										<text>下载模板</text>
-									</button>
-								</view>
-
-								<view v-if="plan.length" class="data-table">
-									<view class="table-header">
-										<text class="table-th w120">监测因子</text>
-										<text class="table-th w120">监测点位</text>
-										<text class="table-th w140">监测方法</text>
-										<text class="table-th w120">监测频次</text>
-										<text class="table-th w100">质控要求</text>
-										<text class="table-th">备注</text>
-										<text class="table-th w120">操作</text>
-									</view>
-									<view class="table-body">
-										<view class="table-row" v-for="(item, index) in plan" :key="item.id">
-											<uni-easyinput class="table-td w120" v-model="item.factor"
-												placeholder="监测因子" />
-											<uni-easyinput class="table-td w120" v-model="item.point"
-												placeholder="监测点位" />
-											<uni-easyinput class="table-td w140" v-model="item.method"
-												placeholder="监测方法" />
-											<uni-easyinput class="table-td w120" v-model="item.frequency"
-												placeholder="监测频次" />
-											<uni-easyinput class="table-td w100" v-model="item.qaqc"
-												placeholder="质控要求" />
-											<uni-easyinput class="table-td" v-model="item.remark" placeholder="备注" />
-											<view class="table-td w120">
-												<view class="action-buttons">
-													<button class="icon-btn" @tap="() => duplicatePlanItem(index)">
-														<uni-icons type="copy" size="16" color="#166534" />
-													</button>
-													<button class="icon-btn" @tap="() => movePlanItem(index, -1)"
-														:disabled="index === 0">
-														<uni-icons type="arrow-up" size="16" color="#166534" />
-													</button>
-													<button class="icon-btn" @tap="() => movePlanItem(index, 1)"
-														:disabled="index === plan.length - 1">
-														<uni-icons type="arrow-down" size="16" color="#166534" />
-													</button>
-													<button class="icon-btn icon-btn--danger"
-														@tap="() => removePlanItem(index)">
-														<uni-icons type="trash" size="16" color="#d92d20" />
-													</button>
-												</view>
-											</view>
-										</view>
-									</view>
-								</view>
-
-								<view v-else class="empty-state">
-									<uni-icons type="eye" size="48" color="#cbd5e1" />
-									<text class="empty-text">尚未制定监测方案</text>
-									<text class="empty-tip">点击上方按钮智能推荐或新增监测项</text>
-								</view>
-
-								<view class="action-row">
-									<button class="btn btn--primary" @tap="saveMonitorPlan">
-										<uni-icons type="checkmark" size="16" color="#ffffff" />
-										<text>保存监测方案</text>
-									</button>
-								</view>
-							</view>
-						</view>
-					</view>
-
+					
 					<!-- 步骤5: 竣工验收报告 -->
 					<view v-show="currentStep === 4" class="content-section">
 						<view class="section-card">
@@ -637,6 +639,7 @@
 		rebuildIndex,
 		runTask,
 		transformExtractResult,
+		downloadSignboardWord,
 	} from '@/api/acceptance.js'
 
 	//手机端头部页面标题
@@ -1393,7 +1396,7 @@
 		const block = sec.block; // 废水 / 废气 / 噪声
 		const unitName = findBaseValue('建设单位名称') || findBaseValue('单位名称') || '';
 
-		/* ---------- 计算下一个排放口编号 ---------- */
+		/* 计算下一个排放口编号 */
 		// 先统计当前块里已经有几组（每 3 项算 1 组）
 		const groupCount = Math.floor(sec.items.length / 3) + 1;
 
@@ -1402,7 +1405,7 @@
 		else if (block === '废气') code = `DA${String(groupCount).padStart(3,'0')}`;
 		else if (block === '噪声') code = `ZS-${String(groupCount).padStart(2,'0')}`;
 
-		/* ---------- 组装一组 ---------- */
+		/* 组装一组 */
 		const group = [{
 				title: '单位名称',
 				content: unitName
@@ -1417,46 +1420,110 @@
 			}
 		];
 
-		/* ---------- 追加到当前块 ---------- */
+		/* 追加到当前块 */
 		sec.items.push(...group);
 	}
-	
-	// 把 flat 的 items 按 3 条一组切开
+
+	// 把标识牌信息按 3 条一组切开
 	function groupItems(items) {
-	  const groups = [];
-	  for (let i = 0; i < items.length; i += 3) {
-	    groups.push(items.slice(i, i + 3));
-	  }
-	  return groups;
-	}
-	
-	// 删除指定组（3 条）
-	function removeGroup(section, groupIndex) {
-	  // 取本组排放口编号用于提示
-	  const start   = groupIndex * 3;
-	  const codeItem = section.items.slice(start, start + 3)
-	                                .find(it => it.title === '排放口编号');
-	  const code     = codeItem?.content || '未知编号';
-	
-	  uni.showModal({
-	    title: '永久删除',
-	    content: `确定删除排污口 ${code} 吗？`,
-	    confirmText: '确定',
-	    cancelText: '取消',
-	    success: (res) => {
-	      if (res.confirm) {
-	        section.items.splice(start, 3);
-	      }
-	    }
-	  });
+		const groups = [];
+		for (let i = 0; i < items.length; i += 3) {
+			groups.push(items.slice(i, i + 3));
+		}
+		return groups;
 	}
 
+	// 删除指定组标识牌信息（3 条）
+	function removeGroup(section, groupIndex) {
+		// 取本组排放口编号用于提示
+		const start = groupIndex * 3;
+		const codeItem = section.items.slice(start, start + 3)
+			.find(it => it.title === '排放口编号');
+		const code = codeItem?.content || '未知编号';
+
+		uni.showModal({
+			title: '永久删除',
+			content: `确定删除排污口  ${code}  所有信息吗？`,
+			confirmText: '确定',
+			cancelText: '取消',
+			success: (res) => {
+				if (res.confirm) {
+					section.items.splice(start, 3);
+				}
+			}
+		});
+	}
+
+	// 从baseTable中提取基本信息
 	function findBaseValue(label) {
 		const r = baseTable.value.find(x => x.label === label);
 		return r ? (r.value || '') : ''
 	}
 
+	// 标识牌下载(数据json交给后端)
+	function downBiaoShi() {
+		uni.showLoading({
+			title: '正在生成文档…'
+		});
+		downloadSignboardWord(signboard)
+			.then(buf => {
+				const fileName = '排污标识牌.docx';
+				// #ifdef H5
+				const blob = new Blob([buf], {
+					type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+				});
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = '排污标识牌.docx';
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+				// #endif
 
+				// #ifdef MP-WEIXIN
+				// 微信小程序：先写临时文件再打开预览
+				const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`;
+				wx.getFileSystemManager().writeFile({
+					filePath,
+					data: buf,
+					encoding: 'binary',
+					success: () => wx.openDocument({
+						filePath,
+						fileType: 'docx'
+					}),
+					fail: e => uni.showToast({
+						title: '保存失败',
+						icon: 'error'
+					})
+				});
+				// #endif
+
+				// #ifdef APP-PLUS
+				// App 端：保存到 downloads 目录
+				plus.io.requestFileSystem(plus.io.PUBLIC_DOWNLOADS, fs => {
+					const fileEntry = fs.root.getFile(fileName, {
+						create: true
+					}, entry => {
+						entry.createWriter(writer => {
+							writer.write(buf);
+							writer.onwrite = () => uni.showToast({
+								title: '已保存到下载目录'
+							});
+						});
+					});
+				});
+				// #endif
+			})
+			.catch(err => {
+				uni.showModal({
+					content: err.message || '生成失败',
+					showCancel: false
+				});
+			})
+			.finally(() => uni.hideLoading());
+	}
 
 
 
@@ -1838,7 +1905,7 @@
 			try {
 				baseTable.value = JSON.parse(cached)
 				console.log('[Cache] 恢复缓存的项目信息，共', baseTable.value.length, '条')
-				console.log('baseTable项目信息，', baseTable.value)
+				// console.log('baseTable项目信息，', baseTable.value)
 			} catch (e) {
 				console.warn('[Cache] 缓存数据解析失败:', e)
 			}

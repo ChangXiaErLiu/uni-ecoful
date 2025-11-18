@@ -17,6 +17,7 @@ export {
   rebuildIndex, 
   runTask,
   transformExtractResult,
+  downloadSignboardWord,
 } from './acceptance.js'
 
 let piniaInstance = null

@@ -55,12 +55,24 @@ class Request {
 				timeout,
 				success: (res) => {
 					this.hideLoading(requestId)
+					
+					this.hideLoading(requestId)
+					  console.log('=== 进入 success ===')
+					  console.log('config.responseType', config.responseType)   // 必须打印出 arraybuffer
+					  console.log('res.data类型', Object.prototype.toString.call(res.data))
+
+					// 二进制流直接放行
+					if (config.responseType === 'arraybuffer') {
+						console.log('二进制直通', res.data.byteLength);
+						return resolve(res) // 整包返回（含 statusCode、data）
+					}
 
 					if (!res) {
 						reject(new Error('响应为空'))
 						return
 					}
 
+					// 普通 JSON
 					if (res.statusCode >= 200 && res.statusCode < 300) {
 						resolve(res.data)
 					} else {
