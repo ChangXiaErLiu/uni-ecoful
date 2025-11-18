@@ -339,6 +339,7 @@ export function downloadSignboardWord(signboard) {
 
   // #ifdef H5
   // H5 用 fetch 保证 arrayBuffer
+  // uni.request 在H5环境中不稳定，使用原生的 fetch API 是一个可靠且推荐的方案
   return fetch(BASE_URL + '/api/v1/download/signageborad', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

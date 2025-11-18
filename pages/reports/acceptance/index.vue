@@ -33,7 +33,7 @@
 					<view v-show="currentStep === 0" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
-								<uni-icons type="cloud-upload" size="9" color="#166534" />
+								<uni-icons type="cloud-upload" size="20" color="#166534" />
 								<text class="section-title">资料上传</text>
 							</view>
 							<view class="section-body">
@@ -238,27 +238,31 @@
 														<text class="table-td table-td--section">{{ sec.block }}
 
 														</text>
-														<button class="pw-ico icon-btn" @tap="() => addSignItem(si)">
+														<button v-if="sec.block == '噪声'" class="pw-ico icon-btn"
+															@tap="() => addSignItem(si)">
 															<uni-icons type="plus" size="16" color="#166534" />
 															<text>新增</text>
 														</button>
 													</view>
 													<view class="form-grid form-grid--base">
 														<!-- 按组渲染，每组 3 条 -->
-														<template v-for="(group, gi) in groupItems(sec.items)"
+														<template
+															v-for="(group, gi) in groupItems(sec.items, sec.block)"
 															:key="'g'+si+'-'+gi">
+															<!-- 普通 3 条 -->
 															<view class="form-item" v-for="(it, ii) in group"
 																:key="'r'+si+'-'+gi+'-'+ii">
 																<view class="form-item__row">
-																	<uni-easyinput class="form-item__title"
-																		v-model="it.title" placeholder="内容标题" />
-																	<uni-easyinput class="form-item__input"
-																		v-model="it.content" placeholder="请输入具体的值" />
+																	<uni-easyinput v-model="it.title"
+																		placeholder="内容标题" />
+																	<uni-easyinput v-model="it.content"
+																		placeholder="请输入具体的值" />
 																</view>
 															</view>
 
-															<!-- 每组尾部放删除按钮 -->
-															<view class="form-item" style="margin-bottom:12px;">
+															<!-- 删除按钮：只有「非危险污染物」才显示 -->
+															<view v-if="sec.block !== '危险污染物'" class="form-item"
+																style="margin-bottom:12px;">
 																<view class="form-item__row"
 																	style="justify-content:flex-end;">
 																	<button class="icon-btn icon-btn--danger"
@@ -278,7 +282,7 @@
 							</view>
 						</view>
 					</view>
-					
+
 					<!-- 步骤1: 监测方案 -->
 					<view v-show="currentStep === 1" class="content-section">
 						<view class="section-card">
@@ -301,7 +305,7 @@
 										<text>下载模板</text>
 									</button>
 								</view>
-					
+
 								<view v-if="plan.length" class="data-table">
 									<view class="table-header">
 										<text class="table-th w120">监测因子</text>
@@ -347,13 +351,13 @@
 										</view>
 									</view>
 								</view>
-					
+
 								<view v-else class="empty-state">
 									<uni-icons type="eye" size="48" color="#cbd5e1" />
 									<text class="empty-text">尚未制定监测方案</text>
 									<text class="empty-tip">点击上方按钮智能推荐或新增监测项</text>
 								</view>
-					
+
 								<view class="action-row">
 									<button class="btn btn--primary" @tap="saveMonitorPlan">
 										<uni-icons type="checkmark" size="16" color="#ffffff" />
@@ -363,7 +367,7 @@
 							</view>
 						</view>
 					</view>
-					
+
 
 					<!-- 步骤2: 提资单比对 -->
 					<view v-show="currentStep === 2" class="content-section">
@@ -508,7 +512,7 @@
 						</view>
 					</view>
 
-					
+
 					<!-- 步骤5: 竣工验收报告 -->
 					<view v-show="currentStep === 4" class="content-section">
 						<view class="section-card">
@@ -1424,8 +1428,9 @@
 		sec.items.push(...group);
 	}
 
-	// 把标识牌信息按 3 条一组切开
-	function groupItems(items) {
+	// 按块决定是否 3 条一组
+	function groupItems(items, block) {
+		if (block === '危险污染物') return [items]; // 整包
 		const groups = [];
 		for (let i = 0; i < items.length; i += 3) {
 			groups.push(items.slice(i, i + 3));
@@ -2892,5 +2897,200 @@
 		.icon-btn:hover {
 			background: #f3f6fa;
 		}
+	}
+
+	/* 平板端：769px - 960px */
+	@media (min-width: 769px) and (max-width: 960px) {
+
+		// 步骤导航
+		.desktop-steps {
+			display: block;
+		}
+
+		.step-connector {
+			width: 0;
+		}
+
+		// 项目基本信息表
+		.baseinfo__row {
+			display: block;
+			width: 50%;
+		}
+
+		.pollutants-container {
+			margin-bottom: 20rpx;
+			width: 52.2%;
+		}
+
+		.pollutants-table {
+			overflow-x: auto;
+		}
+
+		.pollutants-header,
+		.pollutants-row {
+			min-width: 1200rpx;
+			/* 保证表格有足够宽度可以横向滚动 */
+		}
+
+		.pollutants-col {
+			padding: 16rpx 10rpx;
+			font-size: 24rpx;
+		}
+
+		.pw-ico {
+			width: 140rpx;
+			height: 64rpx;
+			border: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: $white;
+			margin: 5rpx 0 0rpx 0;
+
+		}
+
+		.pw-ico text {
+			font-size: 22rpx;
+		}
+
+		.toolbar-content {
+			flex-direction: column;
+			gap: 16rpx;
+		}
+
+		.toolbar-left,
+		.toolbar-right {
+			width: 100%;
+		}
+
+		.toolbar-buttons {
+			width: 100%;
+			overflow-x: auto;
+			padding-bottom: 6rpx;
+		}
+
+		.acceptance-content {
+			padding: 16rpx;
+		}
+
+		.section-header {
+			padding: 20rpx 20rpx 0;
+		}
+
+		.section-body {
+			padding: 0 20rpx 20rpx;
+		}
+
+		.form-grid--base {
+			grid-template-columns: 1fr;
+			gap: 10rpx;
+		}
+
+		.form-item__label {
+			width: 160rpx;
+			min-width: 140rpx;
+			font-weight: 600;
+			font-size: 28rpx;
+		}
+
+		.form-item__title {
+			width: 160rpx;
+			min-width: 140rpx;
+		}
+
+		/* 表格卡片化：自动加标签（无须改模板） */
+		.table-header {
+			display: none;
+		}
+
+		.table-row {
+			display: grid;
+			grid-template-columns: 1fr;
+			border-bottom: 1rpx solid #f1f5f9;
+			padding: 10rpx 8rpx;
+			gap: 0;
+		}
+
+		.table-td {
+			position: relative;
+			padding: 14rpx 14rpx 14rpx 120rpx;
+			border-right: none;
+			border-bottom: 1rpx solid #f7f8fa;
+			min-height: 64rpx;
+		}
+
+		.table-td:last-child {
+			border-bottom: none;
+		}
+
+		/* 用 nth-child 给出列标题（与 header 顺序一致） */
+		.table-row .table-td:nth-child(1)::before {
+			content: '字段';
+		}
+
+		.table-row .table-td:nth-child(2)::before {
+			content: '当前值';
+		}
+
+		.table-row .table-td:nth-child(3)::before {
+			content: '类型';
+		}
+
+		.table-row .table-td:nth-child(4)::before {
+			content: '状态';
+		}
+
+		.table-row .table-td:nth-child(5)::before {
+			content: '操作';
+		}
+
+		.table-td::before {
+			position: absolute;
+			left: 14rpx;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 24rpx;
+			color: #6b7a8a;
+			font-weight: 600;
+			width: 96rpx;
+			text-align-last: justify;
+		}
+
+		/* 简化型行（标识牌）不需要五列标签 */
+		.table-row--simple .table-td {
+			padding: 14rpx;
+		}
+
+		.table-row--simple .table-td::before {
+			content: '';
+			display: none;
+		}
+
+		.acceptance-navigation {
+			padding: 16rpx;
+		}
+
+		.modal {
+			width: 92vw;
+		}
+
+		.update-actions {
+			flex-direction: column;
+		}
+
+		.generation-actions {
+			flex-direction: column;
+		}
+
+		.radio-group {
+			flex-direction: column;
+			gap: 12rpx;
+		}
+
+		.action-buttons {
+			flex-wrap: wrap;
+			justify-content: flex-start;
+		}
+
 	}
 </style>

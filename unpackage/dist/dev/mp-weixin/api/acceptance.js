@@ -259,6 +259,32 @@ function formatValue(value) {
   }
   return value || "";
 }
+function downloadSignboardWord(signboard) {
+  const payload = {
+    sections: signboard.sections.map((sec) => ({
+      block: sec.block,
+      items: sec.items.map((it) => ({ title: it.title, content: it.content }))
+    }))
+  };
+  return new Promise((resolve, reject) => {
+    common_vendor.index.request({
+      url: utils_config.BASE_URL + "/api/v1/download/signageborad",
+      method: "POST",
+      data: payload,
+      header: { "Content-Type": "application/json" },
+      responseType: "arraybuffer",
+      success: (res) => {
+        if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
+          resolve(res.data);
+        } else {
+          reject(new Error("空文件"));
+        }
+      },
+      fail: reject
+    });
+  });
+}
+exports.downloadSignboardWord = downloadSignboardWord;
 exports.rebuildIndex = rebuildIndex;
 exports.runTask = runTask;
 exports.transformExtractResult = transformExtractResult;

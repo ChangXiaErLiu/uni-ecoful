@@ -57,11 +57,11 @@ class Request {
 					this.hideLoading(requestId)
 					
 					this.hideLoading(requestId)
-					  console.log('=== 进入 success ===')
-					  console.log('config.responseType', config.responseType)   // 必须打印出 arraybuffer
-					  console.log('res.data类型', Object.prototype.toString.call(res.data))
+					  // console.log('=== 进入 success ===')
+					  // console.log('config.responseType', config.responseType)   // 必须打印出 arraybuffer
+					  // console.log('res.data类型', Object.prototype.toString.call(res.data))
 
-					// 二进制流直接放行
+					// 二进制流直接放行,试过了不一定行
 					if (config.responseType === 'arraybuffer') {
 						console.log('二进制直通', res.data.byteLength);
 						return resolve(res) // 整包返回（含 statusCode、data）

@@ -43,6 +43,11 @@ class Request {
         success: (res) => {
           var _a;
           this.hideLoading(requestId);
+          this.hideLoading(requestId);
+          if (config.responseType === "arraybuffer") {
+            common_vendor.index.__f__("log", "at utils/request.js:66", "二进制直通", res.data.byteLength);
+            return resolve(res);
+          }
           if (!res) {
             reject(new Error("响应为空"));
             return;
@@ -134,10 +139,10 @@ class Request {
         ...this.baseOptions.header
       },
       success: () => {
-        common_vendor.index.__f__("log", "at utils/request.js:164", "[WebSocket] 连接成功:", fullUrl);
+        common_vendor.index.__f__("log", "at utils/request.js:176", "[WebSocket] 连接成功:", fullUrl);
       },
       fail: (err) => {
-        common_vendor.index.__f__("error", "at utils/request.js:167", "[WebSocket] 连接失败:", err);
+        common_vendor.index.__f__("error", "at utils/request.js:179", "[WebSocket] 连接失败:", err);
         onError == null ? void 0 : onError(new Error("WebSocket 连接失败: " + err.errMsg));
       }
     });
@@ -165,11 +170,11 @@ class Request {
       }
     });
     socket.onError((err) => {
-      common_vendor.index.__f__("error", "at utils/request.js:203", "[WebSocket] 错误:", err);
+      common_vendor.index.__f__("error", "at utils/request.js:215", "[WebSocket] 错误:", err);
       onError == null ? void 0 : onError(new Error("WebSocket 错误: " + err.errMsg));
     });
     socket.onClose((res) => {
-      common_vendor.index.__f__("log", "at utils/request.js:209", "[WebSocket] 连接关闭:", res.code, res.reason);
+      common_vendor.index.__f__("log", "at utils/request.js:221", "[WebSocket] 连接关闭:", res.code, res.reason);
       if (res.code !== 1e3) {
         onError == null ? void 0 : onError(new Error("连接异常关闭: " + res.reason));
       }
@@ -180,7 +185,7 @@ class Request {
       });
     });
     const cancel = () => {
-      common_vendor.index.__f__("log", "at utils/request.js:224", "[WebSocket] 主动取消请求");
+      common_vendor.index.__f__("log", "at utils/request.js:236", "[WebSocket] 主动取消请求");
       socket.close();
     };
     return cancel;
