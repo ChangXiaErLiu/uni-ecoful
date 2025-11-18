@@ -513,7 +513,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           }]
         },
         {
-          block: "危险污染物",
+          block: "危险废物",
           items: [{
             title: "",
             content: ""
@@ -609,7 +609,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           content: ""
         }
       ];
-      signboard.sections.find((s) => s.block === "危险污染物").items = WFItems;
+      signboard.sections.find((s) => s.block === "危险废物").items = WFItems;
       common_vendor.index.showToast({
         title: "已生成标识牌",
         icon: "success"
@@ -644,7 +644,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
       sec.items.push(...group);
     }
     function groupItems(items, block) {
-      if (block === "危险污染物")
+      if (block === "危险废物")
         return [items];
       const groups = [];
       for (let i = 0; i < items.length; i += 3) {
@@ -1233,7 +1233,7 @@ ${head}${tail}`;
                     g: "r" + si + "-" + gi + "-" + ii
                   };
                 })
-              }, sec.block !== "危险污染物" ? {
+              }, sec.block !== "危险废物" ? {
                 b: "41308e16-17-" + i0 + "-" + i1 + ",41308e16-0",
                 c: common_vendor.p({
                   type: "trash",
@@ -1245,7 +1245,7 @@ ${head}${tail}`;
                 e: "g" + si + "-" + gi
               });
             }),
-            g: sec.block !== "危险污染物",
+            g: sec.block !== "危险废物",
             h: "s" + si
           });
         })

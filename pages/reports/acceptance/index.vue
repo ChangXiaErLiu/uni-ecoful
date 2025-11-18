@@ -260,8 +260,8 @@
 																</view>
 															</view>
 
-															<!-- 删除按钮：只有「非危险污染物」才显示 -->
-															<view v-if="sec.block !== '危险污染物'" class="form-item"
+															<!-- 删除按钮：只有「非危险废物」才显示 -->
+															<view v-if="sec.block !== '危险废物'" class="form-item"
 																style="margin-bottom:12px;">
 																<view class="form-item__row"
 																	style="justify-content:flex-end;">
@@ -1278,7 +1278,7 @@
 					content: ''
 				}]
 			}, {
-				block: '危险污染物',
+				block: '危险废物',
 				items: [{
 					title: '',
 					content: ''
@@ -1385,7 +1385,7 @@
 				content: ''
 			},
 		];
-		signboard.sections.find(s => s.block === '危险污染物').items = WFItems;
+		signboard.sections.find(s => s.block === '危险废物').items = WFItems;
 
 		uni.showToast({
 			title: '已生成标识牌',
@@ -1430,7 +1430,7 @@
 
 	// 按块决定是否 3 条一组
 	function groupItems(items, block) {
-		if (block === '危险污染物') return [items]; // 整包
+		if (block === '危险废物') return [items]; // 整包
 		const groups = [];
 		for (let i = 0; i < items.length; i += 3) {
 			groups.push(items.slice(i, i + 3));
