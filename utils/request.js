@@ -33,13 +33,13 @@ class Request {
 		const token = uni.getStorageSync('token')
 		if (token) header.Authorization = `Bearer ${token}`
 
-		// 只在不是第一个请求时显示 loading
+		// 只在不隐藏 loading 时才显示并加入队列
+		let requestId = null
 		if (!hideLoading) {
+			requestId = Date.now()
+			this.requestQueue.push(requestId)
 			this.showLoading()
 		}
-
-		const requestId = Date.now()
-		this.requestQueue.push(requestId)
 
 		// ✅ 关键：手动封装 Promise，避免 H5 平台混用
 		return new Promise((resolve, reject) => {
@@ -54,13 +54,10 @@ class Request {
 				},
 				timeout,
 				success: (res) => {
-					this.hideLoading(requestId)
+					if (requestId !== null) {
+						this.hideLoading(requestId)
+					}
 					
-					this.hideLoading(requestId)
-					  // console.log('=== 进入 success ===')
-					  // console.log('config.responseType', config.responseType)   // 必须打印出 arraybuffer
-					  // console.log('res.data类型', Object.prototype.toString.call(res.data))
-
 					// 二进制流直接放行,试过了不一定行
 					if (config.responseType === 'arraybuffer') {
 						console.log('二进制直通', res.data.byteLength);
@@ -92,7 +89,9 @@ class Request {
 					}
 				},
 				fail: (error) => {
-					this.hideLoading(requestId)
+					if (requestId !== null) {
+						this.hideLoading(requestId)
+					}
 					const netError = {
 						code: 'NETWORK_ERROR',
 						message: error.errMsg || '网络请求失败',

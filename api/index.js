@@ -18,6 +18,8 @@ export {
   runTask,
   transformExtractResult,
   downloadSignboardWord,
+  fetchUploadedFiles,
+  deleteFile
 } from './acceptance.js'
 
 let piniaInstance = null

@@ -6,20 +6,21 @@ const api_acceptance = require("../../../api/acceptance.js");
 if (!Array) {
   const _easycom_uni_data_select2 = common_vendor.resolveComponent("uni-data-select");
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
-  const _easycom_uni_file_picker2 = common_vendor.resolveComponent("uni-file-picker");
   const _easycom_uni_easyinput2 = common_vendor.resolveComponent("uni-easyinput");
+  const _easycom_uni_file_picker2 = common_vendor.resolveComponent("uni-file-picker");
   const _easycom_uni_popup2 = common_vendor.resolveComponent("uni-popup");
-  (_easycom_uni_data_select2 + _easycom_uni_icons2 + _easycom_uni_file_picker2 + _easycom_uni_easyinput2 + _easycom_uni_popup2)();
+  (_easycom_uni_data_select2 + _easycom_uni_icons2 + _easycom_uni_easyinput2 + _easycom_uni_file_picker2 + _easycom_uni_popup2)();
 }
 const _easycom_uni_data_select = () => "../../../uni_modules/uni-data-select/components/uni-data-select/uni-data-select.js";
 const _easycom_uni_icons = () => "../../../uni_modules/uni-icons/components/uni-icons/uni-icons.js";
-const _easycom_uni_file_picker = () => "../../../uni_modules/uni-file-picker/components/uni-file-picker/uni-file-picker.js";
 const _easycom_uni_easyinput = () => "../../../uni_modules/uni-easyinput/components/uni-easyinput/uni-easyinput.js";
+const _easycom_uni_file_picker = () => "../../../uni_modules/uni-file-picker/components/uni-file-picker/uni-file-picker.js";
 const _easycom_uni_popup = () => "../../../uni_modules/uni-popup/components/uni-popup/uni-popup.js";
 if (!Math) {
-  (_easycom_uni_data_select + _easycom_uni_icons + _easycom_uni_file_picker + _easycom_uni_easyinput + AppLayout + _easycom_uni_popup)();
+  (_easycom_uni_data_select + _easycom_uni_icons + ecoFilePicker + _easycom_uni_easyinput + _easycom_uni_file_picker + AppLayout + _easycom_uni_popup)();
 }
 const AppLayout = () => "../../../components/layout/AppLayout.js";
+const ecoFilePicker = () => "../../../components/eco-file-picker/uni-file-picker.js";
 const MAX_FILES = 100;
 const _sfc_main = {
   __name: "index",
@@ -75,6 +76,11 @@ const _sfc_main = {
       "webp"
     ];
     const eiaFiles = common_vendor.ref([]);
+    let rollbackBuffer = [];
+    async function loadFileListOnMount() {
+      const files = await api_acceptance.fetchUploadedFiles();
+      eiaFiles.value = files;
+    }
     const uploadedDocuments = common_vendor.ref([]);
     const extracting = common_vendor.ref(false);
     common_vendor.ref("");
@@ -243,14 +249,14 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           ];
           if (parseableExts.includes(ext)) {
             stats.supported++;
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:931", `文件已上传并支持解析: ${result.filename}`);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:947", `文件已上传并支持解析: ${result.filename}`);
           } else {
             stats.nonSupported++;
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:934", `文件已上传（暂不支持解析）: ${result.filename}`);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:950", `文件已上传（暂不支持解析）: ${result.filename}`);
           }
         } catch (error) {
           stats.failCount++;
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:938", `❌ 文件 ${i + 1} 上传失败:`, error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:954", `❌ 文件 ${i + 1} 上传失败:`, error);
           progressDone = true;
           if (uploadProgressTimer) {
             clearInterval(uploadProgressTimer);
@@ -272,7 +278,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
       }
       showUploadResult(stats);
       if (stats.supported > 0) {
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:967", `[AutoIndex] 检测到 ${stats.supported} 个可解析文件，开始自动索引...`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:983", `[AutoIndex] 检测到 ${stats.supported} 个可解析文件，开始自动索引...`);
         await handleAutoIndexBuild(stats.supported);
       } else {
         progressDone = true;
@@ -288,10 +294,10 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         const result = await api_acceptance.rebuildIndex({
           hideLoading: true
         });
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:987", "[AutoIndex] 成功:", result);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1003", "[AutoIndex] 成功:", result);
         sprintToComplete();
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:993", "[AutoIndex] 失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1009", "[AutoIndex] 失败:", error);
         progressDone = true;
         if (uploadProgressTimer) {
           clearInterval(uploadProgressTimer);
@@ -310,16 +316,36 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         });
       }
     }
-    function handleFileDelete(e) {
-      const {
-        index,
-        tempFile
-      } = e;
-      if (uploadedDocuments.value[index]) {
-        uploadedDocuments.value.splice(index, 1);
-      }
-      if (eiaFiles.value[index]) {
-        eiaFiles.value.splice(index, 1);
+    async function handleFileDelete(e) {
+      const file = e.tempFile;
+      if (!file || !file.document_id)
+        return;
+      const confirm = await new Promise((resolve) => {
+        common_vendor.index.showModal({
+          title: "确认删除？",
+          content: `确定删除文件 “${file.name}” 吗？`,
+          confirmText: "删除",
+          confirmColor: "#E64340",
+          success: (res) => resolve(res.confirm)
+        });
+      });
+      if (!confirm)
+        return;
+      rollbackBuffer = [...eiaFiles.value];
+      try {
+        await api_acceptance.deleteFile(file.document_id);
+        await loadFileListOnMount();
+        common_vendor.index.showToast({
+          title: "文件已删除",
+          icon: "success"
+        });
+      } catch (err) {
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1064", "删除失败:", err);
+        eiaFiles.value = rollbackBuffer;
+        common_vendor.index.showToast({
+          title: "删除失败，请重试",
+          icon: "none"
+        });
       }
     }
     let extractProgressTimer = null;
@@ -417,8 +443,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         }
         baseTable.value = api_acceptance.transformExtractResult(result.result);
         common_vendor.index.setStorageSync("project_base_info", JSON.stringify(baseTable.value));
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1170", "[Extract] 提取成功:", result);
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1171", "[Debug] baseTable:", baseTable.value.水污染物);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1210", "[Extract] 提取成功:", result);
       } catch (error) {
         extractProgressDone = true;
         if (extractProgressTimer) {
@@ -430,7 +455,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           extractSprintTimer = null;
         }
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1187", "[Extract] 提取失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1227", "[Extract] 提取失败:", error);
         if (error.message.includes("超时")) {
           common_vendor.index.showModal({
             title: "提取超时",
@@ -1009,13 +1034,14 @@ ${head}${tail}`;
       return Math.round(completedSteps / totalSteps * 100);
     });
     common_vendor.onLoad(() => {
+      loadFileListOnMount();
       const cached = common_vendor.index.getStorageSync("project_base_info");
       if (cached) {
         try {
           baseTable.value = JSON.parse(cached);
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1912", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1953", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
         } catch (e) {
-          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1915", "[Cache] 缓存数据解析失败:", e);
+          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1956", "[Cache] 缓存数据解析失败:", e);
         }
       }
     });
@@ -1056,9 +1082,11 @@ ${head}${tail}`;
         g: common_vendor.o(handleFileDelete),
         h: common_vendor.o(($event) => eiaFiles.value = $event),
         i: common_vendor.p({
+          ["file-mediatype"]: "all",
+          ["file-extname"]: "pdf,docx,md,doc,ppt,pptx,png,jpg,jpeg",
           fileMediatype: "all",
           ["auto-upload"]: false,
-          limit: 100,
+          limit: "50",
           modelValue: eiaFiles.value
         }),
         j: common_vendor.p({

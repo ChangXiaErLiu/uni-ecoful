@@ -74,6 +74,41 @@ export async function uploadMultipleFiles(files) {
 	return await Promise.all(uploadPromises)
 }
 
+
+/**
+ * 获取已上传文件列表
+ * @returns {Promise<Array>} 格式化后的文件列表
+ */
+export async function fetchUploadedFiles() {
+  try {
+    const res = await request.get('/api/v1/documents?skip=0&limit=1000')
+    if (Array.isArray(res)) {
+      return res.map(file => ({
+        name: file.filename,
+        ext: file.metadata?.file_extension || '',
+        url: `BASE_URL/${file.file_path.replace(/\\\\/g, '/')}`, // 构造预览地址（可选）
+        document_id: file.document_id,
+        size: file.size_bytes,
+        upload_time: file.upload_time
+      }))
+    }
+    return []
+  } catch (error) {
+    console.error('自动刷新文件列表失败:', error)
+    return []
+  }
+}
+
+/**
+ * 删除指定上传的文件
+ * @param {string} document_id
+ * @returns {Promise<void>}
+ */
+export async function deleteFile(document_id) {
+  if (!document_id) throw new Error('document_id 不能为空')
+  await request.delete(`/api/v1/documents/${document_id}`)
+}
+
 /**
  * 临时测试构建向量方案：硬编码 source_dir，后端需要优化
  * @param {Object} options - 选项
@@ -97,20 +132,19 @@ export async function rebuildIndex(options = {}) {
 
 /**
  * 执行任务（提取项目信息）
- * @param {string} taskName - 任务名称（如 'task1'）
  * @param {Object} options - 选项
  * @param {boolean} options.hideLoading - 是否隐藏 loading
  * @param {number} options.timeout - 超时时间（毫秒）
  * @returns {Promise<Object>} 任务执行结果
  */
-export async function runTask(taskName, options = {}) {
+export async function runTask(options = {}) {
 	const {
 		hideLoading = false,
 			timeout = 600000 // 默认10分钟
 	} = options
 
 	try {
-		const result = await request.get(`/api/v1/tasks/${taskName}/run`, {
+		const result = await request.get(`/api/v1/index-parallel-extract-info/EIA`, {
 			timeout,
 			hideLoading
 		})
@@ -120,17 +154,22 @@ export async function runTask(taskName, options = {}) {
 			throw new Error(result?.message || '任务执行失败')
 		}
 
-		if (!result.result || Object.keys(result.result).length === 0) {
+		// 适配新接口：从 extract_info.result 中提取数据
+		if (!result.extract_info?.result || Object.keys(result.extract_info.result).length === 0) {
 			throw new Error('未提取到任何项目信息，请检查文件内容是否完整')
 		}
 
-		return result
+		// 返回前端期望的格式（保持向后兼容）
+		return {
+			status: result.status,
+			result: result.extract_info.result
+		}
 	} catch (error) {
 		// 错误分类处理
 		if (error.code === 'NETWORK_ERROR' && error.message.includes('timeout')) {
 			throw new Error('提取超时：文档过大或网络不稳定，请稍后重试')
 		} else if (error.code === 'HTTP_ERROR' && error.message.includes('404')) {
-			throw new Error(`任务 ${taskName} 不存在，请联系管理员配置`)
+			throw new Error('任务不存在，请联系管理员配置')
 		} else {
 			throw error
 		}
@@ -325,6 +364,7 @@ function formatValue(value) {
 }
 
 /**
+ * 标识牌下载
  * 纯前端数据 → 后端生成 Word
  * @param {Object} signboard  
  * @returns {Promise<ArrayBuffer>}
@@ -371,3 +411,4 @@ export function downloadSignboardWord(signboard) {
   });
   // #endif
 }
+

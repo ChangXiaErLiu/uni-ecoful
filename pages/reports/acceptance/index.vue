@@ -40,9 +40,11 @@
 								<view class="form-group">
 									<text class="form-label">请上传环评报告书/报告表/批复文件/其他资料等</text>
 									<text class="form-tip">支持 PDF、Word、图片等格式，单次上传最多 9 个文件</text>
-									<uni-file-picker v-model="eiaFiles" fileMediatype="all" :auto-upload="false"
-										:limit="100" @select="handleFileSelect" @delete="handleFileDelete">
-									</uni-file-picker>
+									<ecoFilePicker file-mediatype="all"
+										file-extname="pdf,docx,md,doc,ppt,pptx,png,jpg,jpeg" v-model="eiaFiles"
+										fileMediatype="all" :auto-upload="false" limit="50" @select="handleFileSelect"
+										@delete="handleFileDelete">
+									</ecoFilePicker>
 								</view>
 
 								<view class="action-row">
@@ -238,6 +240,7 @@
 														<text class="table-td table-td--section">{{ sec.block }}
 
 														</text>
+														<!-- 只有噪声才可以新增 -->
 														<button v-if="sec.block == '噪声'" class="pw-ico icon-btn"
 															@tap="() => addSignItem(si)">
 															<uni-icons type="plus" size="16" color="#166534" />
@@ -245,7 +248,7 @@
 														</button>
 													</view>
 													<view class="form-grid form-grid--base">
-														<!-- 按组渲染，每组 3 条 -->
+														<!-- 按组渲染，每组 3 条，除了危废以外 -->
 														<template
 															v-for="(group, gi) in groupItems(sec.items, sec.block)"
 															:key="'g'+si+'-'+gi">
@@ -625,7 +628,8 @@
 	import {
 		ref,
 		reactive,
-		computed
+		computed,
+		nextTick
 	} from 'vue'
 	import {
 		usePlatformInfo
@@ -635,6 +639,7 @@
 		onShow,
 		onLoad
 	} from '@dcloudio/uni-app'
+	import ecoFilePicker from '@/components/eco-file-picker/uni-file-picker.vue'
 	import {
 		navTitleStore
 	} from '@/stores/navTitle.js'
@@ -644,6 +649,8 @@
 		runTask,
 		transformExtractResult,
 		downloadSignboardWord,
+		fetchUploadedFiles,
+		deleteFile
 	} from '@/api/acceptance.js'
 
 	//手机端头部页面标题
@@ -718,7 +725,14 @@
 
 	// 上传文件与提取信息
 	const eiaFiles = ref([])
-	const uploadedDocuments = ref([]) // 存储已上传的文档ID
+
+
+	// 刷新已上传的文件列表
+	async function loadFileListOnMount() {
+		const files = await fetchUploadedFiles()
+		eiaFiles.value = files
+	}
+
 	const extracting = ref(false) // 提取状态
 	const extractError = ref('') // 提取错误状态
 
@@ -736,26 +750,13 @@
 	function showUploadResult({
 		successCount,
 		failCount,
-		supported,
-		nonSupported,
 		total
 	}) {
-		const hasSupported = supported > 0
-		const hasNonSupported = nonSupported > 0
-
 		if (failCount === 0 && successCount === total) {
-			//  修复：根据是否有可解析文件显示不同提示
-			let title = `全部上传成功 (${successCount}个)`
-			if (hasSupported) {
-				title = `上传成功: ${supported}个文档已解析, ${nonSupported}个附件`
-			} else if (hasNonSupported) {
-				title = `${successCount}个文件已上传（暂不支持自动解析）`
-			}
-
 			uni.showToast({
-				title,
-				icon: hasSupported ? 'success' : 'none',
-				duration: 2500
+				title: `上传成功 (${successCount}个文件)`,
+				icon: 'success',
+				duration: 2000
 			})
 		} else if (failCount === total) {
 			uni.showToast({
@@ -770,101 +771,10 @@
 		}
 	}
 
-	// 进度条提示
-	let uploadProgressTimer = null
-	let currentUploadPercent = 0
-	let sprintTimer = null
-	let progressDone = false
-
-	/**
-	 * 启动假进度条
-	 * totalSlowTime: 缓慢增长的总时间（ms）
-	 */
-	function startUploadFakeProgress(totalSlowTime = 60000) {
-		currentUploadPercent = 0
-		progressDone = false
-
-		const step = 99 / (totalSlowTime / 200) // 每200ms一步，终点99%
-
-		uploadProgressTimer = setInterval(() => {
-			if (progressDone) {
-				clearInterval(uploadProgressTimer)
-				uploadProgressTimer = null
-				return
-			}
-
-			currentUploadPercent += step
-			if (currentUploadPercent >= 99) {
-				currentUploadPercent = 99
-				clearInterval(uploadProgressTimer)
-				uploadProgressTimer = null
-			}
-
-			uni.showLoading({
-				title: `正在解析文档… ${Math.floor(currentUploadPercent)}%`,
-				mask: true
-			})
-		}, 200)
-	}
-
-	/**
-	 * 冲刺到100%并完成
-	 */
-	function sprintToComplete() {
-		progressDone = true
-
-		// 清除之前的假进度计时器
-		if (uploadProgressTimer) {
-			clearInterval(uploadProgressTimer)
-			uploadProgressTimer = null
-		}
-
-		// 2秒内从当前进度冲到100%
-		const startPercent = currentUploadPercent
-		const targetPercent = 100
-		const duration = 2000 // 2秒
-		const stepTime = 10 // 每10ms更新一次
-		const totalSteps = duration / stepTime
-		const stepValue = (targetPercent - startPercent) / totalSteps
-
-		let currentStep = 0
-		sprintTimer = setInterval(() => {
-			currentStep++
-			currentUploadPercent = startPercent + (stepValue * currentStep)
-
-			if (currentUploadPercent >= 100) {
-				currentUploadPercent = 100
-				clearInterval(sprintTimer)
-				sprintTimer = null
-
-				// 显示100%并停留1秒
-				uni.showLoading({
-					title: `文件解析成功，解析进度：100%`,
-					mask: true
-				})
-
-				setTimeout(() => {
-					uni.hideLoading()
-					// 可选：显示成功提示
-					uni.showToast({
-						title: '文档解析完成',
-						icon: 'success',
-						duration: 1500
-					})
-				}, 1000)
-
-				return
-			}
-
-			uni.showLoading({
-				title: `正在解析文档，请稍等，解析进度：${Math.floor(currentUploadPercent)}%`,
-				mask: true
-			})
-		}, stepTime)
-	}
 
 
-	// 上传文件并解析
+
+	// 上传文件
 	async function handleFileSelect(e) {
 		const selectedFiles = e.tempFiles || (e.tempFile ? [e.tempFile] : [])
 		if (!selectedFiles?.length) return
@@ -904,14 +814,15 @@
 		}
 		if (supportedFiles.length === 0) return
 
-		// ✅ 启动假进度（2.5分钟）
-		startUploadFakeProgress(150000)
+		// 显示上传中提示
+		uni.showLoading({
+			title: '正在上传文件...',
+			mask: true
+		})
 
 		const stats = {
 			successCount: 0,
 			failCount: 0,
-			supported: 0,
-			nonSupported: 0,
 			total: supportedFiles.length
 		}
 
@@ -919,34 +830,13 @@
 			const file = supportedFiles[i]
 			try {
 				const result = await uploadFileToBackend(file)
-				uploadedDocuments.value.push(result.document_id)
 				stats.successCount++
-
-				const ext = (result.filename || file.name || '').split('.').pop().toLowerCase()
-				const parseableExts = ['pdf', 'doc', 'docx', 'txt', 'md',
-					'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'
-				]
-				if (parseableExts.includes(ext)) {
-					stats.supported++
-					console.log(`文件已上传并支持解析: ${result.filename}`)
-				} else {
-					stats.nonSupported++
-					console.log(`文件已上传（暂不支持解析）: ${result.filename}`)
-				}
+				await loadFileListOnMount()
+				console.log(`文件已上传: ${result.filename}`)
 			} catch (error) {
 				stats.failCount++
 				console.error(`❌ 文件 ${i + 1} 上传失败:`, error)
 
-				// 失败时清除进度条
-				progressDone = true
-				if (uploadProgressTimer) {
-					clearInterval(uploadProgressTimer)
-					uploadProgressTimer = null
-				}
-				if (sprintTimer) {
-					clearInterval(sprintTimer)
-					sprintTimer = null
-				}
 				uni.hideLoading()
 
 				if (supportedFiles.length === 1) {
@@ -959,78 +849,59 @@
 			}
 		}
 
+		uni.hideLoading()
+
 		// 显示上传结果
 		showUploadResult(stats)
-
-		// 如果有支持解析的文件，开始自动索引
-		if (stats.supported > 0) {
-			console.log(`[AutoIndex] 检测到 ${stats.supported} 个可解析文件，开始自动索引...`)
-			await handleAutoIndexBuild(stats.supported)
-		} else {
-			// 没有可解析文件时，直接完成进度
-			progressDone = true
-			if (uploadProgressTimer) {
-				clearInterval(uploadProgressTimer)
-				uploadProgressTimer = null
-			}
-			uni.hideLoading()
-		}
-	}
-
-	// 抽离的索引构建函数
-	async function handleAutoIndexBuild(supportedCount) {
-		try {
-			const result = await rebuildIndex({
-				hideLoading: true
-			})
-
-			console.log('[AutoIndex] 成功:', result)
-
-			// ✅ 收到后端成功响应，开始冲刺到100%
-			sprintToComplete()
-
-		} catch (error) {
-			console.error('[AutoIndex] 失败:', error)
-
-			// 失败时清除所有进度条
-			progressDone = true
-			if (uploadProgressTimer) {
-				clearInterval(uploadProgressTimer)
-				uploadProgressTimer = null
-			}
-			if (sprintTimer) {
-				clearInterval(sprintTimer)
-				sprintTimer = null
-			}
-			uni.hideLoading()
-
-			uni.showModal({
-				title: '自动解析失败',
-				content: '文档已上传，但索引构建失败。\n\n错误：' + (error.message || '未知错误'),
-				showCancel: false,
-				confirmText: '知道了'
-			})
-		}
 	}
 
 	// 删除上传的文件
-	function handleFileDelete(e) {
-		const {
-			index,
-			tempFile
-		} = e // uni-file-picker 会返回 index 和 tempFile
+	async function handleFileDelete(e) {
+		const file = e.tempFile // ecoFilePicker 返回被删文件对象
+		if (!file || !file.document_id) return
 
-		// 从 uploadedDocuments 删除对应文档ID
-		if (uploadedDocuments.value[index]) {
-			uploadedDocuments.value.splice(index, 1)
+		/* 1. 删除前确认（组件已经自动删除了文件）*/
+		const confirm = await new Promise(resolve => {
+			uni.showModal({
+				title: '确认删除？',
+				content: `确定删除文件 “${file.name}” 吗？`,
+				confirmText: '删除',
+				confirmColor: '#E64340',
+				success: res => resolve(res.confirm)
+			})
+		})
+
+		if (!confirm) {
+			// 用户取消删除，从后端重新加载文件列表恢复界面
+			await loadFileListOnMount()
+			return
 		}
 
-		// 同时从 eiaFiles 删除（保持 v-model 同步）
-		if (eiaFiles.value[index]) {
-			eiaFiles.value.splice(index, 1)
+		// 用户确认删除，继续执行删除操作（文件已经从界面消失了）
+
+		try {
+			/* 2. 调后端真正删除 */
+			await deleteFile(file.document_id)
+
+			/* 3. 删除成功后刷新列表（保证与后端一致）*/
+			await loadFileListOnMount()
+
+			uni.showToast({
+				title: '文件已删除',
+				icon: 'success'
+			})
+		} catch (err) {
+			console.error('删除失败:', err)
+
+			/* 4. 删除失败，重新加载列表恢复正确状态 */
+			await loadFileListOnMount()
+
+			uni.showToast({
+				title: '删除失败，请重试',
+				icon: 'none'
+			})
 		}
 	}
-
 
 	/* 提取信息的进度条 */
 	// 1. 先声明计时器句柄和状态变量
@@ -1125,7 +996,11 @@
 	// 提取信息到项目基本表
 	async function simulateExtract() {
 		// 1. 前置检查：没上传文件直接弹窗
-		if (uploadedDocuments.value.length === 0) {
+		 uni.showLoading({ title: '检查文件...', mask: true })
+    	await loadFileListOnMount()
+    	uni.hideLoading()
+
+		if (eiaFiles.value.length === 0) {
 			uni.showModal({
 				title: '提示',
 				content: '请先上传环评报告文件',
@@ -1148,7 +1023,7 @@
 
 		try {
 			// 4. 调用后端，超时设为15分钟（900000毫秒），避免大文件超时
-			const result = await runTask('task1', {
+			const result = await runTask({
 				hideLoading: true, // 我们用uni.showLoading，所以这里隐藏
 				timeout: 900000 // 15分钟，足够解析100页PDF
 			})
@@ -1168,7 +1043,7 @@
 			uni.setStorageSync('project_base_info', JSON.stringify(baseTable.value))
 
 			console.log('[Extract] 提取成功:', result)
-			console.log('[Debug] baseTable:', baseTable.value.水污染物)
+			// console.log('[Debug] baseTable:', baseTable.value.水污染物)
 
 		} catch (error) {
 			// 错误时清除所有进度条
@@ -1374,15 +1249,15 @@
 			},
 			{
 				title: '地址',
-				content: findBaseValue('建设地点') || '-'
+				content: findBaseValue('建设地点')
 			},
 			{
 				title: '电话',
-				content: ''
+				content: findBaseValue('联系方式')
 			},
 			{
 				title: '联系人',
-				content: ''
+				content: findBaseValue('单位联系人')
 			},
 		];
 		signboard.sections.find(s => s.block === '危险废物').items = WFItems;
@@ -1905,6 +1780,7 @@
 
 	// 在页面加载时，恢复基本信息表缓存
 	onLoad(() => {
+		loadFileListOnMount()
 		const cached = uni.getStorageSync('project_base_info')
 		if (cached) {
 			try {

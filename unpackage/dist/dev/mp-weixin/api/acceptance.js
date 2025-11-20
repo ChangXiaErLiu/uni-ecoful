@@ -42,6 +42,34 @@ async function uploadFileToBackend(file) {
     });
   });
 }
+async function fetchUploadedFiles() {
+  try {
+    const res = await utils_request.request.get("/api/v1/documents?skip=0&limit=1000");
+    if (Array.isArray(res)) {
+      return res.map((file) => {
+        var _a;
+        return {
+          name: file.filename,
+          ext: ((_a = file.metadata) == null ? void 0 : _a.file_extension) || "",
+          url: `BASE_URL/${file.file_path.replace(/\\\\/g, "/")}`,
+          // 构造预览地址（可选）
+          document_id: file.document_id,
+          size: file.size_bytes,
+          upload_time: file.upload_time
+        };
+      });
+    }
+    return [];
+  } catch (error) {
+    common_vendor.index.__f__("error", "at api/acceptance.js:97", "自动刷新文件列表失败:", error);
+    return [];
+  }
+}
+async function deleteFile(document_id) {
+  if (!document_id)
+    throw new Error("document_id 不能为空");
+  await utils_request.request.delete(`/api/v1/documents/${document_id}`);
+}
 async function rebuildIndex(options = {}) {
   const {
     hideLoading = false
@@ -63,7 +91,7 @@ async function runTask(taskName, options = {}) {
     // 默认10分钟
   } = options;
   try {
-    const result = await utils_request.request.get(`/api/v1/tasks/${taskName}/run`, {
+    const result = await utils_request.request.get(`/api/v1/extract-info/EIA/run`, {
       timeout,
       hideLoading
     });
@@ -284,7 +312,9 @@ function downloadSignboardWord(signboard) {
     });
   });
 }
+exports.deleteFile = deleteFile;
 exports.downloadSignboardWord = downloadSignboardWord;
+exports.fetchUploadedFiles = fetchUploadedFiles;
 exports.rebuildIndex = rebuildIndex;
 exports.runTask = runTask;
 exports.transformExtractResult = transformExtractResult;
