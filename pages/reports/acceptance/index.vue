@@ -228,7 +228,7 @@
 											<button v-if="showSignboard" class="btn btn--primary"
 												@tap="currentStep = 1">
 												<uni-icons type="redo-filled" size="16" color="#ffffff" />
-												<text>生成检测方案</text>
+												<text>生成监测方案</text>
 											</button>
 										</view>
 
@@ -294,79 +294,35 @@
 								<text class="section-title">监测方案</text>
 							</view>
 							<view class="section-body">
-								<view class="section-actions">
-									<button class="btn btn--primary" @tap="recommendPlan">
-										<uni-icons type="magic" size="16" color="#ffffff" />
-										<text>智能推荐方案</text>
-									</button>
-									<button class="btn btn--secondary" @tap="addPlanItem">
-										<uni-icons type="plus" size="16" color="#155e3b" />
-										<text>新增监测项</text>
-									</button>
-									<button class="btn btn--ghost" @tap="downloadMonitorTemplate">
-										<uni-icons type="download" size="16" color="#5b6b7b" />
-										<text>下载模板</text>
-									</button>
-								</view>
-
-								<view v-if="plan.length" class="data-table">
-									<view class="table-header">
-										<text class="table-th w120">监测因子</text>
-										<text class="table-th w120">监测点位</text>
-										<text class="table-th w140">监测方法</text>
-										<text class="table-th w120">监测频次</text>
-										<text class="table-th w100">质控要求</text>
-										<text class="table-th">备注</text>
-										<text class="table-th w120">操作</text>
-									</view>
-									<view class="table-body">
-										<view class="table-row" v-for="(item, index) in plan" :key="item.id">
-											<uni-easyinput class="table-td w120" v-model="item.factor"
-												placeholder="监测因子" />
-											<uni-easyinput class="table-td w120" v-model="item.point"
-												placeholder="监测点位" />
-											<uni-easyinput class="table-td w140" v-model="item.method"
-												placeholder="监测方法" />
-											<uni-easyinput class="table-td w120" v-model="item.frequency"
-												placeholder="监测频次" />
-											<uni-easyinput class="table-td w100" v-model="item.qaqc"
-												placeholder="质控要求" />
-											<uni-easyinput class="table-td" v-model="item.remark" placeholder="备注" />
-											<view class="table-td w120">
-												<view class="action-buttons">
-													<button class="icon-btn" @tap="() => duplicatePlanItem(index)">
-														<uni-icons type="copy" size="16" color="#166534" />
-													</button>
-													<button class="icon-btn" @tap="() => movePlanItem(index, -1)"
-														:disabled="index === 0">
-														<uni-icons type="arrow-up" size="16" color="#166534" />
-													</button>
-													<button class="icon-btn" @tap="() => movePlanItem(index, 1)"
-														:disabled="index === plan.length - 1">
-														<uni-icons type="arrow-down" size="16" color="#166534" />
-													</button>
-													<button class="icon-btn icon-btn--danger"
-														@tap="() => removePlanItem(index)">
-														<uni-icons type="trash" size="16" color="#d92d20" />
-													</button>
-												</view>
-											</view>
-										</view>
-									</view>
-								</view>
-
-								<view v-else class="empty-state">
+								<view class="empty-state">
 									<uni-icons type="eye" size="48" color="#cbd5e1" />
-									<text class="empty-text">尚未制定监测方案</text>
-									<text class="empty-tip">点击上方按钮智能推荐或新增监测项</text>
+									<text class="empty-text">AI帮您制定监测方案</text>
+									<text class="empty-tip">请点击下方按钮为您生成智能检测方案</text>
 								</view>
 
 								<view class="action-row">
 									<button class="btn btn--primary" @tap="saveMonitorPlan">
-										<uni-icons type="checkmark" size="16" color="#ffffff" />
-										<text>保存监测方案</text>
+										<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
+										<text>生成监测方案</text>
 									</button>
 								</view>
+								
+								<view v-if="plan" class="paln-preview">
+										<view class="preview-header">
+											<uni-icons type="checkmark-circle" size="18" color="#166534" />
+											<text class="preview-title">环保验收监测方案已为您已生成！</text>
+										</view>
+										<view class="preview-content">
+											<text class="preview-text">环保验收监测方案已生成，包含以下内容：</text>
+											<view class="preview-sections">
+												<text class="section-item">• 项目基本情况</text>
+												<text class="section-item">• 环保设施建设情况</text>
+												<text class="section-item">• 污染物详细情况</text>
+												<text class="section-item">• 方案已下载，到文件保存位置查看</text>
+											</view>
+										</view>
+									</view>
+								
 							</view>
 						</view>
 					</view>
@@ -515,7 +471,6 @@
 						</view>
 					</view>
 
-
 					<!-- 步骤5: 竣工验收报告 -->
 					<view v-show="currentStep === 4" class="content-section">
 						<view class="section-card">
@@ -535,9 +490,8 @@
 												</label>
 											</radio-group>
 										</view>
-
 										<view class="option-group" v-if="reportType === 'withData'">
-											<text class="option-label">上传检测报告</text>
+											<text class="option-label"> 上传监测报告</text>
 											<uni-file-picker v-model="testReportFiles" fileMediatype="all"
 												:auto-upload="false" :limit="3">
 											</uni-file-picker>
@@ -546,17 +500,8 @@
 
 									<view class="generation-actions">
 										<button class="btn btn--primary" @tap="generateAcceptanceReport">
-											<uni-icons type="gear" size="16" color="#ffffff" />
+											<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
 											<text>生成验收报告</text>
-										</button>
-										<button class="btn btn--secondary" @tap="previewReport"
-											:disabled="!reportGenerated">
-											<uni-icons type="eye" size="16" color="#155e3b" />
-											<text>预览报告</text>
-										</button>
-										<button class="btn btn--ghost" @tap="exportReport" :disabled="!reportGenerated">
-											<uni-icons type="download" size="16" color="#5b6b7b" />
-											<text>导出报告</text>
 										</button>
 									</view>
 
@@ -576,12 +521,6 @@
 													检测数据附件</text>
 											</view>
 										</view>
-									</view>
-
-									<view v-else class="empty-state">
-										<uni-icons type="document" size="48" color="#cbd5e1" />
-										<text class="empty-text">尚未生成验收报告</text>
-										<text class="empty-tip">点击上方按钮生成报告</text>
 									</view>
 								</view>
 							</view>
@@ -650,7 +589,8 @@
 		transformExtractResult,
 		downloadSignboardWord,
 		fetchUploadedFiles,
-		deleteFile
+		deleteFile,
+		downloadMonitorPlan
 	} from '@/api/acceptance.js'
 
 	//手机端头部页面标题
@@ -770,9 +710,6 @@
 			})
 		}
 	}
-
-
-
 
 	// 上传文件
 	async function handleFileSelect(e) {
@@ -996,9 +933,12 @@
 	// 提取信息到项目基本表
 	async function simulateExtract() {
 		// 1. 前置检查：没上传文件直接弹窗
-		 uni.showLoading({ title: '检查文件...', mask: true })
-    	await loadFileListOnMount()
-    	uni.hideLoading()
+		uni.showLoading({
+			title: '检查文件...',
+			mask: true
+		})
+		await loadFileListOnMount()
+		uni.hideLoading()
 
 		if (eiaFiles.value.length === 0) {
 			uni.showModal({
@@ -1268,7 +1208,6 @@
 		});
 	}
 
-	// 添加标识牌信息
 	// 添加一组（3 项）排污标识牌
 	function addSignItem(sectionIdx) {
 		const sec = signboard.sections[sectionIdx];
@@ -1405,6 +1344,192 @@
 			.finally(() => uni.hideLoading());
 	}
 
+	// 以下监测方案模块的方法--------------------------
+	const plan = ref(false)
+
+	/* 监测方案生成进度条 */
+	// 1. 先声明计时器句柄和状态变量
+	let monitorProgressTimer = null
+	let monitorCurrentPercent = 0
+	let monitorSprintTimer = null
+	let monitorProgressDone = false
+
+	// 2. 开始"假进度" - 3分钟到99%
+	function startMonitorFakeProgress(totalTime = 180000) { // 3分钟
+		monitorCurrentPercent = 0
+		monitorProgressDone = false
+
+		// 计算步长：99% / (总时间/间隔时间)
+		const step = 99 / (totalTime / 200) // 每200ms更新一次
+
+		monitorProgressTimer = setInterval(() => {
+			if (monitorProgressDone) {
+				clearInterval(monitorProgressTimer)
+				monitorProgressTimer = null
+				return
+			}
+
+			monitorCurrentPercent += step
+			if (monitorCurrentPercent >= 99) {
+				monitorCurrentPercent = 99
+				clearInterval(monitorProgressTimer)
+				monitorProgressTimer = null
+			}
+
+			uni.showLoading({
+				title: `正在生成监测方案... ${Math.floor(monitorCurrentPercent)}%`,
+				mask: true
+			})
+		}, 200)
+	}
+
+	// 3. 冲刺到100%并完成
+	function sprintMonitorToComplete() {
+		monitorProgressDone = true
+
+		// 清除假进度计时器
+		if (monitorProgressTimer) {
+			clearInterval(monitorProgressTimer)
+			monitorProgressTimer = null
+		}
+
+		// 1秒内从当前进度冲到100%
+		const startPercent = monitorCurrentPercent
+		const targetPercent = 100
+		const duration = 1000 // 1秒
+		const stepTime = 10 // 每10ms更新一次
+		const totalSteps = duration / stepTime
+		const stepValue = (targetPercent - startPercent) / totalSteps
+
+		let currentStep = 0
+		monitorSprintTimer = setInterval(() => {
+			currentStep++
+			monitorCurrentPercent = startPercent + (stepValue * currentStep)
+
+			if (monitorCurrentPercent >= 100) {
+				monitorCurrentPercent = 100
+				clearInterval(monitorSprintTimer)
+				monitorSprintTimer = null
+
+				// 显示100%并停留0.5秒
+				uni.showLoading({
+					title: `正在生成监测方案... 100%`,
+					mask: true
+				})
+
+				setTimeout(() => {
+					uni.hideLoading()
+					// 显示成功提示
+					uni.showModal({
+						title: '监测方案已下载',
+						content: '文件已下载，请到下载目录或保存路径查看！',
+						showCancel: false,
+						confirmText: '确定'
+					})
+				}, 500)
+				plan.value = true
+				return
+			}
+
+			uni.showLoading({
+				title: `正在生成监测方案... ${Math.floor(monitorCurrentPercent)}%`,
+				mask: true
+			})
+		}, stepTime)
+	}
+
+	// 下载检测方案
+	async function saveMonitorPlan() {
+		// 1. 启动假进度（3分钟到99%）
+		startMonitorFakeProgress(180000)
+
+		try {
+			// 2. 调用接口获取文件数据
+			const arrayBuffer = await downloadMonitorPlan({
+				timeout: 300000
+			})
+
+			// 3. 收到后端响应，开始冲刺到100%
+			sprintMonitorToComplete()
+
+			// 4. 保存文件
+			await saveMonitorPlanFile(arrayBuffer)
+
+		} catch (error) {
+			// 错误时清除所有进度条
+			monitorProgressDone = true
+			if (monitorProgressTimer) {
+				clearInterval(monitorProgressTimer)
+				monitorProgressTimer = null
+			}
+			if (monitorSprintTimer) {
+				clearInterval(monitorSprintTimer)
+				monitorSprintTimer = null
+			}
+			uni.hideLoading()
+
+			console.error('生成监测方案失败:', error)
+
+			uni.showModal({
+				title: '生成失败',
+				content: error.message || '监测方案生成失败，请稍后重试',
+				showCancel: false
+			})
+		}
+	}
+
+	/**
+	 * 保存监测方案文件到本地
+	 * @param {ArrayBuffer} arrayBuffer - 文件二进制数据
+	 */
+	async function saveMonitorPlanFile(arrayBuffer) {
+		// #ifdef H5
+		// H5 环境：使用 Blob + a 标签下载
+		const blob = new Blob([arrayBuffer], {
+			type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+		})
+		const url = window.URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = url
+		a.download = '监测方案.docx'
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
+		window.URL.revokeObjectURL(url)
+		// #endif
+
+		// #ifndef H5
+		// 小程序、App 环境：保存到本地文件系统
+		return new Promise((resolve, reject) => {
+			const fs = uni.getFileSystemManager()
+			const fileName = '监测方案.docx'
+			const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`
+
+			// 写入文件
+			fs.writeFile({
+				filePath: filePath,
+				data: arrayBuffer,
+				encoding: 'binary',
+				success: () => {
+					// 打开文档
+					uni.openDocument({
+						filePath: filePath,
+						fileType: 'docx',
+						success: () => resolve(),
+						fail: (err) => {
+							console.error('打开文档失败:', err)
+							reject(new Error('文件已保存，但打开失败'))
+						}
+					})
+				},
+				fail: (err) => {
+					console.error('保存文件失败:', err)
+					reject(new Error('保存文件失败'))
+				}
+			})
+		})
+		// #endif
+	}
 
 
 
@@ -1573,135 +1698,15 @@
 		currentStep.value = 3
 	}
 
-	// 3. 监测方案
-	const plan = ref([])
 
-	function recommendPlan() {
-		const hasWW = baseTable.value.some(item =>
-			item.label.includes('废水') || item.label.includes('污水')
-		)
-		const hasWA = baseTable.value.some(item =>
-			item.label.includes('废气') || item.label.includes('烟气')
-		)
-		const hasNoise = baseTable.value.some(item =>
-			item.label.includes('噪声')
-		)
-
-		const now = Date.now();
-		plan.value = []
-
-		if (hasWW) {
-			plan.value.push({
-				id: now + 1,
-				factor: 'COD',
-				point: '废水总排口',
-				method: 'GB/T 11914-2020',
-				frequency: '3天×2次/天',
-				qaqc: '平行/空白',
-				remark: '化学需氧量'
-			})
-			plan.value.push({
-				id: now + 2,
-				factor: '氨氮',
-				point: '废水总排口',
-				method: 'HJ 535-2009',
-				frequency: '3天×2次/天',
-				qaqc: '平行',
-				remark: ''
-			})
-		}
-
-		if (hasWA) {
-			plan.value.push({
-				id: now + 3,
-				factor: '颗粒物',
-				point: '废气排放口',
-				method: 'HJ 836-2017',
-				frequency: '2天×3次/天',
-				qaqc: '平行',
-				remark: ''
-			})
-		}
-
-		if (hasNoise) {
-			plan.value.push({
-				id: now + 4,
-				factor: '噪声',
-				point: '厂界四角',
-				method: 'GB 12348-2008',
-				frequency: '昼/夜各1次',
-				qaqc: '',
-				remark: '连续2天'
-			})
-		}
-
-		if (plan.value.length === 0) {
-			plan.value.push({
-				id: now + 5,
-				factor: '常规监测',
-				point: '主要产污环节',
-				method: '按标准执行',
-				frequency: '1天×2次',
-				qaqc: '质控样',
-				remark: '请根据实际情况调整'
-			})
-		}
-
-		uni.showToast({
-			title: `已推荐${plan.value.length}项监测方案`,
-			icon: 'success'
-		})
-	}
-
-	function addPlanItem() {
-		plan.value.push({
-			id: Date.now() + Math.random(),
-			factor: '',
-			point: '',
-			method: '',
-			frequency: '',
-			qaqc: '',
-			remark: ''
-		})
-	}
-
-	function removePlanItem(i) {
-		plan.value.splice(i, 1)
-	}
-
-	function duplicatePlanItem(i) {
-		try {
-			const src = plan.value[i];
-			plan.value.splice(i + 1, 0, {
-				...JSON.parse(JSON.stringify(src)),
-				id: Date.now() + Math.random()
-			})
-		} catch (e) {}
-	}
-
-	function movePlanItem(i, dir) {
-		if (i + dir < 0 || i + dir >= plan.value.length) return;
-		const it = plan.value.splice(i, 1)[0];
-		plan.value.splice(i + dir, 0, it)
-	}
-
-	function downloadMonitorTemplate() {
-		uni.showToast({
-			title: '监测方案模板下载成功',
-			icon: 'success'
-		})
-	}
-
-	function saveMonitorPlan() {
-		uni.showToast({
-			title: '监测方案已保存',
-			icon: 'success'
-		})
-	}
 
 	// 4. 竣工验收报告
 	const reportType = ref('withoutData')
 	const testReportFiles = ref([])
+
+
+
+	//选择有无监测方案报告
 	const reportGenerated = ref(false)
 	const reportTypes = [{
 			value: 'withoutData',
@@ -1713,15 +1718,17 @@
 		}
 	]
 
+	// 切换报告类型
 	function onReportTypeChange(e) {
 		reportType.value = e.detail.value
 	}
 
+	// 验证有无上传环评报告
 	function generateAcceptanceReport() {
 		// 验证必要数据
-		if (!baseTable.value.length) {
+		if (!eiaFiles.value.length) {
 			uni.showToast({
-				title: '请先完成项目基本信息',
+				title: '请上传环评报告、批复文件等基本资料',
 				icon: 'none'
 			})
 			return
@@ -1729,7 +1736,7 @@
 
 		if (reportType.value === 'withData' && !testReportFiles.value.length) {
 			uni.showToast({
-				title: '请上传检测报告',
+				title: '有监测数据报告，必须要先上传监测报告',
 				icon: 'none'
 			})
 			return
@@ -1745,32 +1752,6 @@
 		}, 1500)
 	}
 
-	function previewReport() {
-		uni.showToast({
-			title: '报告预览功能待开发',
-			icon: 'none'
-		})
-	}
-
-	function exportReport() {
-		const typeText = reportType.value === 'withData' ? '有检测数据' : '无检测数据'
-		uni.showToast({
-			title: `${typeText}报告导出成功`,
-			icon: 'success'
-		})
-	}
-
-
-
-	// 完成度计算
-	const completionPercent = computed(() => {
-		let totalSteps = stepNames.length
-		let completedSteps = stepNames.reduce((count, _, index) => {
-			return count + (stepDone(index) ? 1 : 0)
-		}, 0)
-
-		return Math.round((completedSteps / totalSteps) * 100)
-	})
 
 
 
@@ -2492,6 +2473,13 @@
 		background: #f0fdf4;
 		border-radius: $radius;
 		border: 1rpx solid #dcfce7;
+	}
+	.paln-preview {
+		padding: 24rpx;
+		background: #f0fdf4;
+		border-radius: $radius;
+		border: 1rpx solid #dcfce7;
+		margin-top: 20rpx;
 	}
 
 	.preview-header {

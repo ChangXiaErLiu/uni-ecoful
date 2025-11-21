@@ -80,23 +80,23 @@ export async function uploadMultipleFiles(files) {
  * @returns {Promise<Array>} 格式化后的文件列表
  */
 export async function fetchUploadedFiles() {
-  try {
-    const res = await request.get('/api/v1/documents?skip=0&limit=1000')
-    if (Array.isArray(res)) {
-      return res.map(file => ({
-        name: file.filename,
-        ext: file.metadata?.file_extension || '',
-        url: `BASE_URL/${file.file_path.replace(/\\\\/g, '/')}`, // 构造预览地址（可选）
-        document_id: file.document_id,
-        size: file.size_bytes,
-        upload_time: file.upload_time
-      }))
-    }
-    return []
-  } catch (error) {
-    console.error('自动刷新文件列表失败:', error)
-    return []
-  }
+	try {
+		const res = await request.get('/api/v1/documents?skip=0&limit=100')
+		if (Array.isArray(res)) {
+			return res.map(file => ({
+				name: file.filename,
+				ext: file.metadata?.file_extension || '',
+				url: `BASE_URL/${file.file_path.replace(/\\\\/g, '/')}`, // 构造预览地址（可选）
+				document_id: file.document_id,
+				size: file.size_bytes,
+				upload_time: file.upload_time
+			}))
+		}
+		return []
+	} catch (error) {
+		console.error('自动刷新文件列表失败:', error)
+		return []
+	}
 }
 
 /**
@@ -105,8 +105,8 @@ export async function fetchUploadedFiles() {
  * @returns {Promise<void>}
  */
 export async function deleteFile(document_id) {
-  if (!document_id) throw new Error('document_id 不能为空')
-  await request.delete(`/api/v1/documents/${document_id}`)
+	if (!document_id) throw new Error('document_id 不能为空')
+	await request.delete(`/api/v1/documents/${document_id}`)
 }
 
 /**
@@ -370,45 +370,120 @@ function formatValue(value) {
  * @returns {Promise<ArrayBuffer>}
  */
 export function downloadSignboardWord(signboard) {
-  const payload = {
-    sections: signboard.sections.map(sec => ({
-      block: sec.block,
-      items: sec.items.map(it => ({ title: it.title, content: it.content }))
-    }))
-  };
+	const payload = {
+		sections: signboard.sections.map(sec => ({
+			block: sec.block,
+			items: sec.items.map(it => ({
+				title: it.title,
+				content: it.content
+			}))
+		}))
+	};
+
+	// #ifdef H5
+	// H5 用 fetch 保证 arrayBuffer
+	// uni.request 在H5环境中不稳定，使用原生的 fetch API 是一个可靠且推荐的方案
+	return fetch(BASE_URL + '/api/v1/download/signageborad', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(payload)
+	}).then(res => {
+		if (!res.ok) throw new Error('生成失败');
+		return res.arrayBuffer(); // 浏览器原生一定返回 ArrayBuffer
+	});
+	// #endif
+
+	// #ifndef H5
+	// 小程序、App 用 uni.request
+	return new Promise((resolve, reject) => {
+		uni.request({
+			url: BASE_URL + '/api/v1/download/signageborad',
+			method: 'POST',
+			data: payload,
+			header: {
+				'Content-Type': 'application/json'
+			},
+			responseType: 'arraybuffer',
+			success: (res) => {
+				if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
+					resolve(res.data);
+				} else {
+					reject(new Error('空文件'));
+				}
+			},
+			fail: reject
+		});
+	});
+	// #endif
+}
+
+/**
+ * 生成并下载监测方案（Word/Markdown）
+ * 调用后端 RAG + LLM 生成监测方案文档
+ * @param {Object} options - 选项
+ * @param {boolean} options.hideLoading - 是否隐藏 loading（默认 false）
+ * @param {number} options.timeout - 超时时间（毫秒，默认10分钟）
+ * @returns {Promise<ArrayBuffer>} 文件的二进制数据
+ */
+export function downloadMonitorPlan(options = {}) {
+  const {
+    hideLoading = false,
+    timeout = 600000  // 默认10分钟，因为涉及 RAG 检索 + LLM 生成
+  } = options
 
   // #ifdef H5
-  // H5 用 fetch 保证 arrayBuffer
-  // uni.request 在H5环境中不稳定，使用原生的 fetch API 是一个可靠且推荐的方案
-  return fetch(BASE_URL + '/api/v1/download/signageborad', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+  // H5 环境使用 fetch
+  // 创建 AbortController 用于超时控制
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  
+  return fetch(BASE_URL + '/api/v1/monitorplan/generate', {
+    method: 'GET',
+    signal: controller.signal
   }).then(res => {
-    if (!res.ok) throw new Error('生成失败');
-    return res.arrayBuffer();   // 浏览器原生一定返回 ArrayBuffer
-  });
+    clearTimeout(timeoutId)  // 清除超时定时器
+    if (!res.ok) {
+      throw new Error(`生成失败: ${res.status} ${res.statusText}`)
+    }
+    return res.arrayBuffer()
+  }).catch(err => {
+    clearTimeout(timeoutId)
+    if (err.name === 'AbortError') {
+      throw new Error('请求超时，请稍后重试')
+    }
+    throw err
+  })
   // #endif
 
   // #ifndef H5
-  // 小程序、App 用 uni.request
+  // 小程序、App 环境使用 uni.request
   return new Promise((resolve, reject) => {
-    uni.request({
-      url: BASE_URL + '/api/v1/download/signageborad',
-      method: 'POST',
-      data: payload,
-      header: { 'Content-Type': 'application/json' },
+    const requestTask = uni.request({
+      url: BASE_URL + '/api/v1/monitorplan/generate',
+      method: 'GET',
       responseType: 'arraybuffer',
+      timeout: timeout,
       success: (res) => {
         if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
-          resolve(res.data);
+          resolve(res.data)
         } else {
-          reject(new Error('空文件'));
+          reject(new Error(`生成失败: ${res.statusCode}`))
         }
       },
-      fail: reject
-    });
-  });
+      fail: (error) => {
+        reject(new Error(error.errMsg || '网络请求失败'))
+      }
+    })
+
+    // 超时处理
+    setTimeout(() => {
+      requestTask.abort()
+      reject(new Error('请求超时，监测方案生成时间较长，请稍后重试'))
+    }, timeout)
+  })
   // #endif
 }
+
 

@@ -44,7 +44,7 @@ async function uploadFileToBackend(file) {
 }
 async function fetchUploadedFiles() {
   try {
-    const res = await utils_request.request.get("/api/v1/documents?skip=0&limit=1000");
+    const res = await utils_request.request.get("/api/v1/documents?skip=0&limit=100");
     if (Array.isArray(res)) {
       return res.map((file) => {
         var _a;
@@ -70,43 +70,33 @@ async function deleteFile(document_id) {
     throw new Error("document_id 不能为空");
   await utils_request.request.delete(`/api/v1/documents/${document_id}`);
 }
-async function rebuildIndex(options = {}) {
-  const {
-    hideLoading = false
-  } = options;
-  const TEST_SOURCE_DIR = "./storage/project_completion_and_acceptance/uploads";
-  return utils_request.request.post("/api/v1/index/build", {
-    source_dir: TEST_SOURCE_DIR,
-    split_by_heading: true
-  }, {
-    hideLoading,
-    timeout: 9e5
-    // 增加：15分钟超时（900秒）
-  });
-}
-async function runTask(taskName, options = {}) {
+async function runTask(options = {}) {
+  var _a;
   const {
     hideLoading = false,
     timeout = 6e5
     // 默认10分钟
   } = options;
   try {
-    const result = await utils_request.request.get(`/api/v1/extract-info/EIA/run`, {
+    const result = await utils_request.request.get(`/api/v1/index-parallel-extract-info/EIA`, {
       timeout,
       hideLoading
     });
     if (!result || result.status !== "success") {
       throw new Error((result == null ? void 0 : result.message) || "任务执行失败");
     }
-    if (!result.result || Object.keys(result.result).length === 0) {
+    if (!((_a = result.extract_info) == null ? void 0 : _a.result) || Object.keys(result.extract_info.result).length === 0) {
       throw new Error("未提取到任何项目信息，请检查文件内容是否完整");
     }
-    return result;
+    return {
+      status: result.status,
+      result: result.extract_info.result
+    };
   } catch (error) {
     if (error.code === "NETWORK_ERROR" && error.message.includes("timeout")) {
       throw new Error("提取超时：文档过大或网络不稳定，请稍后重试");
     } else if (error.code === "HTTP_ERROR" && error.message.includes("404")) {
-      throw new Error(`任务 ${taskName} 不存在，请联系管理员配置`);
+      throw new Error("任务不存在，请联系管理员配置");
     } else {
       throw error;
     }
@@ -291,7 +281,10 @@ function downloadSignboardWord(signboard) {
   const payload = {
     sections: signboard.sections.map((sec) => ({
       block: sec.block,
-      items: sec.items.map((it) => ({ title: it.title, content: it.content }))
+      items: sec.items.map((it) => ({
+        title: it.title,
+        content: it.content
+      }))
     }))
   };
   return new Promise((resolve, reject) => {
@@ -299,7 +292,9 @@ function downloadSignboardWord(signboard) {
       url: utils_config.BASE_URL + "/api/v1/download/signageborad",
       method: "POST",
       data: payload,
-      header: { "Content-Type": "application/json" },
+      header: {
+        "Content-Type": "application/json"
+      },
       responseType: "arraybuffer",
       success: (res) => {
         if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
@@ -312,10 +307,39 @@ function downloadSignboardWord(signboard) {
     });
   });
 }
+function downloadMonitorPlan(options = {}) {
+  const {
+    hideLoading = false,
+    timeout = 6e5
+    // 默认10分钟，因为涉及 RAG 检索 + LLM 生成
+  } = options;
+  return new Promise((resolve, reject) => {
+    const requestTask = common_vendor.index.request({
+      url: utils_config.BASE_URL + "/api/v1/monitorplan/generate",
+      method: "GET",
+      responseType: "arraybuffer",
+      timeout,
+      success: (res) => {
+        if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
+          resolve(res.data);
+        } else {
+          reject(new Error(`生成失败: ${res.statusCode}`));
+        }
+      },
+      fail: (error) => {
+        reject(new Error(error.errMsg || "网络请求失败"));
+      }
+    });
+    setTimeout(() => {
+      requestTask.abort();
+      reject(new Error("请求超时，监测方案生成时间较长，请稍后重试"));
+    }, timeout);
+  });
+}
 exports.deleteFile = deleteFile;
+exports.downloadMonitorPlan = downloadMonitorPlan;
 exports.downloadSignboardWord = downloadSignboardWord;
 exports.fetchUploadedFiles = fetchUploadedFiles;
-exports.rebuildIndex = rebuildIndex;
 exports.runTask = runTask;
 exports.transformExtractResult = transformExtractResult;
 exports.uploadFileToBackend = uploadFileToBackend;
