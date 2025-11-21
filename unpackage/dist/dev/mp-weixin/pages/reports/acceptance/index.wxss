@@ -620,6 +620,13 @@
   border-radius: 14rpx;
   border: 1rpx solid #dcfce7;
 }
+.paln-preview.data-v-41308e16 {
+  padding: 24rpx;
+  background: #f0fdf4;
+  border-radius: 14rpx;
+  border: 1rpx solid #dcfce7;
+  margin-top: 20rpx;
+}
 .preview-header.data-v-41308e16 {
   display: flex;
   align-items: center;

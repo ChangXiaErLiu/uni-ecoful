@@ -19,7 +19,8 @@ export {
   transformExtractResult,
   downloadSignboardWord,
   fetchUploadedFiles,
-  deleteFile
+  deleteFile,
+  downloadMonitorPlan
 } from './acceptance.js'
 
 let piniaInstance = null
