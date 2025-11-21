@@ -330,54 +330,46 @@
 
 					<!-- 步骤2: 提资单比对 -->
 					<view v-show="currentStep === 2" class="content-section">
-						<view class="section-card">
-							<view class="section-header">
-								<uni-icons type="clipboard" size="20" color="#166534" />
-								<text class="section-title">提资单比对清单</text>
+						<!-- 环保资料提交管理系统界面 -->
+						<view class="tizidan-container">
+							<view class="tizidan-header">
+								<text class="tizidan-title">环保资料提交管理系统</text>
+								<text class="tizidan-subtitle">请按要求提交相关环保资料</text>
 							</view>
-							<view class="section-body">
-								<view class="section-actions">
-									<button class="btn btn--primary" @tap="generateDatasheet">
-										<uni-icons type="gear" size="16" color="#ffffff" />
-										<text>生成比对清单</text>
-									</button>
-									<button class="btn btn--secondary" @tap="exportDatasheet">
-										<uni-icons type="download" size="16" color="#155e3b" />
-										<text>导出比对清单</text>
-									</button>
-								</view>
-
-								<view v-if="datasheet.length" class="data-table">
-									<view class="table-header table-header--dense">
-										<text class="table-th w160">字段</text>
-										<text class="table-th">当前值</text>
-										<text class="table-th w140">类型</text>
-										<text class="table-th w120">状态</text>
-										<text class="table-th w80">操作</text>
+							
+							<view class="tizidan-content">
+								<view 
+									v-for="(item, index) in tizidanItems" 
+									:key="index" 
+									class="tizidan-item-card"
+								>
+									<view class="tizidan-item-content">
+										<text class="tizidan-item-number">{{ index + 1 }}.</text>
+										<text class="tizidan-item-text">{{ item.text }}</text>
 									</view>
-									<view class="table-body">
-										<view class="table-row" v-for="(d, i) in datasheet" :key="d.id">
-											<uni-easyinput class="table-td w160" v-model="d.label" placeholder="字段名" />
-											<uni-easyinput class="table-td" v-model="d.value" placeholder="值" />
-											<uni-data-select class="table-td w140" v-model="d.type"
-												:localdata="datasheetTypeOptions" placeholder="类型" />
-											<uni-data-select class="table-td w120" v-model="d.status"
-												:localdata="verifyOptions" placeholder="状态" />
-											<view class="table-td w80">
-												<button class="icon-btn icon-btn--danger"
-													@tap="() => removeDatasheet(i)">
-													<uni-icons type="trash" size="16" color="#d92d20" />
-												</button>
-											</view>
-										</view>
+									
+									<view class="tizidan-item-status">
+										<text 
+											class="tizidan-status-text" 
+											:class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'"
+										>
+											{{ item.submitted ? '已提交' : '未提交' }}
+										</text>
+										
+										<button 
+											v-if="!item.submitted" 
+											class="tizidan-submit-btn" 
+											@click="submitTizidanItem(index)"
+										>
+											提交
+										</button>
 									</view>
 								</view>
-
-								<view v-else class="empty-state">
-									<uni-icons type="document" size="48" color="#cbd5e1" />
-									<text class="empty-text">尚未生成提资单</text>
-									<text class="empty-tip">点击上方"生成提资单"按钮创建</text>
-								</view>
+							</view>
+							
+							<view class="tizidan-footer">
+								<text class="tizidan-footer-text">请确保所有资料完整准确</text>
+								<button>下载验收报告的提资单文档</button>
 							</view>
 						</view>
 					</view>
@@ -643,14 +635,46 @@
 			case 1:
 				return datasheet.value.length > 0;
 			case 2:
-				return fieldworkComparison.value.length > 0;
+				return tizidanItems.value.some(item => item.submitted);
 			case 3:
-				return plan.value.length > 0;
+				return fieldworkComparison.value.length > 0;
 			case 4:
 				return reportGenerated.value;
 			default:
 				return false
 		}
+	}
+
+	// 提资单数据
+	const tizidanItems = ref([
+		{ text: "请提供营业执照、法人身份证、主要负责人姓名、电话、邮箱（账号注册用）", submitted: false },
+		{ text: "项目所有的环评报告及批复", submitted: false },
+		{ text: "部分已完成环保验收的，需提供所有验收报告及批复", submitted: true },
+		{ text: "（房地产项目需提供）项目施工证、规划许可证、规划验收合格证（如有）", submitted: false },
+		{ text: "建设项目废水、废气环保设施设计方案及竣工图纸（cad版，如有）", submitted: false },
+		{ text: "厂区总平面图、各层平面图（cad版）", submitted: false },
+		{ text: "厂区雨水、污水管线及流向示意图、厂区排水设计图等（cad版，如有）", submitted: false },
+		{ text: "建设项目排污许可证（如有）", submitted: true },
+		{ text: "如项目污水排入市政管网，请提供排水许可证", submitted: false },
+		{ text: "如项目有产生危险废物，请提供危废处置协议、相应处置资质等", submitted: false }
+	])
+
+	// 提交提资单项
+	function submitTizidanItem(index) {
+	  uni.showModal({
+		title: '确认提交',
+		content: '您确定要提交此项资料吗？',
+		success: (res) => {
+		  if (res.confirm) {
+			tizidanItems.value[index].submitted = true;
+			uni.showToast({
+			  title: '提交成功',
+			  icon: 'success',
+			  duration: 2000
+			});
+		  }
+		}
+	  });
 	}
 
 	// 以下提取项目基本信息模块的方法--------------------------
@@ -801,7 +825,7 @@
 		const confirm = await new Promise(resolve => {
 			uni.showModal({
 				title: '确认删除？',
-				content: `确定删除文件 “${file.name}” 吗？`,
+				content: `确定删除文件 "${file.name}" 吗？`,
 				confirmText: '删除',
 				confirmColor: '#E64340',
 				success: res => resolve(res.confirm)
@@ -1344,6 +1368,7 @@
 			.finally(() => uni.hideLoading());
 	}
 
+
 	// 以下监测方案模块的方法--------------------------
 	const plan = ref(false)
 
@@ -1530,11 +1555,6 @@
 		})
 		// #endif
 	}
-
-
-
-
-
 
 
 	// 1. 信息表/提资单------------
@@ -2518,6 +2538,126 @@
 		color: #475569;
 	}
 
+	/* 提资单界面样式 */
+	.tizidan-container {
+		display: flex;
+		flex-direction: column;
+		min-height: 80vh;
+		background-color: #f8f9fa;
+		padding: 20rpx;
+	}
+
+	.tizidan-header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 40rpx 20rpx;
+		background-color: #ffffff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+		margin-bottom: 30rpx;
+	}
+
+	.tizidan-title {
+		font-size: 40rpx;
+		font-weight: bold;
+		color: #2c3e50;
+		margin-bottom: 10rpx;
+	}
+
+	.tizidan-subtitle {
+		font-size: 28rpx;
+		color: #7f8c8d;
+	}
+
+	.tizidan-content {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+	}
+
+	.tizidan-item-card {
+		display: flex;
+		flex-direction: column;
+		background-color: #ffffff;
+		border-radius: 16rpx;
+		padding: 30rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+		transition: transform 0.2s;
+	}
+
+	.tizidan-item-card:hover {
+		transform: translateY(-4rpx);
+	}
+
+	.tizidan-item-content {
+		display: flex;
+		margin-bottom: 20rpx;
+	}
+
+	.tizidan-item-number {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #3498db;
+		margin-right: 10rpx;
+	}
+
+	.tizidan-item-text {
+		font-size: 30rpx;
+		color: #2c3e50;
+		line-height: 1.5;
+		flex: 1;
+	}
+
+	.tizidan-item-status {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 20rpx;
+	}
+
+	.tizidan-status-text {
+		font-size: 28rpx;
+		font-weight: bold;
+	}
+
+	.tizidan-status-text.tizidan-submitted {
+		color: #27ae60;
+	}
+
+	.tizidan-status-text.tizidan-unsubmitted {
+		color: #e74c3c;
+	}
+
+	.tizidan-submit-btn {
+		background-color: #3498db;
+		color: #ffffff;
+		border: none;
+		border-radius: 8rpx;
+		padding: 12rpx 24rpx;
+		font-size: 26rpx;
+		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
+		transition: background-color 0.3s;
+	}
+
+	.tizidan-submit-btn:active {
+		background-color: #2980b9;
+	}
+
+	.tizidan-footer {
+		display: flex;
+		justify-content: center;
+		padding: 30rpx 20rpx;
+		margin-top: 30rpx;
+	}
+
+	.tizidan-footer-text {
+		font-size: 26rpx;
+		color: #95a5a6;
+		text-align: center;
+	}
+
 	/* 宽度工具类 */
 	.w80 {
 		min-width: 120rpx;
@@ -2733,6 +2873,31 @@
 			justify-content: flex-start;
 		}
 
+		/* 提资单移动端适配 */
+		.tizidan-container {
+			padding: 16rpx;
+		}
+		
+		.tizidan-header {
+			padding: 30rpx 20rpx;
+		}
+		
+		.tizidan-title {
+			font-size: 36rpx;
+		}
+		
+		.tizidan-subtitle {
+			font-size: 26rpx;
+		}
+		
+		.tizidan-item-card {
+			padding: 24rpx;
+		}
+		
+		.tizidan-item-text {
+			font-size: 28rpx;
+		}
+
 	}
 
 	/* 桌面端：移除突兀 hover 色，保持轻影与对比 */
@@ -2760,6 +2925,33 @@
 
 		.icon-btn:hover {
 			background: #f3f6fa;
+		}
+		
+		/* 提资单桌面端适配 */
+		.tizidan-item-card {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+		
+		.tizidan-item-content {
+			margin-bottom: 0;
+			flex: 1;
+			max-width: 80%;
+		}
+		
+		.tizidan-item-status {
+			flex-shrink: 0;
+		}
+		
+		.tizidan-submit-btn {
+			padding: 16rpx 32rpx;
+			font-size: 28rpx;
+		}
+		
+		.tizidan-submit-btn:hover {
+			background-color: #2980b9;
+			cursor: pointer;
 		}
 	}
 
