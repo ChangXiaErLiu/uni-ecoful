@@ -19,7 +19,19 @@ function useSafeArea() {
       }
       try {
         const cap = common_vendor.index.getMenuButtonBoundingClientRect();
-        navBarHeightPx.value = cap.bottom - statusBarHeightPx.value + (cap.top - statusBarHeightPx.value);
+        const topGap = cap.top - statusBarHeightPx.value;
+        const capsuleHeight = cap.height;
+        navBarHeightPx.value = capsuleHeight + topGap * 2;
+        common_vendor.index.__f__("log", "at utils/safe-area.js:39", "=== 安全区调试信息 ===");
+        common_vendor.index.__f__("log", "at utils/safe-area.js:40", "statusBarHeight:", statusBarHeightPx.value);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:41", "cap.top:", cap.top);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:42", "cap.bottom:", cap.bottom);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:43", "cap.height:", capsuleHeight);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:44", "topGap:", topGap);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:45", "计算公式: capsuleHeight + (topGap * 2) =", capsuleHeight, "+", topGap * 2);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:46", "navBarHeight:", navBarHeightPx.value);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:47", "totalNavHeight:", statusBarHeightPx.value + navBarHeightPx.value);
+        common_vendor.index.__f__("log", "at utils/safe-area.js:48", "===================");
       } catch (e) {
         navBarHeightPx.value = 44;
       }

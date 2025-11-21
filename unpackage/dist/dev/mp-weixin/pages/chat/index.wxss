@@ -30,7 +30,8 @@
   min-height: 0;
   background: #ffffff;
   border-radius: 15rpx;
-  height: 84vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* 桌面：右侧聊天主区域 */
@@ -49,6 +50,8 @@
 }
 .chat-page.layout-mobile.data-v-5a559478 {
   flex-direction: column;
+  /* height 由内联样式动态设置，适配所有机型 */
+  overflow: hidden;
 }
 
 /* 移动端容器（扣掉 header 高度） */
@@ -88,7 +91,6 @@
 }
 .message-list-container.data-v-5a559478 {
   flex: 1;
-  padding: 18rpx;
   min-height: 0;
   /* 中文注释：中间消息列表承担滚动 */
   overflow-y: auto;

@@ -72,8 +72,9 @@ const _sfc_main = {
           size: "18",
           color: "#ffffff"
         }),
-        d: common_vendor.o(createChat),
-        e: common_vendor.f(__props.conversations, (conv, k0, i0) => {
+        d: !__props.collapsed,
+        e: common_vendor.o(createChat),
+        f: common_vendor.f(__props.conversations, (conv, k0, i0) => {
           return common_vendor.e({
             a: "e23d1a63-2-" + i0,
             b: common_vendor.t(conv.title || "新对话")
@@ -98,13 +99,13 @@ const _sfc_main = {
             k: common_vendor.o(($event) => selectConversation(conv.id), conv.id)
           });
         }),
-        f: common_vendor.p({
+        g: common_vendor.p({
           type: "chat",
           size: "18",
           color: "#64748b"
         }),
-        g: !__props.collapsed,
-        h: __props.collapsed ? 1 : ""
+        h: !__props.collapsed,
+        i: __props.collapsed ? 1 : ""
       };
     };
   }

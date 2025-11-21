@@ -18,7 +18,7 @@
         <view class="sidebar-body">
             <button class="create-chat-btn" @tap="createChat">
                 <uni-icons type="plusempty" size="18" color="#ffffff" />
-                新建对话
+                <text v-show="!collapsed" class="create-chat-font">新建对话</text>
             </button>
         </view>
 
@@ -101,9 +101,13 @@
   flex-direction: column;
   border-right: 1px solid #e2e8f0;
   min-width: 0;
-  height: 100%;
+  height: 90%;
   border-radius: 15rpx;
-  // margin-top: 44px;
+  // margin-top: 44px; 
+  @media (min-width: 768px) {
+    height: 100%;  // PC端
+	}
+  
   
 }
 
@@ -120,7 +124,7 @@
 	}
 
 	.sidebar-title {
-		font-size: 28rpx;
+		font-size: 38rpx;
 		color: #111827;
 		font-weight: 600;
 	}
@@ -143,7 +147,7 @@
 
 	/* 折叠（桌面窄栏） */
 	.sidebar-collapsed {
-		width: 96rpx;
+		width: 124rpx;
 	}
 
 	/* 新建按钮 */

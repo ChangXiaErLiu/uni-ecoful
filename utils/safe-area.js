@@ -29,8 +29,23 @@ export function useSafeArea() {
       // #ifdef MP-WEIXIN
       try {
         const cap = uni.getMenuButtonBoundingClientRect()
-        // 中文注释：微信推荐的自定义导航高度计算方式
-        navBarHeightPx.value = (cap.bottom - statusBarHeightPx.value) + (cap.top - statusBarHeightPx.value)
+        // 中文注释：导航栏高度 = 胶囊高度 + 上下边距（上下对称）
+        const topGap = cap.top - statusBarHeightPx.value
+        const capsuleHeight = cap.height
+        // 导航栏高度 = 胶囊高度 + 上下边距（topGap * 2）
+        navBarHeightPx.value = capsuleHeight + (topGap * 2)
+        
+        // 调试日志：输出所有关键数据
+        console.log('=== 安全区调试信息 ===')
+        console.log('statusBarHeight:', statusBarHeightPx.value)
+        console.log('cap.top:', cap.top)
+        console.log('cap.bottom:', cap.bottom)
+        console.log('cap.height:', capsuleHeight)
+        console.log('topGap:', topGap)
+        console.log('计算公式: capsuleHeight + (topGap * 2) =', capsuleHeight, '+', topGap * 2)
+        console.log('navBarHeight:', navBarHeightPx.value)
+        console.log('totalNavHeight:', statusBarHeightPx.value + navBarHeightPx.value)
+        console.log('===================')
       } catch (e) {
         navBarHeightPx.value = 44
       }

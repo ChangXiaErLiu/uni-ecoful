@@ -201,7 +201,7 @@ function getIconColor(color) {
   display: flex;
   flex-direction: column;
   gap: 32rpx;
-  // min-height: 100vh;
+  background-color: #F2F3F6;
   padding: 32rpx;
 }
 

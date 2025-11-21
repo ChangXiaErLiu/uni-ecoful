@@ -240,7 +240,7 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		background-color: #f5f7fa;
+		// background-color: #f5f7fa;
 		height: 100%;
 		min-height: 0;
 		overflow: hidden;
@@ -248,11 +248,12 @@
 
 	.AppLayout__content {
 		flex: 1;
-		padding: 24rpx;
+		// padding: 24rpx;
 		box-sizing: border-box;
 		height: 100%;
 		min-height: 0;
 		overflow: auto;
+		background-color: white;
 	}
 
 	/* 当页面声明由自身管理滚动（如聊天页），H5 端需关闭外层滚动 */
