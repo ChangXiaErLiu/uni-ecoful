@@ -330,50 +330,66 @@
 
 					<!-- 步骤2: 提资单比对 -->
 					<view v-show="currentStep === 2" class="content-section">
-						<!-- 环保资料提交管理系统界面 -->
-						<view class="tizidan-container">
-							<view class="tizidan-header">
-								<text class="tizidan-title">环保资料提交管理系统</text>
-								<text class="tizidan-subtitle">请按要求提交相关环保资料</text>
-							</view>
-							
-							<view class="tizidan-content">
-								<view 
-									v-for="(item, index) in tizidanItems" 
-									:key="index" 
-									class="tizidan-item-card"
-								>
-									<view class="tizidan-item-content">
-										<text class="tizidan-item-number">{{ index + 1 }}.</text>
-										<text class="tizidan-item-text">{{ item.text }}</text>
-									</view>
-									
-									<view class="tizidan-item-status">
-										<text 
-											class="tizidan-status-text" 
-											:class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'"
-										>
-											{{ item.submitted ? '已提交' : '未提交' }}
-										</text>
-										
-										<button 
-											v-if="!item.submitted" 
-											class="tizidan-submit-btn" 
-											@click="submitTizidanItem(index)"
-										>
-											提交
-										</button>
-									</view>
-								</view>
-							</view>
-							
-							<view class="tizidan-footer">
-								<text class="tizidan-footer-text">请确保所有资料完整准确</text>
-								<button>下载验收报告的提资单文档</button>
-							</view>
-						</view>
+					    <!-- 环保资料提交管理系统界面 -->
+					    <view class="tizidan-container">
+					        <view class="tizidan-header">
+					            <text class="tizidan-title">环保资料提交管理系统</text>
+					            <text class="tizidan-subtitle">请按要求提交相关环保资料</text>
+					        </view>
+					        
+					        <!-- 加载失败提示 -->
+					        <view v-if="tizidanItems.length === 0" class="empty-state">
+					            <uni-icons type="refresh" size="48" color="#cbd5e1" />
+					            <text class="empty-text">加载失败，请重新刷新！</text>
+					            <button class="btn btn--primary" @tap="fetchTizidanData">
+					                <uni-icons type="refresh" size="16" color="#ffffff" />
+					                <text>重新加载</text>
+					            </button>
+					        </view>
+					        
+					        <!-- 正常内容 -->
+					        <view v-else class="tizidan-content">
+					            <view 
+					                v-for="(item, index) in tizidanItems" 
+					                :key="index" 
+					                class="tizidan-item-card"
+					            >
+					                <view class="tizidan-item-content">
+					                    <text class="tizidan-item-number">{{ index + 1 }}.</text>
+					                    <text class="tizidan-item-text">{{ item.text }}</text>
+					                </view>
+					                
+					                <view class="tizidan-item-status">
+					                    <text 
+					                        class="tizidan-status-text" 
+					                        :class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'"
+					                    >
+					                        {{ item.submitted ? '已提交' : '未提交' }}
+					                    </text>
+					                    
+					                    <button 
+					                        v-if="!item.submitted" 
+					                        class="tizidan-submit-btn" 
+					                        @click="submitTizidanItem(index)"
+					                    >
+					                        提交
+					                    </button>
+					                </view>
+					            </view>
+					        </view>
+					        
+					        <view class="tizidan-footer">
+					            <text class="tizidan-footer-text">请确保所有资料完整准确</text>
+					            <button class="btn btn--primary" @tap="downloadFile(downloadUrls.acceptance_report, '验收报告提资单')" :disabled="!downloadUrls.acceptance_report">
+					                下载验收报告提资单
+					            </button>
+					            <button class="btn btn--secondary" @tap="downloadFile(downloadUrls.comparison_list, '详细对比清单')" :disabled="!downloadUrls.comparison_list">
+					                下载详细对比清单
+					            </button>
+					        </view>
+					    </view>
 					</view>
-
+					
 					<!-- 步骤3: 现场踏勘比对 -->
 					<view v-show="currentStep === 3" class="content-section">
 						<view class="section-card">
@@ -560,7 +576,8 @@
 		ref,
 		reactive,
 		computed,
-		nextTick
+		nextTick,
+		watch  // 添加这行导入
 	} from 'vue'
 	import {
 		usePlatformInfo
@@ -645,36 +662,213 @@
 	}
 
 	// 提资单数据
-	const tizidanItems = ref([
-		{ text: "请提供营业执照、法人身份证、主要负责人姓名、电话、邮箱（账号注册用）", submitted: false },
-		{ text: "项目所有的环评报告及批复", submitted: false },
-		{ text: "部分已完成环保验收的，需提供所有验收报告及批复", submitted: true },
-		{ text: "（房地产项目需提供）项目施工证、规划许可证、规划验收合格证（如有）", submitted: false },
-		{ text: "建设项目废水、废气环保设施设计方案及竣工图纸（cad版，如有）", submitted: false },
-		{ text: "厂区总平面图、各层平面图（cad版）", submitted: false },
-		{ text: "厂区雨水、污水管线及流向示意图、厂区排水设计图等（cad版，如有）", submitted: false },
-		{ text: "建设项目排污许可证（如有）", submitted: true },
-		{ text: "如项目污水排入市政管网，请提供排水许可证", submitted: false },
-		{ text: "如项目有产生危险废物，请提供危废处置协议、相应处置资质等", submitted: false }
-	])
-
-	// 提交提资单项
-	function submitTizidanItem(index) {
-	  uni.showModal({
-		title: '确认提交',
-		content: '您确定要提交此项资料吗？',
-		success: (res) => {
-		  if (res.confirm) {
-			tizidanItems.value[index].submitted = true;
-			uni.showToast({
-			  title: '提交成功',
-			  icon: 'success',
-			  duration: 2000
-			});
-		  }
-		}
-	  });
+	const tizidanItems = ref([])
+	const downloadUrls = ref({
+	  acceptance_report: '',
+	  comparison_list: ''
+	})
+	
+	// 获取提资单数据
+	async function fetchTizidanData() {
+	    try {
+	        uni.showLoading({
+	            title: '加载中...'
+	        })
+	        
+	        console.log('开始请求数据...')
+	        
+	        // 使用 Promise 包装 uni.request 以确保正确解析
+	        const response = await new Promise((resolve, reject) => {
+	            uni.request({
+	                url: 'http://127.0.0.1:8000/api/v1/tzdDetail/datasheet',
+	                method: 'GET',
+	                timeout: 10000,
+					data: {
+					    memberId: 3,
+					},
+	                success: (res) => {
+	                    console.log('请求成功:', res)
+	                    resolve(res)
+	                },
+	                fail: (err) => {
+	                    console.log('请求失败:', err)
+	                    reject(err)
+	                }
+	            })
+	        })
+	        
+	        console.log('完整响应对象:', response)
+	        console.log('响应状态码:', response.statusCode)
+	        console.log('响应数据:', response.data)
+	        
+	        // 检查返回结果
+	        if (response && response.statusCode === 200) {
+	            console.log('状态码为200，开始解析数据')
+	            
+	            // 确保 data 存在
+	            if (!response.data) {
+	                throw new Error('响应数据为空')
+	            }
+	            
+	            const data = response.data
+	            console.log('解析后的数据:', data)
+	            
+	            // 确保数据结构正确
+	            if (!data.items || !Array.isArray(data.items)) {
+	                throw new Error('数据格式不正确: items 不存在或不是数组')
+	            }
+	            
+	            tizidanItems.value = data.items
+	            downloadUrls.value = data.download_urls || {}
+	            
+	            console.log('最终设置的数据:', {
+	                items: tizidanItems.value,
+	                urls: downloadUrls.value
+	            })
+	            
+	            uni.showToast({
+	                title: '数据加载成功',
+	                icon: 'success'
+	            })
+	        } else {
+	            throw new Error(`请求失败，状态码：${response?.statusCode || '未知'}`)
+	        }
+	    } catch (error) {
+	        console.error('获取提资单数据失败:', error)
+	        // 显示加载失败提示
+	        uni.showToast({
+	            title: '加载失败，请重新刷新！',
+	            icon: 'none',
+	            duration: 3000
+	        })
+	        // 清空数据，显示加载失败状态
+	        tizidanItems.value = []
+	        downloadUrls.value = {
+	            acceptance_report: '',
+	            comparison_list: ''
+	        }
+	    } finally {
+	        uni.hideLoading()
+	    }
 	}
+	
+	// 提交提资单项
+	async function submitTizidanItem(index) {
+	    uni.showModal({
+	        title: '确认提交',
+	        content: '您确定要提交此项资料吗？',
+	        success: async (res) => {
+	            if (res.confirm) {
+	                try {
+	                    uni.showLoading({
+	                        title: '提交中...'
+	                    })
+	                    
+	                    console.log('开始提交项目:', index, tizidanItems.value[index].text)
+	                    
+	                    // 使用 Promise 包装 uni.request
+	                    const response = await new Promise((resolve, reject) => {
+	                        uni.request({
+	                            url: 'http://127.0.0.1:8000/api/v1/tzdDetail/submit-item',
+	                            method: 'POST',
+	                            header: {
+	                                'Content-Type': 'application/json'
+	                            },
+	                            data: {
+	                                item_index: index,
+	                                item_text: tizidanItems.value[index].text
+	                            },
+	                            timeout: 10000,
+	                            success: (res) => {
+	                                console.log('提交响应:', res)
+	                                resolve(res)
+	                            },
+	                            fail: (err) => {
+	                                console.log('提交失败:', err)
+	                                reject(err)
+	                            }
+	                        })
+	                    })
+	                    
+	                    console.log('提交完整响应:', response)
+	                    
+	                    // 检查返回结果
+	                    if (response && response.statusCode === 200) {
+	                        if (response.data && response.data.success) {
+	                            // 更新前端状态
+	                            tizidanItems.value[index].submitted = true
+	                            uni.showToast({
+	                                title: '提交成功',
+	                                icon: 'success',
+	                                duration: 2000
+	                            })
+	                        } else {
+	                            throw new Error(response.data.message || '提交失败')
+	                        }
+	                    } else {
+	                        throw new Error(`提交失败，状态码：${response?.statusCode || '未知'}`)
+	                    }
+	                } catch (error) {
+	                    console.error('提交失败:', error)
+	                    uni.showToast({
+	                        title: '提交失败，请重试',
+	                        icon: 'none'
+	                    })
+	                } finally {
+	                    uni.hideLoading()
+	                }
+	            }
+	        }
+	    })
+	}
+	
+	// 下载文件
+	function downloadFile(url, filename) {
+	  if (!url) {
+	    uni.showToast({
+	      title: '下载链接不存在',
+	      icon: 'none'
+	    })
+	    return
+	  }
+	  
+	  uni.downloadFile({
+	    url: url,
+	    success: (res) => {
+	      if (res.statusCode === 200) {
+	        uni.saveFile({
+	          tempFilePath: res.tempFilePath,
+	          success: (saveRes) => {
+	            uni.showToast({
+	              title: `${filename}下载成功`,
+	              icon: 'success'
+	            })
+	          },
+	          fail: () => {
+	            uni.showToast({
+	              title: '文件保存失败',
+	              icon: 'none'
+	            })
+	          }
+	        })
+	      }
+	    },
+	    fail: () => {
+	      uni.showToast({
+	        title: '下载失败',
+	        icon: 'none'
+	      })
+	    }
+	  })
+	}
+	
+	// 监听步骤变化
+	watch(currentStep, (newVal) => {
+	  if (newVal === 2) {
+	    // 进入提资单比对步骤时获取数据
+	    fetchTizidanData()
+	  }
+	})
 
 	// 以下提取项目基本信息模块的方法--------------------------
 	// 限制文件格式
@@ -2539,419 +2733,289 @@
 
 	/* 提资单界面样式 */
 	.tizidan-container {
-		display: flex;
-		flex-direction: column;
-		min-height: 80vh;
-		background-color: #f8f9fa;
-		padding: 20rpx;
+	    display: flex;
+	    flex-direction: column;
+	    min-height: 80vh;
+	    background-color: #ffffff;
+	    border-radius: 16rpx;
+	    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+	    overflow: hidden;
 	}
-
+	
 	.tizidan-header {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 40rpx 20rpx;
-		background-color: #ffffff;
-		border-radius: 16rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-		margin-bottom: 30rpx;
+	    display: flex;
+	    flex-direction: column;
+	    align-items: center;
+	    padding: 40rpx 24rpx;
+	    background: linear-gradient(135deg, #166534 0%, #17834a 100%);
+	    color: #ffffff;
+	    text-align: center;
 	}
-
+	
 	.tizidan-title {
-		font-size: 40rpx;
-		font-weight: bold;
-		color: #2c3e50;
-		margin-bottom: 10rpx;
+	    font-size: 36rpx;
+	    font-weight: bold;
+	    margin-bottom: 12rpx;
 	}
-
+	
 	.tizidan-subtitle {
-		font-size: 28rpx;
-		color: #7f8c8d;
+	    font-size: 28rpx;
+	    opacity: 0.9;
 	}
-
+	
 	.tizidan-content {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 24rpx;
+	    flex: 1;
+	    display: flex;
+	    flex-direction: column;
+	    gap: 20rpx;
+	    padding: 30rpx 24rpx;
 	}
-
+	
 	.tizidan-item-card {
-		display: flex;
-		flex-direction: column;
-		background-color: #ffffff;
-		border-radius: 16rpx;
-		padding: 30rpx;
-		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-		transition: transform 0.2s;
+	    display: flex;
+	    flex-direction: column;
+	    background-color: #f8fafc;
+	    border-radius: 12rpx;
+	    padding: 24rpx;
+	    border: 1rpx solid #e2e8f0;
+	    transition: all 0.3s ease;
 	}
-
+	
 	.tizidan-item-card:hover {
-		transform: translateY(-4rpx);
+	    transform: translateY(-2rpx);
+	    box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
 	}
-
+	
 	.tizidan-item-content {
-		display: flex;
-		margin-bottom: 20rpx;
+	    display: flex;
+	    margin-bottom: 16rpx;
 	}
-
+	
 	.tizidan-item-number {
-		font-size: 32rpx;
-		font-weight: bold;
-		color: #3498db;
-		margin-right: 10rpx;
+	    font-size: 28rpx;
+	    font-weight: bold;
+	    color: #166534;
+	    margin-right: 12rpx;
+	    min-width: 40rpx;
 	}
-
+	
 	.tizidan-item-text {
-		font-size: 30rpx;
-		color: #2c3e50;
-		line-height: 1.5;
-		flex: 1;
+	    font-size: 28rpx;
+	    color: #2d3748;
+	    line-height: 1.5;
+	    flex: 1;
 	}
-
+	
 	.tizidan-item-status {
-		display: flex;
-		justify-content: flex-end;
-		align-items: center;
-		gap: 20rpx;
+	    display: flex;
+	    justify-content: space-between;
+	    align-items: center;
+	    padding-top: 16rpx;
+	    border-top: 1rpx solid #e2e8f0;
 	}
-
+	
 	.tizidan-status-text {
-		font-size: 28rpx;
-		font-weight: bold;
+	    font-size: 26rpx;
+	    font-weight: bold;
 	}
-
+	
 	.tizidan-status-text.tizidan-submitted {
-		color: #27ae60;
+	    color: #27ae60;
 	}
-
+	
 	.tizidan-status-text.tizidan-unsubmitted {
-		color: #e74c3c;
+	    color: #e74c3c;
 	}
-
+	
 	.tizidan-submit-btn {
-		background-color: #3498db;
-		color: #ffffff;
-		border: none;
-		border-radius: 8rpx;
-		padding: 12rpx 24rpx;
-		font-size: 26rpx;
-		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
-		transition: background-color 0.3s;
+	    background-color: #3498db;
+	    color: #ffffff;
+	    border: none;
+	    border-radius: 8rpx;
+	    padding: 12rpx 24rpx;
+	    font-size: 26rpx;
+	    box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
+	    transition: background-color 0.3s;
 	}
-
+	
 	.tizidan-submit-btn:active {
-		background-color: #2980b9;
+	    background-color: #2980b9;
 	}
-
+	
 	.tizidan-footer {
-		display: flex;
-		justify-content: center;
-		padding: 30rpx 20rpx;
-		margin-top: 30rpx;
+	    display: flex;
+	    flex-direction: column;
+	    gap: 20rpx;
+	    padding: 30rpx 24rpx;
+	    background-color: #f8fafc;
+	    border-top: 1rpx solid #e2e8f0;
 	}
-
+	
 	.tizidan-footer-text {
-		font-size: 26rpx;
-		color: #95a5a6;
-		text-align: center;
+	    font-size: 26rpx;
+	    color: #64748b;
+	    text-align: center;
+	    margin-bottom: 10rpx;
 	}
-
-	/* 宽度工具类 */
-	.w80 {
-		min-width: 120rpx;
-		max-width: 120rpx;
-	}
-
-	.w100 {
-		min-width: 140rpx;
-		max-width: 140rpx;
-	}
-
-	.w120 {
-		min-width: 160rpx;
-		max-width: 160rpx;
-	}
-
-	.w140 {
-		min-width: 200rpx;
-		max-width: 200rpx;
-	}
-
-	.w160 {
-		min-width: 260rpx;
-		max-width: 260rpx;
-	}
-
-	.w200 {
-		min-width: 320rpx;
-		max-width: 320rpx;
-	}
-
-	/* 响应式（小屏） */
+	
+	/* 响应式设计 - 移动端 */
 	@media (max-width: 768px) {
-
-		// 项目基本信息表
-		.baseinfo__row {
-			display: block;
-			width: 50%;
-		}
-
-		.pollutants-container {
-			margin-bottom: 20rpx;
-			width: 52.2%;
-		}
-
-		.pollutants-table {
-			overflow-x: auto;
-		}
-
-		.pollutants-header,
-		.pollutants-row {
-			min-width: 1200rpx;
-			/* 保证表格有足够宽度可以横向滚动 */
-		}
-
-		.pollutants-col {
-			padding: 16rpx 10rpx;
-			font-size: 24rpx;
-		}
-
-		.pw-ico {
-			width: 140rpx;
-			height: 64rpx;
-			border: none;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background: $white;
-			margin: 5rpx 0 0rpx 0;
-
-		}
-
-		.pw-ico text {
-			font-size: 22rpx;
-		}
-
-		.toolbar-content {
-			flex-direction: column;
-			gap: 16rpx;
-		}
-
-		.toolbar-left,
-		.toolbar-right {
-			width: 100%;
-		}
-
-		.toolbar-buttons {
-			width: 100%;
-			overflow-x: auto;
-			padding-bottom: 6rpx;
-		}
-
-		.acceptance-content {
-			padding: 16rpx;
-		}
-
-		.section-header {
-			padding: 20rpx 20rpx 0;
-		}
-
-		.section-body {
-			padding: 0 20rpx 20rpx;
-		}
-
-		.form-grid--base {
-			grid-template-columns: 1fr;
-			gap: 10rpx;
-		}
-
-		.form-item__label {
-			width: 160rpx;
-			min-width: 140rpx;
-			font-weight: 600;
-			font-size: 28rpx;
-		}
-
-		.form-item__title {
-			width: 160rpx;
-			min-width: 140rpx;
-		}
-
-		/* 表格卡片化：自动加标签（无须改模板） */
-		.table-header {
-			display: none;
-		}
-
-		.table-row {
-			display: grid;
-			grid-template-columns: 1fr;
-			border-bottom: 1rpx solid #f1f5f9;
-			padding: 10rpx 8rpx;
-			gap: 0;
-		}
-
-		.table-td {
-			position: relative;
-			padding: 14rpx 14rpx 14rpx 120rpx;
-			border-right: none;
-			border-bottom: 1rpx solid #f7f8fa;
-			min-height: 64rpx;
-		}
-
-		.table-td:last-child {
-			border-bottom: none;
-		}
-
-		/* 用 nth-child 给出列标题（与 header 顺序一致） */
-		.table-row .table-td:nth-child(1)::before {
-			content: '字段';
-		}
-
-		.table-row .table-td:nth-child(2)::before {
-			content: '当前值';
-		}
-
-		.table-row .table-td:nth-child(3)::before {
-			content: '类型';
-		}
-
-		.table-row .table-td:nth-child(4)::before {
-			content: '状态';
-		}
-
-		.table-row .table-td:nth-child(5)::before {
-			content: '操作';
-		}
-
-		.table-td::before {
-			position: absolute;
-			left: 14rpx;
-			top: 50%;
-			transform: translateY(-50%);
-			font-size: 24rpx;
-			color: #6b7a8a;
-			font-weight: 600;
-			width: 96rpx;
-			text-align-last: justify;
-		}
-
-		/* 简化型行（标识牌）不需要五列标签 */
-		.table-row--simple .table-td {
-			padding: 14rpx;
-		}
-
-		.table-row--simple .table-td::before {
-			content: '';
-			display: none;
-		}
-
-		.acceptance-navigation {
-			padding: 16rpx;
-		}
-
-		.modal {
-			width: 92vw;
-		}
-
-		.update-actions {
-			flex-direction: column;
-		}
-
-		.generation-actions {
-			flex-direction: column;
-		}
-
-		.radio-group {
-			flex-direction: column;
-			gap: 12rpx;
-		}
-
-		.action-buttons {
-			flex-wrap: wrap;
-			justify-content: flex-start;
-		}
-
-		/* 提资单移动端适配 */
-		.tizidan-container {
-			padding: 16rpx;
-		}
-		
-		.tizidan-header {
-			padding: 30rpx 20rpx;
-		}
-		
-		.tizidan-title {
-			font-size: 36rpx;
-		}
-		
-		.tizidan-subtitle {
-			font-size: 26rpx;
-		}
-		
-		.tizidan-item-card {
-			padding: 24rpx;
-		}
-		
-		.tizidan-item-text {
-			font-size: 28rpx;
-		}
-
+	    .tizidan-container {
+	        margin: 10rpx;
+	        border-radius: 12rpx;
+	    }
+	    
+	    .tizidan-header {
+	        padding: 30rpx 20rpx;
+	    }
+	    
+	    .tizidan-title {
+	        font-size: 32rpx;
+	    }
+	    
+	    .tizidan-subtitle {
+	        font-size: 26rpx;
+	    }
+	    
+	    .tizidan-content {
+	        padding: 20rpx;
+	        gap: 16rpx;
+	    }
+	    
+	    .tizidan-item-card {
+	        padding: 20rpx;
+	    }
+	    
+	    .tizidan-item-content {
+	        flex-direction: column;
+	    }
+	    
+	    .tizidan-item-number {
+	        margin-bottom: 8rpx;
+	    }
+	    
+	    .tizidan-item-text {
+	        font-size: 26rpx;
+	    }
+	    
+	    .tizidan-item-status {
+	        flex-direction: column;
+	        align-items: flex-start;
+	        gap: 12rpx;
+	    }
+	    
+	    .tizidan-submit-btn {
+	        width: 100%;
+	        padding: 16rpx;
+	        font-size: 28rpx;
+	    }
+	    
+	    .tizidan-footer {
+	        padding: 24rpx 20rpx;
+	        gap: 16rpx;
+	    }
+	    
+	    .tizidan-footer .btn {
+	        width: 100%;
+	        margin: 0;
+	        justify-content: center;
+	    }
 	}
-
-	/* 桌面端：移除突兀 hover 色，保持轻影与对比 */
-	@media (min-width: 769px) {
-		.btn--primary:hover {
-			box-shadow: 0 6rpx 16rpx rgba(22, 101, 52, .28);
-		}
-
-		.btn--secondary:hover {
-			background: #eef6f2;
-			border-color: #d7efe4;
-		}
-
-		.btn--ghost:hover {
-			background: #f7f9fb;
-		}
-
-		.btn--danger:hover {
-			box-shadow: 0 6rpx 16rpx rgba(217, 45, 32, .25);
-		}
-
-		.step-item:hover {
-			background: #f7fafc;
-		}
-
-		.icon-btn:hover {
-			background: #f3f6fa;
-		}
-		
-		/* 提资单桌面端适配 */
-		.tizidan-item-card {
-			flex-direction: row;
-			justify-content: space-between;
-			align-items: center;
-		}
-		
-		.tizidan-item-content {
-			margin-bottom: 0;
-			flex: 1;
-			max-width: 80%;
-		}
-		
-		.tizidan-item-status {
-			flex-shrink: 0;
-		}
-		
-		.tizidan-submit-btn {
-			padding: 16rpx 32rpx;
-			font-size: 28rpx;
-		}
-		
-		.tizidan-submit-btn:hover {
-			background-color: #2980b9;
-			cursor: pointer;
-		}
+	
+	/* 平板端适配 */
+	@media (min-width: 769px) and (max-width: 960px) {
+	    .tizidan-container {
+	        margin: 20rpx;
+	    }
+	    
+	    .tizidan-item-card {
+	        flex-direction: row;
+	        justify-content: space-between;
+	        align-items: flex-start;
+	    }
+	    
+	    .tizidan-item-content {
+	        margin-bottom: 0;
+	        flex: 1;
+	        max-width: 70%;
+	    }
+	    
+	    .tizidan-item-status {
+	        flex-shrink: 0;
+	        border-top: none;
+	        padding-top: 0;
+	        flex-direction: column;
+	        align-items: flex-end;
+	        gap: 12rpx;
+	        min-width: 150rpx;
+	    }
+	    
+	    .tizidan-footer {
+	        flex-direction: row;
+	        justify-content: space-between;
+	        align-items: center;
+	    }
+	    
+	    .tizidan-footer-text {
+	        margin-bottom: 0;
+	        flex: 1;
+	        text-align: left;
+	    }
+	    
+	    .tizidan-footer .btn {
+	        flex-shrink: 0;
+	        margin-left: 20rpx;
+	    }
+	}
+	
+	/* 桌面端适配 */
+	@media (min-width: 1100px) {
+	    .tizidan-container {
+	        max-width: 1000rpx;
+	        margin: 0 auto;
+	    }
+	    
+	    .tizidan-item-card {
+	        flex-direction: row;
+	        justify-content: space-between;
+	        align-items: center;
+	    }
+	    
+	    .tizidan-item-content {
+	        margin-bottom: 0;
+	        flex: 1;
+	        max-width: 75%;
+	    }
+	    
+	    .tizidan-item-status {
+	        border-top: none;
+	        padding-top: 0;
+	        flex-shrink: 0;
+	        min-width: 180rpx;
+	        justify-content: flex-end;
+	    }
+	    
+	    .tizidan-footer {
+	        flex-direction: row;
+	        justify-content: space-between;
+	        align-items: center;
+	    }
+	    
+	    .tizidan-footer-text {
+	        margin-bottom: 0;
+	        flex: 1;
+	        text-align: left;
+	    }
+	    
+	    .tizidan-footer .btn {
+	        flex-shrink: 0;
+	        margin-left: 20rpx;
+	    }
+	    
+	    .tizidan-submit-btn:hover {
+	        background-color: #2980b9;
+	        cursor: pointer;
+	    }
 	}
 
 	/* 平板端：769px - 960px */
