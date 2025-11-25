@@ -95,8 +95,7 @@ const _sfc_main = {
             h: common_vendor.o(($event) => deleteConv(conv.id), conv.id)
           } : {}, {
             i: conv.id,
-            j: conv.id === __props.currentConversationId ? 1 : "",
-            k: common_vendor.o(($event) => selectConversation(conv.id), conv.id)
+            j: common_vendor.o(($event) => selectConversation(conv.id), conv.id)
           });
         }),
         g: common_vendor.p({

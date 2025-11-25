@@ -29,23 +29,23 @@ export function useSafeArea() {
       // #ifdef MP-WEIXIN
       try {
         const cap = uni.getMenuButtonBoundingClientRect()
-        // 中文注释：导航栏高度 = 胶囊高度 + 上下边距（上下对称）
+        // 中文注释：自定义导航栏高度应该让内容区从胶囊底部开始，并留出底部边距
+        // 计算胶囊顶部到状态栏的间距
         const topGap = cap.top - statusBarHeightPx.value
-        const capsuleHeight = cap.height
-        // 导航栏高度 = 胶囊高度 + 上下边距（topGap * 2）
-        navBarHeightPx.value = capsuleHeight + (topGap * 2)
+        // 导航栏高度 = 胶囊高度 + 顶部间距 + 底部间距（上下对称）
+        navBarHeightPx.value = cap.height + Math.abs(topGap) + Math.abs(topGap)
         
         // 调试日志：输出所有关键数据
-        console.log('=== 安全区调试信息 ===')
-        console.log('statusBarHeight:', statusBarHeightPx.value)
-        console.log('cap.top:', cap.top)
-        console.log('cap.bottom:', cap.bottom)
-        console.log('cap.height:', capsuleHeight)
-        console.log('topGap:', topGap)
-        console.log('计算公式: capsuleHeight + (topGap * 2) =', capsuleHeight, '+', topGap * 2)
-        console.log('navBarHeight:', navBarHeightPx.value)
-        console.log('totalNavHeight:', statusBarHeightPx.value + navBarHeightPx.value)
-        console.log('===================')
+        // console.log('=== 安全区调试信息 ===')
+        // console.log('statusBarHeight:', statusBarHeightPx.value)
+        // console.log('cap.top:', cap.top)
+        // console.log('cap.bottom:', cap.bottom)
+        // console.log('cap.height:', cap.height)
+        // console.log('topGap:', topGap)
+        // console.log('计算公式: cap.height + |topGap| * 2 =', cap.height, '+', Math.abs(topGap) * 2)
+        // console.log('navBarHeight:', navBarHeightPx.value)
+        // console.log('totalNavHeight:', statusBarHeightPx.value + navBarHeightPx.value)
+        // console.log('===================')
       } catch (e) {
         navBarHeightPx.value = 44
       }

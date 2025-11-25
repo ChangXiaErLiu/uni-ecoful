@@ -29,7 +29,8 @@ const _sfc_main = {
     const {
       statusBarHeightPx,
       navBarHeightPx,
-      totalNavHeightPx
+      totalNavHeightPx,
+      safeAreaBottomPx
     } = utils_safeArea.useSafeArea();
     const conversations = common_vendor.ref([]);
     const currentConversationId = common_vendor.ref("");
@@ -163,7 +164,7 @@ const _sfc_main = {
       if (conversations.value.length === 0) {
         createNewChat();
       } else {
-        common_vendor.index.__f__("log", "at pages/chat/index.vue:366", "初始化：使用已有对话，数量:", conversations.value.length);
+        common_vendor.index.__f__("log", "at pages/chat/index.vue:367", "初始化：使用已有对话，数量:", conversations.value.length);
       }
     });
     common_vendor.watch(isGenerating, (newVal) => {
@@ -189,21 +190,37 @@ const _sfc_main = {
       try {
         const saved = common_vendor.index.getStorageSync("chat_conversations");
         if (saved) {
-          conversations.value = JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          const uniqueMap = /* @__PURE__ */ new Map();
+          parsed.forEach((conv) => {
+            if (conv.id && !uniqueMap.has(conv.id)) {
+              uniqueMap.set(conv.id, conv);
+            }
+          });
+          conversations.value = Array.from(uniqueMap.values());
           if (conversations.value.length > 0) {
             currentConversationId.value = ((_a = conversations.value[0]) == null ? void 0 : _a.id) || "";
           }
         }
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/chat/index.vue:409", e);
+        common_vendor.index.__f__("error", "at pages/chat/index.vue:420", e);
       }
     }
     function saveConversations() {
       try {
-        conversations.value = [...conversations.value];
+        const uniqueMap = /* @__PURE__ */ new Map();
+        conversations.value.forEach((conv) => {
+          if (conv.id && !uniqueMap.has(conv.id)) {
+            uniqueMap.set(conv.id, conv);
+          }
+        });
+        const uniqueConversations = Array.from(uniqueMap.values());
+        if (uniqueConversations.length !== conversations.value.length) {
+          conversations.value = uniqueConversations;
+        }
         common_vendor.index.setStorageSync("chat_conversations", JSON.stringify(conversations.value));
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/chat/index.vue:421", "保存对话失败:", e);
+        common_vendor.index.__f__("error", "at pages/chat/index.vue:444", "保存对话失败:", e);
       }
     }
     function createNewChat() {
@@ -211,7 +228,7 @@ const _sfc_main = {
         (conv) => !conv.title || conv.title === "新对话" || conv.messages.length === 0
       );
       if (existingEmptyConv) {
-        common_vendor.index.__f__("log", "at pages/chat/index.vue:433", "已有空对话，切换到:", existingEmptyConv.id);
+        common_vendor.index.__f__("log", "at pages/chat/index.vue:456", "已有空对话，切换到:", existingEmptyConv.id);
         currentConversationId.value = existingEmptyConv.id;
         return;
       }
@@ -224,7 +241,7 @@ const _sfc_main = {
       conversations.value.unshift(chat);
       currentConversationId.value = chat.id;
       saveConversations();
-      common_vendor.index.__f__("log", "at pages/chat/index.vue:447", "创建新对话:", chat.id);
+      common_vendor.index.__f__("log", "at pages/chat/index.vue:470", "创建新对话:", chat.id);
     }
     function selectConversation(id) {
       currentConversationId.value = id;
@@ -354,7 +371,7 @@ const _sfc_main = {
             saveConversations();
           },
           (err) => {
-            common_vendor.index.__f__("error", "at pages/chat/index.vue:625", "AI回复错误:", err);
+            common_vendor.index.__f__("error", "at pages/chat/index.vue:648", "AI回复错误:", err);
             aiMsg.content += `
 [错误] ${(err == null ? void 0 : err.message) || err}`;
             try {
@@ -371,7 +388,7 @@ const _sfc_main = {
           }
         );
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/chat/index.vue:640", "生成AI回复时发生异常:", error);
+        common_vendor.index.__f__("error", "at pages/chat/index.vue:663", "生成AI回复时发生异常:", error);
         isGenerating.value = false;
         cancelGenerate.value = null;
       }
@@ -418,7 +435,7 @@ const _sfc_main = {
       try {
         (_a = chatInputRef.value) == null ? void 0 : _a.setDraft((msg == null ? void 0 : msg.content) || "", (msg == null ? void 0 : msg.attachments) || []);
       } catch (e) {
-        common_vendor.index.__f__("error", "at pages/chat/index.vue:693", "回填草稿失败:", e);
+        common_vendor.index.__f__("error", "at pages/chat/index.vue:716", "回填草稿失败:", e);
       }
     }
     function generateTitleFromText(text = "") {

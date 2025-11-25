@@ -142,7 +142,8 @@
 	const {
 		statusBarHeightPx,
 		navBarHeightPx,
-		totalNavHeightPx
+		totalNavHeightPx,
+		safeAreaBottomPx
 	} = useSafeArea()
 
 	// ====== 状态 ======
@@ -399,7 +400,17 @@
 		try {
 			const saved = uni.getStorageSync('chat_conversations')
 			if (saved) {
-				conversations.value = JSON.parse(saved)
+				const parsed = JSON.parse(saved)
+				// 去重：使用 Map 确保每个 ID 只出现一次
+				const uniqueMap = new Map()
+				parsed.forEach(conv => {
+					if (conv.id && !uniqueMap.has(conv.id)) {
+						uniqueMap.set(conv.id, conv)
+					}
+				})
+				conversations.value = Array.from(uniqueMap.values())
+				// console.log('加载对话，去重前:', parsed.length, '去重后:', conversations.value.length)
+				
 				// 确保当前对话ID有效
 				if (conversations.value.length > 0) {
 					currentConversationId.value = conversations.value[0]?.id || ''
@@ -413,10 +424,22 @@
 	// 修改 saveConversations 函数确保触发响应式更新
 	function saveConversations() {
 		try {
-			// 强制触发响应式更新
-			conversations.value = [...conversations.value]
+			// 去重：使用 Map 确保每个 ID 只出现一次
+			const uniqueMap = new Map()
+			conversations.value.forEach(conv => {
+				if (conv.id && !uniqueMap.has(conv.id)) {
+					uniqueMap.set(conv.id, conv)
+				}
+			})
+			const uniqueConversations = Array.from(uniqueMap.values())
+			
+			// 如果去重后数量变化，说明有重复，需要更新
+			if (uniqueConversations.length !== conversations.value.length) {
+				// console.warn('检测到重复对话，去重前:', conversations.value.length, '去重后:', uniqueConversations.length)
+				conversations.value = uniqueConversations
+			}
+			
 			uni.setStorageSync('chat_conversations', JSON.stringify(conversations.value))
-			// console.log('保存对话完成，当前消息:', currentMessages.value)
 		} catch (e) {
 			console.error('保存对话失败:', e)
 		}

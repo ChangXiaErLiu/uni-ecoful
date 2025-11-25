@@ -658,6 +658,109 @@
   color: #475569;
 }
 
+/* 提资单界面样式 */
+.tizidan-container.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  min-height: 80vh;
+  background-color: #f8f9fa;
+  padding: 20rpx;
+}
+.tizidan-header.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 20rpx;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  margin-bottom: 30rpx;
+}
+.tizidan-title.data-v-41308e16 {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 10rpx;
+}
+.tizidan-subtitle.data-v-41308e16 {
+  font-size: 28rpx;
+  color: #7f8c8d;
+}
+.tizidan-content.data-v-41308e16 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.tizidan-item-card.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+.tizidan-item-card.data-v-41308e16:hover {
+  transform: translateY(-4rpx);
+}
+.tizidan-item-content.data-v-41308e16 {
+  display: flex;
+  margin-bottom: 20rpx;
+}
+.tizidan-item-number.data-v-41308e16 {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #3498db;
+  margin-right: 10rpx;
+}
+.tizidan-item-text.data-v-41308e16 {
+  font-size: 30rpx;
+  color: #2c3e50;
+  line-height: 1.5;
+  flex: 1;
+}
+.tizidan-item-status.data-v-41308e16 {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 20rpx;
+}
+.tizidan-status-text.data-v-41308e16 {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+.tizidan-status-text.tizidan-submitted.data-v-41308e16 {
+  color: #27ae60;
+}
+.tizidan-status-text.tizidan-unsubmitted.data-v-41308e16 {
+  color: #e74c3c;
+}
+.tizidan-submit-btn.data-v-41308e16 {
+  background-color: #3498db;
+  color: #ffffff;
+  border: none;
+  border-radius: 8rpx;
+  padding: 12rpx 24rpx;
+  font-size: 26rpx;
+  box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
+  transition: background-color 0.3s;
+}
+.tizidan-submit-btn.data-v-41308e16:active {
+  background-color: #2980b9;
+}
+.tizidan-footer.data-v-41308e16 {
+  display: flex;
+  justify-content: center;
+  padding: 30rpx 20rpx;
+  margin-top: 30rpx;
+}
+.tizidan-footer-text.data-v-41308e16 {
+  font-size: 26rpx;
+  color: #95a5a6;
+  text-align: center;
+}
+
 /* 宽度工具类 */
 .w80.data-v-41308e16 {
   min-width: 120rpx;
@@ -834,6 +937,26 @@
     flex-wrap: wrap;
     justify-content: flex-start;
 }
+
+  /* 提资单移动端适配 */
+.tizidan-container.data-v-41308e16 {
+    padding: 16rpx;
+}
+.tizidan-header.data-v-41308e16 {
+    padding: 30rpx 20rpx;
+}
+.tizidan-title.data-v-41308e16 {
+    font-size: 36rpx;
+}
+.tizidan-subtitle.data-v-41308e16 {
+    font-size: 26rpx;
+}
+.tizidan-item-card.data-v-41308e16 {
+    padding: 24rpx;
+}
+.tizidan-item-text.data-v-41308e16 {
+    font-size: 28rpx;
+}
 }
 /* 桌面端：移除突兀 hover 色，保持轻影与对比 */
 @media (min-width: 769px) {
@@ -855,6 +978,29 @@
 }
 .icon-btn.data-v-41308e16:hover {
     background: #f3f6fa;
+}
+
+  /* 提资单桌面端适配 */
+.tizidan-item-card.data-v-41308e16 {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+.tizidan-item-content.data-v-41308e16 {
+    margin-bottom: 0;
+    flex: 1;
+    max-width: 80%;
+}
+.tizidan-item-status.data-v-41308e16 {
+    flex-shrink: 0;
+}
+.tizidan-submit-btn.data-v-41308e16 {
+    padding: 16rpx 32rpx;
+    font-size: 28rpx;
+}
+.tizidan-submit-btn.data-v-41308e16:hover {
+    background-color: #2980b9;
+    cursor: pointer;
 }
 }
 /* 平板端：769px - 960px */

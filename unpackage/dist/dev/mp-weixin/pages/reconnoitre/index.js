@@ -3,436 +3,492 @@ const common_vendor = require("../../common/vendor.js");
 const stores_navTitle = require("../../stores/navTitle.js");
 if (!Array) {
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
-  _easycom_uni_icons2();
+  const _easycom_uni_file_picker2 = common_vendor.resolveComponent("uni-file-picker");
+  const _easycom_uni_easyinput2 = common_vendor.resolveComponent("uni-easyinput");
+  const _easycom_uni_popup2 = common_vendor.resolveComponent("uni-popup");
+  (_easycom_uni_icons2 + _easycom_uni_file_picker2 + _easycom_uni_easyinput2 + _easycom_uni_popup2)();
 }
 const _easycom_uni_icons = () => "../../uni_modules/uni-icons/components/uni-icons/uni-icons.js";
+const _easycom_uni_file_picker = () => "../../uni_modules/uni-file-picker/components/uni-file-picker/uni-file-picker.js";
+const _easycom_uni_easyinput = () => "../../uni_modules/uni-easyinput/components/uni-easyinput/uni-easyinput.js";
+const _easycom_uni_popup = () => "../../uni_modules/uni-popup/components/uni-popup/uni-popup.js";
 if (!Math) {
-  (_easycom_uni_icons + AppLayout)();
+  (_easycom_uni_icons + _easycom_uni_file_picker + _easycom_uni_easyinput + AppLayout + _easycom_uni_popup)();
 }
 const AppLayout = () => "../../components/layout/AppLayout.js";
 const _sfc_main = {
   __name: "index",
   setup(__props) {
     const navTitle = stores_navTitle.navTitleStore();
-    common_vendor.onShow(() => navTitle.setTitle("现场踏查管理"));
-    const stats = common_vendor.ref({
-      totalInvestigations: 24,
-      completedInvestigations: 16,
-      inProgressInvestigations: 5,
-      issuesFound: 8
-    });
-    const investigationPoints = common_vendor.ref([
-      {
-        id: "point-1",
-        name: "废水处理站",
-        description: "厂区废水处理设施及排放口",
-        type: "water",
-        status: "completed",
-        inspector: "张三",
-        investigationDate: "2024-01-15 09:30",
-        coordinates: "23.135°N, 113.264°E",
-        environmentConditions: [
-          { id: "cond-1", name: "废水处理设施", icon: "gear", status: "normal" },
-          { id: "cond-2", name: "排放口水质", icon: "water", status: "normal" },
-          { id: "cond-3", name: "设备运行", icon: "settings", status: "normal" }
-        ],
-        photos: [
-          { thumbnail: "/static/sample/photo1.jpg", time: "09:35", fullImage: "/static/sample/photo1.jpg" },
-          { thumbnail: "/static/sample/photo2.jpg", time: "09:40", fullImage: "/static/sample/photo2.jpg" }
-        ],
-        findings: []
-      },
-      {
-        id: "point-2",
-        name: "危废暂存间",
-        description: "危险废物分类存放区域",
-        type: "waste",
-        status: "in-progress",
-        inspector: "李四",
-        investigationDate: "2024-01-16 10:15",
-        coordinates: "23.136°N, 113.265°E",
-        environmentConditions: [
-          { id: "cond-4", name: "危废标识", icon: "flag", status: "normal" },
-          { id: "cond-5", name: "分类存放", icon: "folder", status: "abnormal" },
-          { id: "cond-6", name: "防渗措施", icon: "shield", status: "normal" }
-        ],
-        photos: [
-          { thumbnail: "/static/sample/photo3.jpg", time: "10:20", fullImage: "/static/sample/photo3.jpg" }
-        ],
-        findings: [
-          {
-            id: "finding-1",
-            title: "危废分类不规范",
-            description: "部分危险废物未按规定分类存放，存在混放现象",
-            severity: "medium",
-            recordTime: "10:25",
-            resolved: false
-          }
-        ]
-      },
-      {
-        id: "point-3",
-        name: "锅炉房",
-        description: "生产用锅炉及废气处理设施",
-        type: "air",
-        status: "pending",
-        inspector: "王五",
-        investigationDate: "2024-01-17 14:00",
-        coordinates: "23.137°N, 113.266°E",
-        environmentConditions: [
-          { id: "cond-7", name: "废气处理", icon: "cloudy", status: "pending" },
-          { id: "cond-8", name: "设备运行", icon: "gear", status: "pending" }
-        ],
-        photos: [],
-        findings: []
-      },
-      {
-        id: "point-4",
-        name: "原料仓库",
-        description: "化学品原料存储区域",
-        type: "chemical",
-        status: "completed",
-        inspector: "赵六",
-        investigationDate: "2024-01-14 11:20",
-        coordinates: "23.138°N, 113.267°E",
-        environmentConditions: [
-          { id: "cond-9", name: "防泄漏措施", icon: "shield", status: "normal" },
-          { id: "cond-10", name: "消防设施", icon: "fire", status: "normal" }
-        ],
-        photos: [
-          { thumbnail: "/static/sample/photo4.jpg", time: "11:25", fullImage: "/static/sample/photo4.jpg" }
-        ],
-        findings: [
-          {
-            id: "finding-2",
-            title: "消防器材检查过期",
-            description: "部分灭火器检查标签已过期，需及时更换",
-            severity: "high",
-            recordTime: "11:30",
-            resolved: true
-          }
-        ]
-      }
+    common_vendor.onShow(() => navTitle.setTitle("现场踏勘"));
+    const tabs = ["建设内容", "设备情况", "污染物设施", "排污口情况"];
+    const currentTab = common_vendor.ref(0);
+    const mainContentTable = common_vendor.ref([
+      { id: "mc_1", label: "项目名称", value: "", type: "text" },
+      { id: "mc_2", label: "建设单位", value: "", type: "text" },
+      { id: "mc_3", label: "建设地点", value: "", type: "text" },
+      { id: "mc_4", label: "建设规模", value: "", type: "text" },
+      { id: "mc_5", label: "主体工程", value: [], type: "image" }
     ]);
-    const activePointId = common_vendor.ref("point-1");
-    const activePoint = common_vendor.computed(
-      () => investigationPoints.value.find((point) => point.id === activePointId.value)
-    );
-    function switchPoint(pointId) {
-      activePointId.value = pointId;
+    const selectModeMain = common_vendor.ref(false);
+    const selectedMainIds = common_vendor.ref([]);
+    const newMainContentPopup = common_vendor.ref(null);
+    const newMainContentLabel = common_vendor.ref("");
+    function toggleSelectModeMain() {
+      selectModeMain.value = !selectModeMain.value;
+      if (!selectModeMain.value)
+        selectedMainIds.value = [];
     }
-    function startNewInvestigation() {
-      common_vendor.index.showToast({
-        title: "开始新的踏查任务",
-        icon: "none"
-      });
+    function toggleSelectedMain(id) {
+      const idx = selectedMainIds.value.indexOf(id);
+      if (idx > -1)
+        selectedMainIds.value.splice(idx, 1);
+      else
+        selectedMainIds.value.push(id);
     }
-    function addPoint() {
-      const newPoint = {
-        id: "point-new-" + Date.now(),
-        name: "新踏查点位",
-        description: "请描述点位位置和检查内容",
-        type: "general",
-        status: "pending",
-        inspector: "当前用户",
-        investigationDate: (/* @__PURE__ */ new Date()).toLocaleDateString(),
-        coordinates: "待定位",
-        environmentConditions: [],
-        photos: [],
-        findings: []
-      };
-      investigationPoints.value.unshift(newPoint);
-      activePointId.value = newPoint.id;
+    function removeSelectedMain() {
+      mainContentTable.value = mainContentTable.value.filter((item) => !selectedMainIds.value.includes(item.id));
+      selectedMainIds.value = [];
+      selectModeMain.value = false;
+      common_vendor.index.showToast({ title: "删除成功", icon: "success" });
     }
-    function navigateToPoint(point) {
-      common_vendor.index.showToast({
-        title: `导航到 ${point.name}`,
-        icon: "none"
-      });
+    function openAddMainContent() {
+      var _a;
+      newMainContentLabel.value = "";
+      (_a = newMainContentPopup.value) == null ? void 0 : _a.open();
     }
-    function takePhoto() {
-      if (!activePoint.value)
+    function closeMainContent() {
+      var _a;
+      (_a = newMainContentPopup.value) == null ? void 0 : _a.close();
+    }
+    function confirmAddMainContent() {
+      if (!newMainContentLabel.value.trim()) {
+        common_vendor.index.showToast({ title: "请输入内容名称", icon: "none" });
         return;
-      common_vendor.index.showToast({
-        title: "拍照功能开发中",
-        icon: "none"
-      });
-    }
-    function recordFinding() {
-      if (!activePoint.value)
-        return;
-      const newFinding = {
-        id: "finding-new-" + Date.now(),
-        title: "新发现问题",
-        description: "请描述具体问题和位置",
-        severity: "medium",
-        recordTime: (/* @__PURE__ */ new Date()).toLocaleTimeString(),
-        resolved: false
-      };
-      if (!activePoint.value.findings) {
-        activePoint.value.findings = [];
       }
-      activePoint.value.findings.push(newFinding);
-      activePoint.value.status = "in-progress";
+      const newItem = {
+        id: "mc_" + Date.now(),
+        label: newMainContentLabel.value,
+        value: "",
+        type: "text"
+      };
+      mainContentTable.value.push(newItem);
+      closeMainContent();
+      common_vendor.index.showToast({ title: "添加成功", icon: "success" });
     }
-    function previewPhoto(photo) {
-      common_vendor.index.previewImage({
-        urls: [photo.fullImage],
-        current: 0
+    const equipmentList = common_vendor.ref([
+      { id: "eq_1", name: "废水处理设备", quantity: "1", remark: "运行正常", images: [] },
+      { id: "eq_2", name: "废气处理设备", quantity: "2", remark: "定期维护", images: [] }
+    ]);
+    function addEquipment() {
+      const newEquipment = {
+        id: "eq_" + Date.now(),
+        name: "",
+        quantity: "",
+        remark: "",
+        images: []
+      };
+      equipmentList.value.push(newEquipment);
+      common_vendor.index.showToast({ title: "已添加新设备", icon: "success" });
+    }
+    function removeEquipment(index) {
+      common_vendor.index.showModal({
+        title: "确认删除",
+        content: "确定要删除这条设备记录吗？",
+        success: (res) => {
+          if (res.confirm) {
+            equipmentList.value.splice(index, 1);
+            common_vendor.index.showToast({ title: "删除成功", icon: "success" });
+          }
+        }
       });
     }
-    function resolveFinding(findingId) {
-      const finding = activePoint.value.findings.find((f) => f.id === findingId);
-      if (finding) {
-        finding.resolved = true;
-        common_vendor.index.showToast({
-          title: "问题已标记为已处理",
-          icon: "success"
-        });
+    const pollutionFacilityList = common_vendor.ref([
+      { id: "pf_1", name: "废水处理站", quantity: "1", remark: "处理能力100t/d", images: [] },
+      { id: "pf_2", name: "危废暂存间", quantity: "1", remark: "面积50㎡", images: [] }
+    ]);
+    function addPollutionFacility() {
+      const newFacility = {
+        id: "pf_" + Date.now(),
+        name: "",
+        quantity: "",
+        remark: "",
+        images: []
+      };
+      pollutionFacilityList.value.push(newFacility);
+      common_vendor.index.showToast({ title: "已添加新设施", icon: "success" });
+    }
+    function removePollutionFacility(index) {
+      common_vendor.index.showModal({
+        title: "确认删除",
+        content: "确定要删除这条设施记录吗？",
+        success: (res) => {
+          if (res.confirm) {
+            pollutionFacilityList.value.splice(index, 1);
+            common_vendor.index.showToast({ title: "删除成功", icon: "success" });
+          }
+        }
+      });
+    }
+    const outletSignboard = common_vendor.ref({
+      sections: []
+    });
+    function generateOutletInfo() {
+      outletSignboard.value = {
+        sections: [
+          {
+            block: "废水排放口",
+            items: [
+              { title: "排放口编号", content: "WS-001" },
+              { title: "排放口名称", content: "生产废水排放口" },
+              { title: "排放去向", content: "市政污水管网" }
+            ]
+          },
+          {
+            block: "废气排放口",
+            items: [
+              { title: "排放口编号", content: "FQ-001" },
+              { title: "排放口名称", content: "锅炉废气排放口" },
+              { title: "排放高度", content: "15米" }
+            ]
+          },
+          {
+            block: "噪声",
+            items: [
+              { title: "监测点位", content: "厂界东侧" },
+              { title: "主要噪声源", content: "生产设备" },
+              { title: "执行标准", content: "2类标准" }
+            ]
+          },
+          {
+            block: "危险废物",
+            items: [
+              { title: "危废名称", content: "废机油" },
+              { title: "危废代码", content: "HW08" },
+              { title: "暂存位置", content: "危废暂存间" }
+            ]
+          }
+        ]
+      };
+      common_vendor.index.showToast({ title: "排污口信息已生成", icon: "success" });
+    }
+    function addOutletItem(sectionIndex) {
+      const section = outletSignboard.value.sections[sectionIndex];
+      if (section) {
+        section.items.push(
+          { title: "", content: "" },
+          { title: "", content: "" },
+          { title: "", content: "" }
+        );
       }
     }
-    function syncData() {
-      common_vendor.index.showToast({
-        title: "数据同步中...",
-        icon: "loading"
+    function groupOutletItems(items, blockName) {
+      if (!items || items.length === 0)
+        return [];
+      if (blockName === "危险废物") {
+        return [items];
+      }
+      const groups = [];
+      for (let i = 0; i < items.length; i += 3) {
+        groups.push(items.slice(i, i + 3));
+      }
+      return groups;
+    }
+    function removeOutletGroup(section, groupIndex) {
+      common_vendor.index.showModal({
+        title: "确认删除",
+        content: "确定要删除这组信息吗？",
+        success: (res) => {
+          if (res.confirm) {
+            section.items.splice(groupIndex * 3, 3);
+            common_vendor.index.showToast({ title: "删除成功", icon: "success" });
+          }
+        }
       });
-      setTimeout(() => {
-        common_vendor.index.showToast({
-          title: "同步完成",
-          icon: "success"
-        });
-      }, 1500);
-    }
-    function getPointColor(status) {
-      const colorMap = {
-        completed: "#10b981",
-        "in-progress": "#f59e0b",
-        pending: "#64748b"
-      };
-      return colorMap[status] || "#64748b";
-    }
-    function getPointIcon(type) {
-      const iconMap = {
-        water: "water",
-        waste: "trash",
-        air: "cloudy",
-        chemical: "flask",
-        general: "location"
-      };
-      return iconMap[type] || "location";
-    }
-    function getPointStatusText(status) {
-      const statusMap = {
-        completed: "已完成",
-        "in-progress": "进行中",
-        pending: "待踏查"
-      };
-      return statusMap[status] || "未知";
-    }
-    function getSeverityText(severity) {
-      const severityMap = {
-        low: "低风险",
-        medium: "中风险",
-        high: "高风险"
-      };
-      return severityMap[severity] || "未知";
     }
     return (_ctx, _cache) => {
-      var _a, _b;
       return common_vendor.e({
-        a: common_vendor.p({
-          type: "refresh",
-          size: "16",
-          color: "#3b82f6"
+        a: common_vendor.f(tabs, (tab, index, i0) => {
+          return {
+            a: common_vendor.t(tab),
+            b: index,
+            c: currentTab.value === index ? 1 : "",
+            d: common_vendor.o(($event) => currentTab.value = index, index)
+          };
         }),
-        b: common_vendor.o(syncData),
+        b: common_vendor.p({
+          type: "list",
+          size: "20",
+          color: "#166534"
+        }),
         c: common_vendor.p({
           type: "plus",
           size: "16",
-          color: "#ffffff"
+          color: "#166534"
         }),
-        d: common_vendor.o(startNewInvestigation),
-        e: common_vendor.p({
-          type: "location",
-          size: "24",
-          color: "#3b82f6"
-        }),
-        f: common_vendor.t(stats.value.totalInvestigations),
-        g: common_vendor.p({
-          type: "checkmark",
-          size: "24",
-          color: "#10b981"
-        }),
-        h: common_vendor.t(stats.value.completedInvestigations),
-        i: common_vendor.p({
-          type: "clock",
-          size: "24",
-          color: "#f59e0b"
-        }),
-        j: common_vendor.t(stats.value.inProgressInvestigations),
-        k: common_vendor.p({
-          type: "info",
-          size: "24",
-          color: "#ef4444"
-        }),
-        l: common_vendor.t(stats.value.issuesFound),
-        m: common_vendor.p({
-          type: "plus",
-          size: "14",
-          color: "#3b82f6"
-        }),
-        n: common_vendor.o(addPoint),
-        o: common_vendor.f(investigationPoints.value, (point, k0, i0) => {
-          return {
-            a: "10464b8b-8-" + i0 + ",10464b8b-0",
-            b: common_vendor.p({
-              type: getPointIcon(point.type),
-              size: "16",
-              color: "#ffffff"
-            }),
-            c: getPointColor(point.status),
-            d: common_vendor.t(point.name),
-            e: common_vendor.t(getPointStatusText(point.status)),
-            f: common_vendor.n(`investigation__point-badge--${point.status}`),
-            g: common_vendor.t(point.description),
-            h: "10464b8b-9-" + i0 + ",10464b8b-0",
-            i: common_vendor.t(point.inspector),
-            j: "10464b8b-10-" + i0 + ",10464b8b-0",
-            k: common_vendor.t(point.investigationDate),
-            l: "10464b8b-11-" + i0 + ",10464b8b-0",
-            m: common_vendor.o(() => navigateToPoint(point), point.id),
-            n: point.id,
-            o: point.id === activePointId.value ? 1 : "",
-            p: point.status === "completed" ? 1 : "",
-            q: common_vendor.o(() => switchPoint(point.id), point.id)
-          };
-        }),
-        p: common_vendor.p({
-          type: "person",
-          size: "12",
-          color: "#94a3b8"
-        }),
-        q: common_vendor.p({
-          type: "calendar",
-          size: "12",
-          color: "#94a3b8"
-        }),
-        r: common_vendor.p({
-          type: "navigate",
-          size: "16",
-          color: "#3b82f6"
-        }),
-        s: investigationPoints.value.length === 0
-      }, investigationPoints.value.length === 0 ? {
-        t: common_vendor.p({
-          type: "location",
-          size: "60",
-          color: "#cbd5e1"
-        })
-      } : {}, {
-        v: activePoint.value
-      }, activePoint.value ? {
-        w: common_vendor.t(getPointStatusText(activePoint.value.status))
-      } : {}, {
-        x: common_vendor.p({
-          type: "camera",
-          size: "16",
-          color: "#64748b"
-        }),
-        y: common_vendor.o(takePhoto),
-        z: !activePoint.value,
-        A: common_vendor.p({
-          type: "compose",
+        d: common_vendor.o(openAddMainContent),
+        e: selectModeMain.value
+      }, selectModeMain.value ? {
+        f: common_vendor.p({
+          type: "trash",
           size: "16",
           color: "#ffffff"
         }),
-        B: common_vendor.o(recordFinding),
-        C: !activePoint.value,
-        D: activePoint.value
-      }, activePoint.value ? common_vendor.e({
-        E: common_vendor.p({
-          type: "info",
-          size: "18",
-          color: "#3b82f6"
+        g: common_vendor.t(selectedMainIds.value.length),
+        h: !selectedMainIds.value.length,
+        i: common_vendor.o(removeSelectedMain)
+      } : {}, {
+        j: common_vendor.p({
+          type: selectModeMain.value ? "clear" : "checkbox",
+          size: "16",
+          color: "#155e3b"
         }),
-        F: common_vendor.t(activePoint.value.name),
-        G: common_vendor.t(activePoint.value.coordinates),
-        H: common_vendor.t(activePoint.value.inspector),
-        I: common_vendor.t(activePoint.value.investigationDate),
-        J: common_vendor.p({
-          type: "eye",
-          size: "18",
-          color: "#10b981"
+        k: common_vendor.t(selectModeMain.value ? "取消" : "选择删除"),
+        l: common_vendor.o(toggleSelectModeMain),
+        m: mainContentTable.value.length
+      }, mainContentTable.value.length ? {
+        n: common_vendor.f(mainContentTable.value, (item, idx, i0) => {
+          return common_vendor.e({
+            a: common_vendor.t(item.label),
+            b: item.type === "image"
+          }, item.type === "image" ? {
+            c: "10464b8b-5-" + i0 + ",10464b8b-0",
+            d: common_vendor.o(($event) => item.value = $event, item.id),
+            e: common_vendor.p({
+              fileMediatype: "image",
+              mode: "grid",
+              limit: 9,
+              ["auto-upload"]: false,
+              modelValue: item.value
+            })
+          } : {
+            f: "10464b8b-6-" + i0 + ",10464b8b-0",
+            g: common_vendor.o(($event) => item.value = $event, item.id),
+            h: common_vendor.p({
+              placeholder: "请输入具体的值",
+              clearable: true,
+              modelValue: item.value
+            })
+          }, selectModeMain.value ? {
+            i: selectedMainIds.value.includes(item.id),
+            j: common_vendor.o(() => toggleSelectedMain(item.id), item.id)
+          } : {}, {
+            k: item.id
+          });
         }),
-        K: common_vendor.f(activePoint.value.environmentConditions, (item, k0, i0) => {
-          return {
-            a: "10464b8b-17-" + i0 + ",10464b8b-0",
-            b: common_vendor.p({
-              type: item.icon,
-              size: "16",
-              color: item.status === "normal" ? "#10b981" : "#ef4444"
-            }),
-            c: common_vendor.t(item.name),
-            d: common_vendor.t(item.status === "normal" ? "正常" : "异常"),
-            e: common_vendor.n(`investigation__environment-status--${item.status}`),
-            f: item.id
-          };
-        }),
-        L: common_vendor.p({
-          type: "image",
-          size: "18",
-          color: "#f59e0b"
-        }),
-        M: common_vendor.t(((_a = activePoint.value.photos) == null ? void 0 : _a.length) || 0),
-        N: common_vendor.f(activePoint.value.photos, (photo, index, i0) => {
-          return {
-            a: photo.thumbnail,
-            b: common_vendor.t(photo.time),
-            c: index,
-            d: common_vendor.o(() => previewPhoto(photo), index)
-          };
-        }),
-        O: common_vendor.p({
-          type: "plus",
-          size: "24",
-          color: "#cbd5e1"
-        }),
-        P: common_vendor.o(takePhoto),
-        Q: common_vendor.p({
-          type: "flag",
-          size: "18",
-          color: "#ef4444"
-        }),
-        R: common_vendor.t(((_b = activePoint.value.findings) == null ? void 0 : _b.length) || 0),
-        S: activePoint.value.findings && activePoint.value.findings.length > 0
-      }, activePoint.value.findings && activePoint.value.findings.length > 0 ? {
-        T: common_vendor.f(activePoint.value.findings, (finding, k0, i0) => {
-          return {
-            a: common_vendor.t(finding.title),
-            b: common_vendor.t(getSeverityText(finding.severity)),
-            c: common_vendor.n(`investigation__finding-severity--${finding.severity}`),
-            d: common_vendor.t(finding.description),
-            e: common_vendor.t(finding.recordTime),
-            f: common_vendor.o(() => resolveFinding(finding.id), finding.id),
-            g: finding.id,
-            h: common_vendor.n(`investigation__finding-item--${finding.severity}`)
-          };
-        })
+        o: selectModeMain.value
       } : {
-        U: common_vendor.p({
-          type: "checkmark",
-          size: "32",
-          color: "#cbd5e1"
-        })
-      }) : {
-        V: common_vendor.p({
-          type: "map",
-          size: "60",
+        p: common_vendor.p({
+          type: "list",
+          size: "48",
           color: "#cbd5e1"
         })
       }, {
-        W: common_vendor.p({
-          current: "pages/investigation/index"
+        q: currentTab.value === 0,
+        r: common_vendor.p({
+          type: "gear",
+          size: "20",
+          color: "#166534"
+        }),
+        s: common_vendor.p({
+          type: "plus",
+          size: "16",
+          color: "#166534"
+        }),
+        t: common_vendor.o(addEquipment),
+        v: equipmentList.value.length
+      }, equipmentList.value.length ? {
+        w: common_vendor.f(equipmentList.value, (item, index, i0) => {
+          return {
+            a: "10464b8b-10-" + i0 + ",10464b8b-0",
+            b: common_vendor.o(($event) => item.name = $event, item.id),
+            c: common_vendor.p({
+              placeholder: "设备名称",
+              modelValue: item.name
+            }),
+            d: "10464b8b-11-" + i0 + ",10464b8b-0",
+            e: common_vendor.o(($event) => item.quantity = $event, item.id),
+            f: common_vendor.p({
+              placeholder: "数量",
+              modelValue: item.quantity
+            }),
+            g: "10464b8b-12-" + i0 + ",10464b8b-0",
+            h: common_vendor.o(($event) => item.remark = $event, item.id),
+            i: common_vendor.p({
+              placeholder: "备注",
+              modelValue: item.remark
+            }),
+            j: "10464b8b-13-" + i0 + ",10464b8b-0",
+            k: common_vendor.o(($event) => item.images = $event, item.id),
+            l: common_vendor.p({
+              fileMediatype: "image",
+              mode: "grid",
+              limit: 3,
+              ["auto-upload"]: false,
+              modelValue: item.images
+            }),
+            m: "10464b8b-14-" + i0 + ",10464b8b-0",
+            n: common_vendor.o(() => removeEquipment(index), item.id),
+            o: item.id
+          };
+        }),
+        x: common_vendor.p({
+          type: "trash",
+          size: "16",
+          color: "#d92d20"
+        })
+      } : {
+        y: common_vendor.p({
+          type: "gear",
+          size: "48",
+          color: "#cbd5e1"
+        })
+      }, {
+        z: currentTab.value === 1,
+        A: common_vendor.p({
+          type: "flag",
+          size: "20",
+          color: "#166534"
+        }),
+        B: common_vendor.p({
+          type: "plus",
+          size: "16",
+          color: "#166534"
+        }),
+        C: common_vendor.o(addPollutionFacility),
+        D: pollutionFacilityList.value.length
+      }, pollutionFacilityList.value.length ? {
+        E: common_vendor.f(pollutionFacilityList.value, (item, index, i0) => {
+          return {
+            a: "10464b8b-18-" + i0 + ",10464b8b-0",
+            b: common_vendor.o(($event) => item.name = $event, item.id),
+            c: common_vendor.p({
+              placeholder: "设施名称",
+              modelValue: item.name
+            }),
+            d: "10464b8b-19-" + i0 + ",10464b8b-0",
+            e: common_vendor.o(($event) => item.quantity = $event, item.id),
+            f: common_vendor.p({
+              placeholder: "数量",
+              modelValue: item.quantity
+            }),
+            g: "10464b8b-20-" + i0 + ",10464b8b-0",
+            h: common_vendor.o(($event) => item.remark = $event, item.id),
+            i: common_vendor.p({
+              placeholder: "备注",
+              modelValue: item.remark
+            }),
+            j: "10464b8b-21-" + i0 + ",10464b8b-0",
+            k: common_vendor.o(($event) => item.images = $event, item.id),
+            l: common_vendor.p({
+              fileMediatype: "image",
+              mode: "grid",
+              limit: 3,
+              ["auto-upload"]: false,
+              modelValue: item.images
+            }),
+            m: "10464b8b-22-" + i0 + ",10464b8b-0",
+            n: common_vendor.o(() => removePollutionFacility(index), item.id),
+            o: item.id
+          };
+        }),
+        F: common_vendor.p({
+          type: "trash",
+          size: "16",
+          color: "#d92d20"
+        })
+      } : {
+        G: common_vendor.p({
+          type: "flag",
+          size: "48",
+          color: "#cbd5e1"
+        })
+      }, {
+        H: currentTab.value === 2,
+        I: common_vendor.p({
+          type: "water",
+          size: "20",
+          color: "#166534"
+        }),
+        J: common_vendor.p({
+          type: "gear",
+          size: "16",
+          color: "#ffffff"
+        }),
+        K: common_vendor.o(generateOutletInfo),
+        L: outletSignboard.value.sections && outletSignboard.value.sections.length
+      }, outletSignboard.value.sections && outletSignboard.value.sections.length ? {
+        M: common_vendor.f(outletSignboard.value.sections, (sec, si, i0) => {
+          return common_vendor.e({
+            a: common_vendor.t(sec.block),
+            b: sec.block == "噪声"
+          }, sec.block == "噪声" ? {
+            c: "10464b8b-26-" + i0 + ",10464b8b-0",
+            d: common_vendor.p({
+              type: "plus",
+              size: "16",
+              color: "#166534"
+            }),
+            e: common_vendor.o(() => addOutletItem(si), "s" + si)
+          } : {}, {
+            f: common_vendor.f(groupOutletItems(sec.items, sec.block), (group, gi, i1) => {
+              return common_vendor.e({
+                a: common_vendor.f(group, (it, ii, i2) => {
+                  return {
+                    a: "10464b8b-27-" + i0 + "-" + i1 + "-" + i2 + ",10464b8b-0",
+                    b: common_vendor.o(($event) => it.title = $event, "r" + si + "-" + gi + "-" + ii),
+                    c: common_vendor.p({
+                      placeholder: "内容标题",
+                      modelValue: it.title
+                    }),
+                    d: "10464b8b-28-" + i0 + "-" + i1 + "-" + i2 + ",10464b8b-0",
+                    e: common_vendor.o(($event) => it.content = $event, "r" + si + "-" + gi + "-" + ii),
+                    f: common_vendor.p({
+                      placeholder: "请输入具体的值",
+                      modelValue: it.content
+                    }),
+                    g: "r" + si + "-" + gi + "-" + ii
+                  };
+                })
+              }, sec.block !== "危险废物" ? {
+                b: "10464b8b-29-" + i0 + "-" + i1 + ",10464b8b-0",
+                c: common_vendor.p({
+                  type: "trash",
+                  size: "16",
+                  color: "#d92d20"
+                }),
+                d: common_vendor.o(() => removeOutletGroup(sec, gi), "g" + si + "-" + gi)
+              } : {}, {
+                e: "g" + si + "-" + gi
+              });
+            }),
+            g: sec.block !== "危险废物",
+            h: "s" + si
+          });
+        })
+      } : {
+        N: common_vendor.p({
+          type: "water",
+          size: "48",
+          color: "#cbd5e1"
+        })
+      }, {
+        O: currentTab.value === 3,
+        P: common_vendor.p({
+          current: "pages/reconnoitre/index"
+        }),
+        Q: common_vendor.o(($event) => newMainContentLabel.value = $event),
+        R: common_vendor.p({
+          placeholder: "如：项目名称/建设规模",
+          modelValue: newMainContentLabel.value
+        }),
+        S: common_vendor.o(closeMainContent),
+        T: common_vendor.o(confirmAddMainContent),
+        U: common_vendor.sr(newMainContentPopup, "10464b8b-31", {
+          "k": "newMainContentPopup"
+        }),
+        V: common_vendor.p({
+          type: "center"
         })
       });
     };

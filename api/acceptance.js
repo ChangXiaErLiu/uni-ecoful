@@ -28,7 +28,7 @@ export async function uploadFileToBackend(file) {
 		}
 
 		uni.uploadFile({
-			url: BASE_URL + '/api/v1/documents/upload',
+			url: BASE_URL + '/api/v1/completion/documents/upload',
 			filePath: filePath,
 			name: 'file',
 			formData: {
@@ -81,7 +81,7 @@ export async function uploadMultipleFiles(files) {
  */
 export async function fetchUploadedFiles() {
 	try {
-		const res = await request.get('/api/v1/documents?skip=0&limit=100')
+		const res = await request.get('/api/v1/completion/documents?skip=0&limit=100')
 		if (Array.isArray(res)) {
 			return res.map(file => ({
 				name: file.filename,
@@ -106,29 +106,9 @@ export async function fetchUploadedFiles() {
  */
 export async function deleteFile(document_id) {
 	if (!document_id) throw new Error('document_id 不能为空')
-	await request.delete(`/api/v1/documents/${document_id}`)
+	await request.delete(`/api/v1/completion/documents/${document_id}`)
 }
 
-/**
- * 临时测试构建向量方案：硬编码 source_dir，后端需要优化
- * @param {Object} options - 选项
- * @param {boolean} options.hideLoading - 是否隐藏 loading（默认 false）
- */
-export async function rebuildIndex(options = {}) {
-	const {
-		hideLoading = false
-	} = options;
-
-	const TEST_SOURCE_DIR = './storage/project_completion_and_acceptance/uploads'
-
-	return request.post('/api/v1/index/build', {
-		source_dir: TEST_SOURCE_DIR,
-		split_by_heading: true
-	}, {
-		hideLoading,
-		timeout: 900000 // 增加：15分钟超时（900秒）
-	});
-}
 
 /**
  * 执行任务（提取项目信息）
@@ -144,7 +124,7 @@ export async function runTask(options = {}) {
 	} = options
 
 	try {
-		const result = await request.get(`/api/v1/index-parallel-extract-info/EIA`, {
+		const result = await request.get(`/api/v1/completion/index-parallel-extract-info`, {
 			timeout,
 			hideLoading
 		})
@@ -383,7 +363,7 @@ export function downloadSignboardWord(signboard) {
 	// #ifdef H5
 	// H5 用 fetch 保证 arrayBuffer
 	// uni.request 在H5环境中不稳定，使用原生的 fetch API 是一个可靠且推荐的方案
-	return fetch(BASE_URL + '/api/v1/download/signageborad', {
+	return fetch(BASE_URL + '/api/v1/completion/signboard/download', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
@@ -399,7 +379,7 @@ export function downloadSignboardWord(signboard) {
 	// 小程序、App 用 uni.request
 	return new Promise((resolve, reject) => {
 		uni.request({
-			url: BASE_URL + '/api/v1/download/signageborad',
+			url: BASE_URL + '/api/v1/completion/signboard/download',
 			method: 'POST',
 			data: payload,
 			header: {
@@ -439,7 +419,7 @@ export function downloadMonitorPlan(options = {}) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
   
-  return fetch(BASE_URL + '/api/v1/monitorplan/generate', {
+  return fetch(BASE_URL + '/api/v1/completion/monitor-plan/generate', {
     method: 'GET',
     signal: controller.signal
   }).then(res => {
@@ -461,7 +441,7 @@ export function downloadMonitorPlan(options = {}) {
   // 小程序、App 环境使用 uni.request
   return new Promise((resolve, reject) => {
     const requestTask = uni.request({
-      url: BASE_URL + '/api/v1/monitorplan/generate',
+      url: BASE_URL + '/api/v1/completion/monitor-plan/generate',
       method: 'GET',
       responseType: 'arraybuffer',
       timeout: timeout,

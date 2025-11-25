@@ -576,7 +576,6 @@
 	} from '@/stores/navTitle.js'
 	import {
 		uploadFileToBackend,
-		rebuildIndex,
 		runTask,
 		transformExtractResult,
 		downloadSignboardWord,

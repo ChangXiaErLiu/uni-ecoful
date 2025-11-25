@@ -25,7 +25,8 @@
 		<!-- 列表 -->
         <scroll-view class="conversation-list" scroll-y>
             <view v-for="conv in conversations" :key="conv.id" class="conversation-item"
-                :class="{'active': conv.id === currentConversationId}" @tap="selectConversation(conv.id)">
+                 @tap="selectConversation(conv.id)">  
+				 <!-- :class="getItemClass(conv.id)" -->
                 <view class="conv-content">
                     <uni-icons type="chat" size="18" color="#64748b" />
                     <text class="conv-title">{{ conv.title || '新对话' }}</text>
@@ -70,6 +71,20 @@
 	const createChat = () => emit('create-chat')
 	const selectConversation = id => emit('select-conversation', id)
 	const toggleCollapse = () => emit('toggle-collapse')
+	
+	// 判断对话项是否选中
+	// const getItemClass = (convId) => {
+	// 	const isActive = convId === props.currentConversationId
+	// 	// 调试日志
+	// 	console.log('getItemClass 调用:', {
+	// 		convId,
+	// 		currentId: props.currentConversationId,
+	// 		isActive,
+	// 		convIdType: typeof convId,
+	// 		currentIdType: typeof props.currentConversationId
+	// 	})
+	// 	return isActive ? 'active' : ''
+	// }
 
 	const editTitle = (id) => {
 		uni.showModal({

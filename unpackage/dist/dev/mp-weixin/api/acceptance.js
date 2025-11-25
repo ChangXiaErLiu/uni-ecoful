@@ -11,7 +11,7 @@ async function uploadFileToBackend(file) {
       return;
     }
     common_vendor.index.uploadFile({
-      url: utils_config.BASE_URL + "/api/v1/documents/upload",
+      url: utils_config.BASE_URL + "/api/v1/completion/documents/upload",
       filePath,
       name: "file",
       formData: {
@@ -44,7 +44,7 @@ async function uploadFileToBackend(file) {
 }
 async function fetchUploadedFiles() {
   try {
-    const res = await utils_request.request.get("/api/v1/documents?skip=0&limit=100");
+    const res = await utils_request.request.get("/api/v1/completion/documents?skip=0&limit=100");
     if (Array.isArray(res)) {
       return res.map((file) => {
         var _a;
@@ -68,7 +68,7 @@ async function fetchUploadedFiles() {
 async function deleteFile(document_id) {
   if (!document_id)
     throw new Error("document_id 不能为空");
-  await utils_request.request.delete(`/api/v1/documents/${document_id}`);
+  await utils_request.request.delete(`/api/v1/completion/documents/${document_id}`);
 }
 async function runTask(options = {}) {
   var _a;
@@ -78,7 +78,7 @@ async function runTask(options = {}) {
     // 默认10分钟
   } = options;
   try {
-    const result = await utils_request.request.get(`/api/v1/index-parallel-extract-info/EIA`, {
+    const result = await utils_request.request.get(`/api/v1/completion/index-parallel-extract-info`, {
       timeout,
       hideLoading
     });
@@ -289,7 +289,7 @@ function downloadSignboardWord(signboard) {
   };
   return new Promise((resolve, reject) => {
     common_vendor.index.request({
-      url: utils_config.BASE_URL + "/api/v1/download/signageborad",
+      url: utils_config.BASE_URL + "/api/v1/completion/signboard/download",
       method: "POST",
       data: payload,
       header: {
@@ -315,7 +315,7 @@ function downloadMonitorPlan(options = {}) {
   } = options;
   return new Promise((resolve, reject) => {
     const requestTask = common_vendor.index.request({
-      url: utils_config.BASE_URL + "/api/v1/monitorplan/generate",
+      url: utils_config.BASE_URL + "/api/v1/completion/monitor-plan/generate",
       method: "GET",
       responseType: "arraybuffer",
       timeout,

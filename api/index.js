@@ -14,7 +14,6 @@ export * from './chat'
 export { 
   uploadFileToBackend, 
   uploadMultipleFiles, 
-  rebuildIndex, 
   runTask,
   transformExtractResult,
   downloadSignboardWord,
