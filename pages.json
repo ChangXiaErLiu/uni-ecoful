@@ -82,14 +82,14 @@
 	  // 登录
       "path": "pages/auth/login",
       "style": {
-        "navigationBarTitleText": "登录"
+        "navigationStyle": "custom"
       }
     },
     {
 	  // 注册
       "path": "pages/auth/register",
       "style": {
-        "navigationBarTitleText": "注册"
+        "navigationStyle": "custom"
       }
     },
     {

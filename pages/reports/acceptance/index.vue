@@ -306,23 +306,23 @@
 										<text>生成监测方案</text>
 									</button>
 								</view>
-								
+
 								<view v-if="plan" class="paln-preview">
-										<view class="preview-header">
-											<uni-icons type="checkmark-circle" size="18" color="#166534" />
-											<text class="preview-title">环保验收监测方案已为您已生成！</text>
-										</view>
-										<view class="preview-content">
-											<text class="preview-text">环保验收监测方案已生成，包含以下内容：</text>
-											<view class="preview-sections">
-												<text class="section-item">• 项目基本情况</text>
-												<text class="section-item">• 环保设施建设情况</text>
-												<text class="section-item">• 污染物详细情况</text>
-												<text class="section-item">• 方案已下载，到文件保存位置查看</text>
-											</view>
+									<view class="preview-header">
+										<uni-icons type="checkmark-circle" size="18" color="#166534" />
+										<text class="preview-title">环保验收监测方案已为您已生成！</text>
+									</view>
+									<view class="preview-content">
+										<text class="preview-text">环保验收监测方案已生成，包含以下内容：</text>
+										<view class="preview-sections">
+											<text class="section-item">• 项目基本情况</text>
+											<text class="section-item">• 环保设施建设情况</text>
+											<text class="section-item">• 污染物详细情况</text>
+											<text class="section-item">• 方案已下载，到文件保存位置查看</text>
 										</view>
 									</view>
-								
+								</view>
+
 							</view>
 						</view>
 					</view>
@@ -330,66 +330,61 @@
 
 					<!-- 步骤2: 提资单比对 -->
 					<view v-show="currentStep === 2" class="content-section">
-					    <!-- 环保资料提交管理系统界面 -->
-					    <view class="tizidan-container">
-					        <view class="tizidan-header">
-					            <text class="tizidan-title">环保资料提交管理系统</text>
-					            <text class="tizidan-subtitle">请按要求提交相关环保资料</text>
-					        </view>
-					        
-					        <!-- 加载失败提示 -->
-					        <view v-if="tizidanItems.length === 0" class="empty-state">
-					            <uni-icons type="refresh" size="48" color="#cbd5e1" />
-					            <text class="empty-text">加载失败，请重新刷新！</text>
-					            <button class="btn btn--primary" @tap="fetchTizidanData">
-					                <uni-icons type="refresh" size="16" color="#ffffff" />
-					                <text>重新加载</text>
-					            </button>
-					        </view>
-					        
-					        <!-- 正常内容 -->
-					        <view v-else class="tizidan-content">
-					            <view 
-					                v-for="(item, index) in tizidanItems" 
-					                :key="index" 
-					                class="tizidan-item-card"
-					            >
-					                <view class="tizidan-item-content">
-					                    <text class="tizidan-item-number">{{ index + 1 }}.</text>
-					                    <text class="tizidan-item-text">{{ item.text }}</text>
-					                </view>
-					                
-					                <view class="tizidan-item-status">
-					                    <text 
-					                        class="tizidan-status-text" 
-					                        :class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'"
-					                    >
-					                        {{ item.submitted ? '已提交' : '未提交' }}
-					                    </text>
-					                    
-					                    <button 
-					                        v-if="!item.submitted" 
-					                        class="tizidan-submit-btn" 
-					                        @click="submitTizidanItem(index)"
-					                    >
-					                        提交
-					                    </button>
-					                </view>
-					            </view>
-					        </view>
-					        
-					        <view class="tizidan-footer">
-					            <text class="tizidan-footer-text">请确保所有资料完整准确</text>
-					            <button class="btn btn--primary" @tap="downloadFile(downloadUrls.acceptance_report, '验收报告提资单')" :disabled="!downloadUrls.acceptance_report">
-					                下载验收报告提资单
-					            </button>
-					            <button class="btn btn--secondary" @tap="downloadFile(downloadUrls.comparison_list, '详细对比清单')" :disabled="!downloadUrls.comparison_list">
-					                下载详细对比清单
-					            </button>
-					        </view>
-					    </view>
+						<!-- 环保资料提交管理系统界面 -->
+						<view class="tizidan-container">
+							<view class="tizidan-header">
+								<text class="tizidan-title">环保资料提交管理系统</text>
+								<text class="tizidan-subtitle">请按要求提交相关环保资料</text>
+							</view>
+
+							<!-- 加载失败提示 -->
+							<view v-if="tizidanItems.length === 0" class="empty-state">
+								<uni-icons type="refresh" size="48" color="#cbd5e1" />
+								<text class="empty-text">加载失败，请重新刷新！</text>
+								<button class="btn btn--primary" @tap="fetchTizidanData">
+									<uni-icons type="refresh" size="16" color="#ffffff" />
+									<text>重新加载</text>
+								</button>
+							</view>
+
+							<!-- 正常内容 -->
+							<view v-else class="tizidan-content">
+								<view v-for="(item, index) in tizidanItems" :key="index" class="tizidan-item-card">
+									<view class="tizidan-item-content">
+										<text class="tizidan-item-number">{{ index + 1 }}.</text>
+										<text class="tizidan-item-text">{{ item.text }}</text>
+									</view>
+
+									<view class="tizidan-item-status">
+										<text class="tizidan-status-text"
+											:class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'">
+											{{ item.submitted ? '已提交' : '未提交' }}
+										</text>
+
+										<button v-if="!item.submitted" class="tizidan-submit-btn"
+											@click="submitTizidanItem(index)">
+											提交
+										</button>
+									</view>
+								</view>
+							</view>
+
+							<view class="tizidan-footer">
+								<text class="tizidan-footer-text">请确保所有资料完整准确</text>
+								<button class="btn btn--primary"
+									@tap="downloadFile(downloadUrls.acceptance_report, '验收报告提资单')"
+									:disabled="!downloadUrls.acceptance_report">
+									下载验收报告提资单
+								</button>
+								<button class="btn btn--secondary"
+									@tap="downloadFile(downloadUrls.comparison_list, '详细对比清单')"
+									:disabled="!downloadUrls.comparison_list">
+									下载详细对比清单
+								</button>
+							</view>
+						</view>
 					</view>
-					
+
 					<!-- 步骤3: 现场踏勘比对 -->
 					<view v-show="currentStep === 3" class="content-section">
 						<view class="section-card">
@@ -577,7 +572,7 @@
 		reactive,
 		computed,
 		nextTick,
-		watch  // 添加这行导入
+		watch // 添加这行导入
 	} from 'vue'
 	import {
 		usePlatformInfo
@@ -660,215 +655,6 @@
 				return false
 		}
 	}
-
-	// 提资单数据
-	const tizidanItems = ref([])
-	const downloadUrls = ref({
-	  acceptance_report: '',
-	  comparison_list: ''
-	})
-	
-	// 获取提资单数据
-	async function fetchTizidanData() {
-	    try {
-	        uni.showLoading({
-	            title: '加载中...'
-	        })
-	        
-	        console.log('开始请求数据...')
-	        
-	        // 使用 Promise 包装 uni.request 以确保正确解析
-	        const response = await new Promise((resolve, reject) => {
-	            uni.request({
-	                url: 'http://127.0.0.1:8000/api/v1/tzdDetail/datasheet',
-	                method: 'GET',
-	                timeout: 10000,
-					data: {
-					    memberId: 3,
-					},
-	                success: (res) => {
-	                    console.log('请求成功:', res)
-	                    resolve(res)
-	                },
-	                fail: (err) => {
-	                    console.log('请求失败:', err)
-	                    reject(err)
-	                }
-	            })
-	        })
-	        
-	        console.log('完整响应对象:', response)
-	        console.log('响应状态码:', response.statusCode)
-	        console.log('响应数据:', response.data)
-	        
-	        // 检查返回结果
-	        if (response && response.statusCode === 200) {
-	            console.log('状态码为200，开始解析数据')
-	            
-	            // 确保 data 存在
-	            if (!response.data) {
-	                throw new Error('响应数据为空')
-	            }
-	            
-	            const data = response.data
-	            console.log('解析后的数据:', data)
-	            
-	            // 确保数据结构正确
-	            if (!data.items || !Array.isArray(data.items)) {
-	                throw new Error('数据格式不正确: items 不存在或不是数组')
-	            }
-	            
-	            tizidanItems.value = data.items
-	            downloadUrls.value = data.download_urls || {}
-	            
-	            console.log('最终设置的数据:', {
-	                items: tizidanItems.value,
-	                urls: downloadUrls.value
-	            })
-	            
-	            uni.showToast({
-	                title: '数据加载成功',
-	                icon: 'success'
-	            })
-	        } else {
-	            throw new Error(`请求失败，状态码：${response?.statusCode || '未知'}`)
-	        }
-	    } catch (error) {
-	        console.error('获取提资单数据失败:', error)
-	        // 显示加载失败提示
-	        uni.showToast({
-	            title: '加载失败，请重新刷新！',
-	            icon: 'none',
-	            duration: 3000
-	        })
-	        // 清空数据，显示加载失败状态
-	        tizidanItems.value = []
-	        downloadUrls.value = {
-	            acceptance_report: '',
-	            comparison_list: ''
-	        }
-	    } finally {
-	        uni.hideLoading()
-	    }
-	}
-	
-	// 提交提资单项
-	async function submitTizidanItem(index) {
-	    uni.showModal({
-	        title: '确认提交',
-	        content: '您确定要提交此项资料吗？',
-	        success: async (res) => {
-	            if (res.confirm) {
-	                try {
-	                    uni.showLoading({
-	                        title: '提交中...'
-	                    })
-	                    
-	                    console.log('开始提交项目:', index, tizidanItems.value[index].text)
-	                    
-	                    // 使用 Promise 包装 uni.request
-	                    const response = await new Promise((resolve, reject) => {
-	                        uni.request({
-	                            url: 'http://127.0.0.1:8000/api/v1/tzdDetail/submit-item',
-	                            method: 'POST',
-	                            header: {
-	                                'Content-Type': 'application/json'
-	                            },
-	                            data: {
-	                                item_index: index,
-	                                item_text: tizidanItems.value[index].text
-	                            },
-	                            timeout: 10000,
-	                            success: (res) => {
-	                                console.log('提交响应:', res)
-	                                resolve(res)
-	                            },
-	                            fail: (err) => {
-	                                console.log('提交失败:', err)
-	                                reject(err)
-	                            }
-	                        })
-	                    })
-	                    
-	                    console.log('提交完整响应:', response)
-	                    
-	                    // 检查返回结果
-	                    if (response && response.statusCode === 200) {
-	                        if (response.data && response.data.success) {
-	                            // 更新前端状态
-	                            tizidanItems.value[index].submitted = true
-	                            uni.showToast({
-	                                title: '提交成功',
-	                                icon: 'success',
-	                                duration: 2000
-	                            })
-	                        } else {
-	                            throw new Error(response.data.message || '提交失败')
-	                        }
-	                    } else {
-	                        throw new Error(`提交失败，状态码：${response?.statusCode || '未知'}`)
-	                    }
-	                } catch (error) {
-	                    console.error('提交失败:', error)
-	                    uni.showToast({
-	                        title: '提交失败，请重试',
-	                        icon: 'none'
-	                    })
-	                } finally {
-	                    uni.hideLoading()
-	                }
-	            }
-	        }
-	    })
-	}
-	
-	// 下载文件
-	function downloadFile(url, filename) {
-	  if (!url) {
-	    uni.showToast({
-	      title: '下载链接不存在',
-	      icon: 'none'
-	    })
-	    return
-	  }
-	  
-	  uni.downloadFile({
-	    url: url,
-	    success: (res) => {
-	      if (res.statusCode === 200) {
-	        uni.saveFile({
-	          tempFilePath: res.tempFilePath,
-	          success: (saveRes) => {
-	            uni.showToast({
-	              title: `${filename}下载成功`,
-	              icon: 'success'
-	            })
-	          },
-	          fail: () => {
-	            uni.showToast({
-	              title: '文件保存失败',
-	              icon: 'none'
-	            })
-	          }
-	        })
-	      }
-	    },
-	    fail: () => {
-	      uni.showToast({
-	        title: '下载失败',
-	        icon: 'none'
-	      })
-	    }
-	  })
-	}
-	
-	// 监听步骤变化
-	watch(currentStep, (newVal) => {
-	  if (newVal === 2) {
-	    // 进入提资单比对步骤时获取数据
-	    fetchTizidanData()
-	  }
-	})
 
 	// 以下提取项目基本信息模块的方法--------------------------
 	// 限制文件格式
@@ -1748,6 +1534,222 @@
 		})
 		// #endif
 	}
+
+	// 以下提资单比对的方法--------------------------
+	// 提资单数据
+	const tizidanItems = ref([])
+	const downloadUrls = ref({
+		acceptance_report: '',
+		comparison_list: ''
+	})
+
+	// 获取提资单数据
+	async function fetchTizidanData() {
+		try {
+			uni.showLoading({
+				title: '加载中...'
+			})
+
+			console.log('开始请求数据...')
+
+			// 使用 Promise 包装 uni.request 以确保正确解析
+			const response = await new Promise((resolve, reject) => {
+				uni.request({
+					url: 'http://127.0.0.1:8000/api/v1/tzdDetail/datasheet',
+					method: 'GET',
+					timeout: 10000,
+					data: {
+						memberId: 3,
+					},
+					success: (res) => {
+						console.log('请求成功:', res)
+						resolve(res)
+					},
+					fail: (err) => {
+						console.log('请求失败:', err)
+						reject(err)
+					}
+				})
+			})
+
+			console.log('完整响应对象:', response)
+			console.log('响应状态码:', response.statusCode)
+			console.log('响应数据:', response.data)
+
+			// 检查返回结果
+			if (response && response.statusCode === 200) {
+				console.log('状态码为200，开始解析数据')
+
+				// 确保 data 存在
+				if (!response.data) {
+					throw new Error('响应数据为空')
+				}
+
+				const data = response.data
+				console.log('解析后的数据:', data)
+
+				// 确保数据结构正确
+				if (!data.items || !Array.isArray(data.items)) {
+					throw new Error('数据格式不正确: items 不存在或不是数组')
+				}
+
+				tizidanItems.value = data.items
+				downloadUrls.value = data.download_urls || {}
+
+				console.log('最终设置的数据:', {
+					items: tizidanItems.value,
+					urls: downloadUrls.value
+				})
+
+				uni.showToast({
+					title: '数据加载成功',
+					icon: 'success'
+				})
+			} else {
+				throw new Error(`请求失败，状态码：${response?.statusCode || '未知'}`)
+			}
+		} catch (error) {
+			console.error('获取提资单数据失败:', error)
+			// 显示加载失败提示
+			uni.showToast({
+				title: '加载失败，请重新刷新！',
+				icon: 'none',
+				duration: 3000
+			})
+			// 清空数据，显示加载失败状态
+			tizidanItems.value = []
+			downloadUrls.value = {
+				acceptance_report: '',
+				comparison_list: ''
+			}
+		} finally {
+			uni.hideLoading()
+		}
+	}
+
+	// 提交提资单项
+	async function submitTizidanItem(index) {
+		uni.showModal({
+			title: '确认提交',
+			content: '您确定要提交此项资料吗？',
+			success: async (res) => {
+				if (res.confirm) {
+					try {
+						uni.showLoading({
+							title: '提交中...'
+						})
+
+						console.log('开始提交项目:', index, tizidanItems.value[index].text)
+
+						// 使用 Promise 包装 uni.request
+						const response = await new Promise((resolve, reject) => {
+							uni.request({
+								url: 'http://127.0.0.1:8000/api/v1/tzdDetail/submit-item',
+								method: 'POST',
+								header: {
+									'Content-Type': 'application/json'
+								},
+								data: {
+									item_index: index,
+									item_text: tizidanItems.value[index].text
+								},
+								timeout: 10000,
+								success: (res) => {
+									console.log('提交响应:', res)
+									resolve(res)
+								},
+								fail: (err) => {
+									console.log('提交失败:', err)
+									reject(err)
+								}
+							})
+						})
+
+						console.log('提交完整响应:', response)
+
+						// 检查返回结果
+						if (response && response.statusCode === 200) {
+							if (response.data && response.data.success) {
+								// 更新前端状态
+								tizidanItems.value[index].submitted = true
+								uni.showToast({
+									title: '提交成功',
+									icon: 'success',
+									duration: 2000
+								})
+							} else {
+								throw new Error(response.data.message || '提交失败')
+							}
+						} else {
+							throw new Error(`提交失败，状态码：${response?.statusCode || '未知'}`)
+						}
+					} catch (error) {
+						console.error('提交失败:', error)
+						uni.showToast({
+							title: '提交失败，请重试',
+							icon: 'none'
+						})
+					} finally {
+						uni.hideLoading()
+					}
+				}
+			}
+		})
+	}
+
+	// 下载提资对比清单
+	function downloadFile(url, filename) {
+		if (!url) {
+			uni.showToast({
+				title: '下载链接不存在',
+				icon: 'none'
+			})
+			return
+		}
+
+		uni.downloadFile({
+			url: url,
+			success: (res) => {
+				if (res.statusCode === 200) {
+					uni.saveFile({
+						tempFilePath: res.tempFilePath,
+						success: (saveRes) => {
+							uni.showToast({
+								title: `${filename}下载成功`,
+								icon: 'success'
+							})
+						},
+						fail: () => {
+							uni.showToast({
+								title: '文件保存失败',
+								icon: 'none'
+							})
+						}
+					})
+				}
+			},
+			fail: () => {
+				uni.showToast({
+					title: '下载失败',
+					icon: 'none'
+				})
+			}
+		})
+	}
+
+	// 监听步骤变化
+	watch(currentStep, (newVal) => {
+		if (newVal === 2) {
+			// 进入提资单比对步骤时获取数据
+			fetchTizidanData()
+		}
+	})
+
+
+
+
+
+
 
 
 	// 1. 信息表/提资单------------
@@ -2687,6 +2689,7 @@
 		border-radius: $radius;
 		border: 1rpx solid #dcfce7;
 	}
+
 	.paln-preview {
 		padding: 24rpx;
 		background: #f0fdf4;
@@ -2733,289 +2736,289 @@
 
 	/* 提资单界面样式 */
 	.tizidan-container {
-	    display: flex;
-	    flex-direction: column;
-	    min-height: 80vh;
-	    background-color: #ffffff;
-	    border-radius: 16rpx;
-	    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-	    overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		min-height: 80vh;
+		background-color: #ffffff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+		overflow: hidden;
 	}
-	
+
 	.tizidan-header {
-	    display: flex;
-	    flex-direction: column;
-	    align-items: center;
-	    padding: 40rpx 24rpx;
-	    background: linear-gradient(135deg, #166534 0%, #17834a 100%);
-	    color: #ffffff;
-	    text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 40rpx 24rpx;
+		background: linear-gradient(135deg, #166534 0%, #17834a 100%);
+		color: #ffffff;
+		text-align: center;
 	}
-	
+
 	.tizidan-title {
-	    font-size: 36rpx;
-	    font-weight: bold;
-	    margin-bottom: 12rpx;
+		font-size: 36rpx;
+		font-weight: bold;
+		margin-bottom: 12rpx;
 	}
-	
+
 	.tizidan-subtitle {
-	    font-size: 28rpx;
-	    opacity: 0.9;
+		font-size: 28rpx;
+		opacity: 0.9;
 	}
-	
+
 	.tizidan-content {
-	    flex: 1;
-	    display: flex;
-	    flex-direction: column;
-	    gap: 20rpx;
-	    padding: 30rpx 24rpx;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
+		padding: 30rpx 24rpx;
 	}
-	
+
 	.tizidan-item-card {
-	    display: flex;
-	    flex-direction: column;
-	    background-color: #f8fafc;
-	    border-radius: 12rpx;
-	    padding: 24rpx;
-	    border: 1rpx solid #e2e8f0;
-	    transition: all 0.3s ease;
+		display: flex;
+		flex-direction: column;
+		background-color: #f8fafc;
+		border-radius: 12rpx;
+		padding: 24rpx;
+		border: 1rpx solid #e2e8f0;
+		transition: all 0.3s ease;
 	}
-	
+
 	.tizidan-item-card:hover {
-	    transform: translateY(-2rpx);
-	    box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
+		transform: translateY(-2rpx);
+		box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
 	}
-	
+
 	.tizidan-item-content {
-	    display: flex;
-	    margin-bottom: 16rpx;
+		display: flex;
+		margin-bottom: 16rpx;
 	}
-	
+
 	.tizidan-item-number {
-	    font-size: 28rpx;
-	    font-weight: bold;
-	    color: #166534;
-	    margin-right: 12rpx;
-	    min-width: 40rpx;
+		font-size: 28rpx;
+		font-weight: bold;
+		color: #166534;
+		margin-right: 12rpx;
+		min-width: 40rpx;
 	}
-	
+
 	.tizidan-item-text {
-	    font-size: 28rpx;
-	    color: #2d3748;
-	    line-height: 1.5;
-	    flex: 1;
+		font-size: 28rpx;
+		color: #2d3748;
+		line-height: 1.5;
+		flex: 1;
 	}
-	
+
 	.tizidan-item-status {
-	    display: flex;
-	    justify-content: space-between;
-	    align-items: center;
-	    padding-top: 16rpx;
-	    border-top: 1rpx solid #e2e8f0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-top: 16rpx;
+		border-top: 1rpx solid #e2e8f0;
 	}
-	
+
 	.tizidan-status-text {
-	    font-size: 26rpx;
-	    font-weight: bold;
+		font-size: 26rpx;
+		font-weight: bold;
 	}
-	
+
 	.tizidan-status-text.tizidan-submitted {
-	    color: #27ae60;
+		color: #27ae60;
 	}
-	
+
 	.tizidan-status-text.tizidan-unsubmitted {
-	    color: #e74c3c;
+		color: #e74c3c;
 	}
-	
+
 	.tizidan-submit-btn {
-	    background-color: #3498db;
-	    color: #ffffff;
-	    border: none;
-	    border-radius: 8rpx;
-	    padding: 12rpx 24rpx;
-	    font-size: 26rpx;
-	    box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
-	    transition: background-color 0.3s;
+		background-color: #3498db;
+		color: #ffffff;
+		border: none;
+		border-radius: 8rpx;
+		padding: 12rpx 24rpx;
+		font-size: 26rpx;
+		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
+		transition: background-color 0.3s;
 	}
-	
+
 	.tizidan-submit-btn:active {
-	    background-color: #2980b9;
+		background-color: #2980b9;
 	}
-	
+
 	.tizidan-footer {
-	    display: flex;
-	    flex-direction: column;
-	    gap: 20rpx;
-	    padding: 30rpx 24rpx;
-	    background-color: #f8fafc;
-	    border-top: 1rpx solid #e2e8f0;
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
+		padding: 30rpx 24rpx;
+		background-color: #f8fafc;
+		border-top: 1rpx solid #e2e8f0;
 	}
-	
+
 	.tizidan-footer-text {
-	    font-size: 26rpx;
-	    color: #64748b;
-	    text-align: center;
-	    margin-bottom: 10rpx;
+		font-size: 26rpx;
+		color: #64748b;
+		text-align: center;
+		margin-bottom: 10rpx;
 	}
-	
+
 	/* 响应式设计 - 移动端 */
 	@media (max-width: 768px) {
-	    .tizidan-container {
-	        margin: 10rpx;
-	        border-radius: 12rpx;
-	    }
-	    
-	    .tizidan-header {
-	        padding: 30rpx 20rpx;
-	    }
-	    
-	    .tizidan-title {
-	        font-size: 32rpx;
-	    }
-	    
-	    .tizidan-subtitle {
-	        font-size: 26rpx;
-	    }
-	    
-	    .tizidan-content {
-	        padding: 20rpx;
-	        gap: 16rpx;
-	    }
-	    
-	    .tizidan-item-card {
-	        padding: 20rpx;
-	    }
-	    
-	    .tizidan-item-content {
-	        flex-direction: column;
-	    }
-	    
-	    .tizidan-item-number {
-	        margin-bottom: 8rpx;
-	    }
-	    
-	    .tizidan-item-text {
-	        font-size: 26rpx;
-	    }
-	    
-	    .tizidan-item-status {
-	        flex-direction: column;
-	        align-items: flex-start;
-	        gap: 12rpx;
-	    }
-	    
-	    .tizidan-submit-btn {
-	        width: 100%;
-	        padding: 16rpx;
-	        font-size: 28rpx;
-	    }
-	    
-	    .tizidan-footer {
-	        padding: 24rpx 20rpx;
-	        gap: 16rpx;
-	    }
-	    
-	    .tizidan-footer .btn {
-	        width: 100%;
-	        margin: 0;
-	        justify-content: center;
-	    }
+		.tizidan-container {
+			margin: 10rpx;
+			border-radius: 12rpx;
+		}
+
+		.tizidan-header {
+			padding: 30rpx 20rpx;
+		}
+
+		.tizidan-title {
+			font-size: 32rpx;
+		}
+
+		.tizidan-subtitle {
+			font-size: 26rpx;
+		}
+
+		.tizidan-content {
+			padding: 20rpx;
+			gap: 16rpx;
+		}
+
+		.tizidan-item-card {
+			padding: 20rpx;
+		}
+
+		.tizidan-item-content {
+			flex-direction: column;
+		}
+
+		.tizidan-item-number {
+			margin-bottom: 8rpx;
+		}
+
+		.tizidan-item-text {
+			font-size: 26rpx;
+		}
+
+		.tizidan-item-status {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 12rpx;
+		}
+
+		.tizidan-submit-btn {
+			width: 100%;
+			padding: 16rpx;
+			font-size: 28rpx;
+		}
+
+		.tizidan-footer {
+			padding: 24rpx 20rpx;
+			gap: 16rpx;
+		}
+
+		.tizidan-footer .btn {
+			width: 100%;
+			margin: 0;
+			justify-content: center;
+		}
 	}
-	
+
 	/* 平板端适配 */
 	@media (min-width: 769px) and (max-width: 960px) {
-	    .tizidan-container {
-	        margin: 20rpx;
-	    }
-	    
-	    .tizidan-item-card {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: flex-start;
-	    }
-	    
-	    .tizidan-item-content {
-	        margin-bottom: 0;
-	        flex: 1;
-	        max-width: 70%;
-	    }
-	    
-	    .tizidan-item-status {
-	        flex-shrink: 0;
-	        border-top: none;
-	        padding-top: 0;
-	        flex-direction: column;
-	        align-items: flex-end;
-	        gap: 12rpx;
-	        min-width: 150rpx;
-	    }
-	    
-	    .tizidan-footer {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: center;
-	    }
-	    
-	    .tizidan-footer-text {
-	        margin-bottom: 0;
-	        flex: 1;
-	        text-align: left;
-	    }
-	    
-	    .tizidan-footer .btn {
-	        flex-shrink: 0;
-	        margin-left: 20rpx;
-	    }
+		.tizidan-container {
+			margin: 20rpx;
+		}
+
+		.tizidan-item-card {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-start;
+		}
+
+		.tizidan-item-content {
+			margin-bottom: 0;
+			flex: 1;
+			max-width: 70%;
+		}
+
+		.tizidan-item-status {
+			flex-shrink: 0;
+			border-top: none;
+			padding-top: 0;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 12rpx;
+			min-width: 150rpx;
+		}
+
+		.tizidan-footer {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.tizidan-footer-text {
+			margin-bottom: 0;
+			flex: 1;
+			text-align: left;
+		}
+
+		.tizidan-footer .btn {
+			flex-shrink: 0;
+			margin-left: 20rpx;
+		}
 	}
-	
+
 	/* 桌面端适配 */
 	@media (min-width: 1100px) {
-	    .tizidan-container {
-	        max-width: 1000rpx;
-	        margin: 0 auto;
-	    }
-	    
-	    .tizidan-item-card {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: center;
-	    }
-	    
-	    .tizidan-item-content {
-	        margin-bottom: 0;
-	        flex: 1;
-	        max-width: 75%;
-	    }
-	    
-	    .tizidan-item-status {
-	        border-top: none;
-	        padding-top: 0;
-	        flex-shrink: 0;
-	        min-width: 180rpx;
-	        justify-content: flex-end;
-	    }
-	    
-	    .tizidan-footer {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: center;
-	    }
-	    
-	    .tizidan-footer-text {
-	        margin-bottom: 0;
-	        flex: 1;
-	        text-align: left;
-	    }
-	    
-	    .tizidan-footer .btn {
-	        flex-shrink: 0;
-	        margin-left: 20rpx;
-	    }
-	    
-	    .tizidan-submit-btn:hover {
-	        background-color: #2980b9;
-	        cursor: pointer;
-	    }
+		.tizidan-container {
+			max-width: 1000rpx;
+			margin: 0 auto;
+		}
+
+		.tizidan-item-card {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.tizidan-item-content {
+			margin-bottom: 0;
+			flex: 1;
+			max-width: 75%;
+		}
+
+		.tizidan-item-status {
+			border-top: none;
+			padding-top: 0;
+			flex-shrink: 0;
+			min-width: 180rpx;
+			justify-content: flex-end;
+		}
+
+		.tizidan-footer {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.tizidan-footer-text {
+			margin-bottom: 0;
+			flex: 1;
+			text-align: left;
+		}
+
+		.tizidan-footer .btn {
+			flex-shrink: 0;
+			margin-left: 20rpx;
+		}
+
+		.tizidan-submit-btn:hover {
+			background-color: #2980b9;
+			cursor: pointer;
+		}
 	}
 
 	/* 平板端：769px - 960px */

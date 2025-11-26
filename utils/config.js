@@ -6,7 +6,7 @@
 
 // 环境配置映射
 const ENV_CONFIG = {
-  development: 'http://127.0.0.1:8000',   //开发环境地址http://http://172.16.1.61:8000
+  development: 'http://172.16.1.61:8000',   //开发环境地址http://http://172.16.1.61:8000
   production: 'https://api.yourdomain.com' // 生产环境地址
 }
 

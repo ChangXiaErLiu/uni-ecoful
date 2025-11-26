@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 中文注释：避免使用 vh，高度随内容与父容器伸展 */
+  min-height: 100vh;
   padding: 48rpx;
   background: linear-gradient(135deg, #e0f2fe, #ede9fe);
 }
@@ -41,7 +41,13 @@
   box-shadow: 0 24rpx 60rpx rgba(15, 23, 42, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 32rpx;
+}
+.auth__header.data-v-2cc9f8c3 {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  text-align: center;
 }
 .auth__title.data-v-2cc9f8c3 {
   font-size: 40rpx;
@@ -52,30 +58,79 @@
   font-size: 26rpx;
   color: #64748b;
 }
+.auth__tabs.data-v-2cc9f8c3 {
+  display: flex;
+  background-color: #f8fafc;
+  border-radius: 16rpx;
+  padding: 8rpx;
+}
+.auth__tab.data-v-2cc9f8c3 {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #64748b;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+}
+.auth__tab--active.data-v-2cc9f8c3 {
+  background-color: #ffffff;
+  color: #2563eb;
+  font-weight: 500;
+  box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.1);
+}
 .auth__form.data-v-2cc9f8c3 {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 32rpx;
+}
+.auth__input-group.data-v-2cc9f8c3 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+.auth__input-icon.data-v-2cc9f8c3 {
+  padding: 0 24rpx;
 }
 .auth__input.data-v-2cc9f8c3 {
+  flex: 1;
   height: 88rpx;
-  border-radius: 16rpx;
-  border: 1px solid rgba(148, 163, 184, 0.6);
   padding: 0 24rpx;
   font-size: 28rpx;
-}
-.auth__code-row.data-v-2cc9f8c3 {
-  display: flex;
-  gap: 16rpx;
+  border: none;
+  outline: none;
 }
 .auth__input--code.data-v-2cc9f8c3 {
-  flex: 1;
+  border-right: 1px solid rgba(148, 163, 184, 0.3);
+}
+.auth__code-btn.data-v-2cc9f8c3 {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  background-color: transparent;
+  color: #2563eb;
+  border: none;
+  white-space: nowrap;
+}
+.auth__code-btn[disabled].data-v-2cc9f8c3 {
+  color: #94a3b8;
+}
+.auth__password-toggle.data-v-2cc9f8c3 {
+  padding: 0 24rpx;
+}
+.auth__forgot.data-v-2cc9f8c3 {
+  text-align: right;
 }
 .auth__button.data-v-2cc9f8c3 {
   height: 88rpx;
   line-height: 88rpx;
   font-size: 28rpx;
   border: none;
+  border-radius: 16rpx;
   background-color: #e2e8f0;
   color: #334155;
   margin-left: 0;
@@ -85,13 +140,82 @@
   background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: #ffffff;
 }
-.auth__button--wechat.data-v-2cc9f8c3 {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: #ffffff;
+
+/* 微信扫码登录样式 */
+.auth__wechat-scan.data-v-2cc9f8c3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40rpx;
+}
+.auth__qrcode-container.data-v-2cc9f8c3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+.auth__qrcode-placeholder.data-v-2cc9f8c3 {
+  width: 400rpx;
+  height: 400rpx;
+  border: 2rpx dashed #e2e8f0;
+  border-radius: 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  background-color: #f8fafc;
+}
+.auth__qrcode-text.data-v-2cc9f8c3 {
+  font-size: 28rpx;
+  color: #475569;
+}
+.auth__qrcode-desc.data-v-2cc9f8c3 {
+  font-size: 26rpx;
+  color: #64748b;
+}
+.auth__wechat-tips.data-v-2cc9f8c3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+.auth__wechat-tip.data-v-2cc9f8c3 {
+  font-size: 26rpx;
+  color: #64748b;
+  position: relative;
+  padding-left: 40rpx;
+}
+.auth__wechat-tip.data-v-2cc9f8c3::before {
+  content: "•";
+  position: absolute;
+  left: 20rpx;
+  color: #22c55e;
+}
+.auth__refresh-btn.data-v-2cc9f8c3 {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  background-color: transparent;
+  color: #2563eb;
+  border: none;
+  font-size: 26rpx;
+  padding: 20rpx 40rpx;
+  border-radius: 16rpx;
+  border: 1rpx solid #2563eb;
+}
+.auth__footer.data-v-2cc9f8c3 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 26rpx;
+}
+.auth__footer-text.data-v-2cc9f8c3 {
+  color: #64748b;
 }
 .auth__link.data-v-2cc9f8c3 {
-  background: transparent;
   color: #2563eb;
-  text-align: center;
-  font-size: 14rpx;
+  background: transparent;
+  font-size: 26rpx;
 }

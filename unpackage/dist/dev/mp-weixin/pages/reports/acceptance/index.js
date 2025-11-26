@@ -62,34 +62,6 @@ const _sfc_main = {
           return false;
       }
     }
-    const tizidanItems = common_vendor.ref([
-      { text: "请提供营业执照、法人身份证、主要负责人姓名、电话、邮箱（账号注册用）", submitted: false },
-      { text: "项目所有的环评报告及批复", submitted: false },
-      { text: "部分已完成环保验收的，需提供所有验收报告及批复", submitted: true },
-      { text: "（房地产项目需提供）项目施工证、规划许可证、规划验收合格证（如有）", submitted: false },
-      { text: "建设项目废水、废气环保设施设计方案及竣工图纸（cad版，如有）", submitted: false },
-      { text: "厂区总平面图、各层平面图（cad版）", submitted: false },
-      { text: "厂区雨水、污水管线及流向示意图、厂区排水设计图等（cad版，如有）", submitted: false },
-      { text: "建设项目排污许可证（如有）", submitted: true },
-      { text: "如项目污水排入市政管网，请提供排水许可证", submitted: false },
-      { text: "如项目有产生危险废物，请提供危废处置协议、相应处置资质等", submitted: false }
-    ]);
-    function submitTizidanItem(index) {
-      common_vendor.index.showModal({
-        title: "确认提交",
-        content: "您确定要提交此项资料吗？",
-        success: (res) => {
-          if (res.confirm) {
-            tizidanItems.value[index].submitted = true;
-            common_vendor.index.showToast({
-              title: "提交成功",
-              icon: "success",
-              duration: 2e3
-            });
-          }
-        }
-      });
-    }
     const ALLOWED_EXTS = [
       "pdf",
       "doc",
@@ -184,10 +156,10 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           const result = await api_acceptance.uploadFileToBackend(file);
           stats.successCount++;
           await loadFileListOnMount();
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:795", `文件已上传: ${result.filename}`);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:775", `文件已上传: ${result.filename}`);
         } catch (error) {
           stats.failCount++;
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:798", `❌ 文件 ${i + 1} 上传失败:`, error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:778", `❌ 文件 ${i + 1} 上传失败:`, error);
           common_vendor.index.hideLoading();
           if (supportedFiles.length === 1) {
             common_vendor.index.showToast({
@@ -226,7 +198,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           icon: "success"
         });
       } catch (err) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:854", "删除失败:", err);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:834", "删除失败:", err);
         await loadFileListOnMount();
         common_vendor.index.showToast({
           title: "删除失败，请重试",
@@ -335,7 +307,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         }
         baseTable.value = api_acceptance.transformExtractResult(result.result);
         common_vendor.index.setStorageSync("project_base_info", JSON.stringify(baseTable.value));
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1008", "[Extract] 提取成功:", result);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:988", "[Extract] 提取成功:", result);
       } catch (error) {
         extractProgressDone = true;
         if (extractProgressTimer) {
@@ -347,7 +319,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           extractSprintTimer = null;
         }
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1025", "[Extract] 提取失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1005", "[Extract] 提取失败:", error);
         if (error.message.includes("超时")) {
           common_vendor.index.showModal({
             title: "提取超时",
@@ -704,7 +676,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           monitorSprintTimer = null;
         }
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1495", "生成监测方案失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1475", "生成监测方案失败:", error);
         common_vendor.index.showModal({
           title: "生成失败",
           content: error.message || "监测方案生成失败，请稍后重试",
@@ -727,18 +699,192 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
               fileType: "docx",
               success: () => resolve(),
               fail: (err) => {
-                common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1544", "打开文档失败:", err);
+                common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1524", "打开文档失败:", err);
                 reject(new Error("文件已保存，但打开失败"));
               }
             });
           },
           fail: (err) => {
-            common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1550", "保存文件失败:", err);
+            common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1530", "保存文件失败:", err);
             reject(new Error("保存文件失败"));
           }
         });
       });
     }
+    const tizidanItems = common_vendor.ref([]);
+    const downloadUrls = common_vendor.ref({
+      acceptance_report: "",
+      comparison_list: ""
+    });
+    async function fetchTizidanData() {
+      try {
+        common_vendor.index.showLoading({
+          title: "加载中..."
+        });
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1553", "开始请求数据...");
+        const response = await new Promise((resolve, reject) => {
+          common_vendor.index.request({
+            url: "http://127.0.0.1:8000/api/v1/tzdDetail/datasheet",
+            method: "GET",
+            timeout: 1e4,
+            data: {
+              memberId: 3
+            },
+            success: (res) => {
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1565", "请求成功:", res);
+              resolve(res);
+            },
+            fail: (err) => {
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1569", "请求失败:", err);
+              reject(err);
+            }
+          });
+        });
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1575", "完整响应对象:", response);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1576", "响应状态码:", response.statusCode);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1577", "响应数据:", response.data);
+        if (response && response.statusCode === 200) {
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1581", "状态码为200，开始解析数据");
+          if (!response.data) {
+            throw new Error("响应数据为空");
+          }
+          const data = response.data;
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1589", "解析后的数据:", data);
+          if (!data.items || !Array.isArray(data.items)) {
+            throw new Error("数据格式不正确: items 不存在或不是数组");
+          }
+          tizidanItems.value = data.items;
+          downloadUrls.value = data.download_urls || {};
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1599", "最终设置的数据:", {
+            items: tizidanItems.value,
+            urls: downloadUrls.value
+          });
+          common_vendor.index.showToast({
+            title: "数据加载成功",
+            icon: "success"
+          });
+        } else {
+          throw new Error(`请求失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1612", "获取提资单数据失败:", error);
+        common_vendor.index.showToast({
+          title: "加载失败，请重新刷新！",
+          icon: "none",
+          duration: 3e3
+        });
+        tizidanItems.value = [];
+        downloadUrls.value = {
+          acceptance_report: "",
+          comparison_list: ""
+        };
+      } finally {
+        common_vendor.index.hideLoading();
+      }
+    }
+    async function submitTizidanItem(index) {
+      common_vendor.index.showModal({
+        title: "确认提交",
+        content: "您确定要提交此项资料吗？",
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              common_vendor.index.showLoading({
+                title: "提交中..."
+              });
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1642", "开始提交项目:", index, tizidanItems.value[index].text);
+              const response = await new Promise((resolve, reject) => {
+                common_vendor.index.request({
+                  url: "http://127.0.0.1:8000/api/v1/tzdDetail/submit-item",
+                  method: "POST",
+                  header: {
+                    "Content-Type": "application/json"
+                  },
+                  data: {
+                    item_index: index,
+                    item_text: tizidanItems.value[index].text
+                  },
+                  timeout: 1e4,
+                  success: (res2) => {
+                    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1658", "提交响应:", res2);
+                    resolve(res2);
+                  },
+                  fail: (err) => {
+                    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1662", "提交失败:", err);
+                    reject(err);
+                  }
+                });
+              });
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1668", "提交完整响应:", response);
+              if (response && response.statusCode === 200) {
+                if (response.data && response.data.success) {
+                  tizidanItems.value[index].submitted = true;
+                  common_vendor.index.showToast({
+                    title: "提交成功",
+                    icon: "success",
+                    duration: 2e3
+                  });
+                } else {
+                  throw new Error(response.data.message || "提交失败");
+                }
+              } else {
+                throw new Error(`提交失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
+              }
+            } catch (error) {
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1687", "提交失败:", error);
+              common_vendor.index.showToast({
+                title: "提交失败，请重试",
+                icon: "none"
+              });
+            } finally {
+              common_vendor.index.hideLoading();
+            }
+          }
+        }
+      });
+    }
+    function downloadFile(url, filename) {
+      if (!url) {
+        common_vendor.index.showToast({
+          title: "下载链接不存在",
+          icon: "none"
+        });
+        return;
+      }
+      common_vendor.index.downloadFile({
+        url,
+        success: (res) => {
+          if (res.statusCode === 200) {
+            common_vendor.index.saveFile({
+              tempFilePath: res.tempFilePath,
+              success: (saveRes) => {
+                common_vendor.index.showToast({
+                  title: `${filename}下载成功`,
+                  icon: "success"
+                });
+              },
+              fail: () => {
+                common_vendor.index.showToast({
+                  title: "文件保存失败",
+                  icon: "none"
+                });
+              }
+            });
+          }
+        },
+        fail: () => {
+          common_vendor.index.showToast({
+            title: "下载失败",
+            icon: "none"
+          });
+        }
+      });
+    }
+    common_vendor.watch(currentStep, (newVal) => {
+      if (newVal === 2) {
+        fetchTizidanData();
+      }
+    });
     const baseTable = common_vendor.ref([]);
     const datasheet = common_vendor.ref([]);
     const selectMode = common_vendor.ref(false);
@@ -882,9 +1028,9 @@ ${head}${tail}`;
       if (cached) {
         try {
           baseTable.value = JSON.parse(cached);
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1788", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1984", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
         } catch (e) {
-          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1791", "[Cache] 缓存数据解析失败:", e);
+          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1987", "[Cache] 缓存数据解析失败:", e);
         }
       }
     });
@@ -1147,7 +1293,21 @@ ${head}${tail}`;
         })
       } : {}, {
         R: currentStep.value === 1,
-        S: common_vendor.f(tizidanItems.value, (item, index, i0) => {
+        S: tizidanItems.value.length === 0
+      }, tizidanItems.value.length === 0 ? {
+        T: common_vendor.p({
+          type: "refresh",
+          size: "48",
+          color: "#cbd5e1"
+        }),
+        U: common_vendor.p({
+          type: "refresh",
+          size: "16",
+          color: "#ffffff"
+        }),
+        V: common_vendor.o(fetchTizidanData)
+      } : {
+        W: common_vendor.f(tizidanItems.value, (item, index, i0) => {
           return common_vendor.e({
             a: common_vendor.t(index + 1),
             b: common_vendor.t(item.text),
@@ -1159,91 +1319,96 @@ ${head}${tail}`;
           } : {}, {
             g: index
           });
-        }),
-        T: currentStep.value === 2,
-        U: common_vendor.p({
+        })
+      }, {
+        X: common_vendor.o(($event) => downloadFile(downloadUrls.value.acceptance_report, "验收报告提资单")),
+        Y: !downloadUrls.value.acceptance_report,
+        Z: common_vendor.o(($event) => downloadFile(downloadUrls.value.comparison_list, "详细对比清单")),
+        aa: !downloadUrls.value.comparison_list,
+        ab: currentStep.value === 2,
+        ac: common_vendor.p({
           type: "map-pin-ellipse",
           size: "20",
           color: "#166534"
         }),
-        V: fieldworkRecord.value,
-        W: common_vendor.o(($event) => fieldworkRecord.value = $event.detail.value),
-        X: common_vendor.p({
+        ad: fieldworkRecord.value,
+        ae: common_vendor.o(($event) => fieldworkRecord.value = $event.detail.value),
+        af: common_vendor.p({
           type: "list",
           size: "18",
           color: "#166534"
         }),
-        Y: common_vendor.p({
+        ag: common_vendor.p({
           type: "gear",
           size: "16",
           color: "#ffffff"
         }),
-        Z: common_vendor.o(generateFieldworkComparison),
-        aa: common_vendor.p({
+        ah: common_vendor.o(generateFieldworkComparison),
+        ai: common_vendor.p({
           type: "plus",
           size: "16",
           color: "#155e3b"
         }),
-        ab: common_vendor.o(addComparisonItem),
-        ac: fieldworkComparison.value.length
+        aj: common_vendor.o(addComparisonItem),
+        ak: fieldworkComparison.value.length
       }, fieldworkComparison.value.length ? {
-        ad: common_vendor.f(fieldworkComparison.value, (item, index, i0) => {
+        al: common_vendor.f(fieldworkComparison.value, (item, index, i0) => {
           return {
-            a: "41308e16-26-" + i0 + ",41308e16-0",
+            a: "41308e16-28-" + i0 + ",41308e16-0",
             b: common_vendor.o(($event) => item.project = $event, item.id),
             c: common_vendor.p({
               placeholder: "项目名称",
               modelValue: item.project
             }),
-            d: "41308e16-27-" + i0 + ",41308e16-0",
+            d: "41308e16-29-" + i0 + ",41308e16-0",
             e: common_vendor.o(($event) => item.eiaRequirement = $event, item.id),
             f: common_vendor.p({
               placeholder: "环评要求",
               modelValue: item.eiaRequirement
             }),
-            g: "41308e16-28-" + i0 + ",41308e16-0",
+            g: "41308e16-30-" + i0 + ",41308e16-0",
             h: common_vendor.o(($event) => item.fieldSituation = $event, item.id),
             i: common_vendor.p({
               placeholder: "现场情况",
               modelValue: item.fieldSituation
             }),
-            j: "41308e16-29-" + i0 + ",41308e16-0",
+            j: "41308e16-31-" + i0 + ",41308e16-0",
             k: common_vendor.o(($event) => item.difference = $event, item.id),
             l: common_vendor.p({
               placeholder: "差异说明",
               modelValue: item.difference
             }),
-            m: "41308e16-30-" + i0 + ",41308e16-0",
+            m: "41308e16-32-" + i0 + ",41308e16-0",
             n: common_vendor.o(() => removeComparisonItem(index), item.id),
             o: item.id
           };
         }),
-        ae: common_vendor.p({
+        am: common_vendor.p({
           type: "trash",
           size: "16",
           color: "#d92d20"
         })
       } : {
-        af: common_vendor.p({
+        an: common_vendor.p({
           type: "map-pin-ellipse",
           size: "48",
           color: "#cbd5e1"
         })
       }, {
-        ag: common_vendor.p({
+        ao: common_vendor.p({
           type: "refresh",
           size: "18",
           color: "#166534"
         }),
-        ah: common_vendor.o(($event) => updateBaseInfo(false)),
-        ai: common_vendor.o(($event) => updateBaseInfo(true)),
-        aj: currentStep.value === 3,
-        ak: common_vendor.p({
+        ap: common_vendor.o(($event) => updateBaseInfo(false)),
+        aq: common_vendor.o(($event) => updateBaseInfo(true)),
+        ar: currentStep.value === 3,
+        as: common_vendor.p({
           type: "document",
           size: "20",
           color: "#166534"
         }),
-        al: common_vendor.f(reportTypes, (type, k0, i0) => {
+        at: common_vendor.f(reportTypes, (type, k0, i0) => {
           return {
             a: type.value,
             b: reportType.value === type.value,
@@ -1251,61 +1416,61 @@ ${head}${tail}`;
             d: type.value
           };
         }),
-        am: common_vendor.o(onReportTypeChange),
-        an: reportType.value === "withData"
+        av: common_vendor.o(onReportTypeChange),
+        aw: reportType.value === "withData"
       }, reportType.value === "withData" ? {
-        ao: common_vendor.o(($event) => testReportFiles.value = $event),
-        ap: common_vendor.p({
+        ax: common_vendor.o(($event) => testReportFiles.value = $event),
+        ay: common_vendor.p({
           fileMediatype: "all",
           ["auto-upload"]: false,
           limit: 3,
           modelValue: testReportFiles.value
         })
       } : {}, {
-        aq: common_vendor.p({
+        az: common_vendor.p({
           type: "cloud-download-filled",
           size: "16",
           color: "#ffffff"
         }),
-        ar: common_vendor.o(generateAcceptanceReport),
-        as: reportGenerated.value
+        aA: common_vendor.o(generateAcceptanceReport),
+        aB: reportGenerated.value
       }, reportGenerated.value ? common_vendor.e({
-        at: common_vendor.p({
+        aC: common_vendor.p({
           type: "checkmark-circle",
           size: "18",
           color: "#166534"
         }),
-        av: reportType.value === "withData"
+        aD: reportType.value === "withData"
       }, reportType.value === "withData" ? {} : {}) : {}, {
-        aw: currentStep.value === 4,
-        ax: common_vendor.p({
+        aE: currentStep.value === 4,
+        aF: common_vendor.p({
           type: "left",
           size: "16",
           color: "#5b6b7b"
         }),
-        ay: currentStep.value === 0,
-        az: common_vendor.o(prevStep),
-        aA: common_vendor.p({
+        aG: currentStep.value === 0,
+        aH: common_vendor.o(prevStep),
+        aI: common_vendor.p({
           type: "right",
           size: "16",
           color: "#ffffff"
         }),
-        aB: currentStep.value === stepNames.length - 1,
-        aC: common_vendor.o(nextStep),
-        aD: common_vendor.p({
+        aJ: currentStep.value === stepNames.length - 1,
+        aK: common_vendor.o(nextStep),
+        aL: common_vendor.p({
           current: "pages/reports/acceptance/index"
         }),
-        aE: common_vendor.o(($event) => newBaseInfoLabel.value = $event),
-        aF: common_vendor.p({
+        aM: common_vendor.o(($event) => newBaseInfoLabel.value = $event),
+        aN: common_vendor.p({
           placeholder: "如：项目名称/单位名称",
           modelValue: newBaseInfoLabel.value
         }),
-        aG: common_vendor.o(closeBaseInfo),
-        aH: common_vendor.o(confirmAddBaseInfo),
-        aI: common_vendor.sr(newBaseInfoPopup, "41308e16-39", {
+        aO: common_vendor.o(closeBaseInfo),
+        aP: common_vendor.o(confirmAddBaseInfo),
+        aQ: common_vendor.sr(newBaseInfoPopup, "41308e16-41", {
           "k": "newBaseInfoPopup"
         }),
-        aJ: common_vendor.p({
+        aR: common_vendor.p({
           type: "center"
         })
       });

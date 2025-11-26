@@ -28,7 +28,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 中文注释：避免使用 vh，高度随内容与父容器伸展 */
+  min-height: 100vh;
   padding: 48rpx;
   background: linear-gradient(135deg, #e0f2fe, #ede9fe);
 }
@@ -41,7 +41,13 @@
   box-shadow: 0 24rpx 60rpx rgba(15, 23, 42, 0.12);
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 32rpx;
+}
+.auth__header.data-v-4bb68961 {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  text-align: center;
 }
 .auth__title.data-v-4bb68961 {
   font-size: 40rpx;
@@ -55,36 +61,79 @@
 .auth__form.data-v-4bb68961 {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 32rpx;
+}
+.auth__input-group.data-v-4bb68961 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  border-radius: 16rpx;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+.auth__input-group.data-v-4bb68961:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.auth__input-icon.data-v-4bb68961 {
+  padding: 0 24rpx;
 }
 .auth__input.data-v-4bb68961 {
+  flex: 1;
   height: 88rpx;
-  border-radius: 16rpx;
-  border: 1px solid rgba(148, 163, 184, 0.6);
   padding: 0 24rpx;
   font-size: 28rpx;
-}
-.auth__code-row.data-v-4bb68961 {
-  display: flex;
-  gap: 16rpx;
+  border: none;
+  outline: none;
 }
 .auth__input--code.data-v-4bb68961 {
-  flex: 1;
+  border-right: 1px solid rgba(148, 163, 184, 0.3);
+}
+.auth__code-btn.data-v-4bb68961 {
+  height: 88rpx;
+  line-height: 88rpx;
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  background-color: transparent;
+  color: #2563eb;
+  border: none;
+  white-space: nowrap;
+}
+.auth__code-btn[disabled].data-v-4bb68961 {
+  color: #94a3b8;
 }
 .auth__button.data-v-4bb68961 {
   height: 88rpx;
-  border-radius: 999px;
+  line-height: 88rpx;
   font-size: 28rpx;
   border: none;
+  border-radius: 16rpx;
   background-color: #e2e8f0;
   color: #334155;
+  margin-left: 0;
+  margin-right: 0;
+  transition: all 0.3s ease;
+}
+.auth__button.data-v-4bb68961:active {
+  transform: translateY(2rpx);
 }
 .auth__button--primary.data-v-4bb68961 {
   background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: #ffffff;
 }
+.auth__footer.data-v-4bb68961 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 26rpx;
+}
+.auth__footer-text.data-v-4bb68961 {
+  color: #64748b;
+}
 .auth__link.data-v-4bb68961 {
-  background: transparent;
   color: #2563eb;
-  text-align: center;
+  background: transparent;
+  font-size: 26rpx;
 }
