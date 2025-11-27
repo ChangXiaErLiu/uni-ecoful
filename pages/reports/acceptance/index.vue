@@ -1535,7 +1535,7 @@
 		// #endif
 	}
 
-	// 以下提资单比对的方法--------------------------
+	// 以下提资单比对的方法-modify by wilson-------------------------
 	// 提资单数据
 	const tizidanItems = ref([])
 	const downloadUrls = ref({
@@ -1555,7 +1555,7 @@
 			// 使用 Promise 包装 uni.request 以确保正确解析
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
-					url: 'http://127.0.0.1:8000/api/v1/tzdDetail/datasheet',
+					url: 'http://127.0.0.1:8000/api/v1/completion/datasheet',
 					method: 'GET',
 					timeout: 10000,
 					data: {
