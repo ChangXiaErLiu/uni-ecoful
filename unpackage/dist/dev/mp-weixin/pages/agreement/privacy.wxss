@@ -1,0 +1,258 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/* 层级规范（全局使用） */
+.privacy.data-v-d015f332 {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx;
+  /* 手机端样式 */
+  /* 平板端样式 */
+  /* PC端样式 */
+}
+@media (max-width: 767px) {
+.privacy.data-v-d015f332 {
+    padding: 24rpx;
+    align-items: flex-start;
+    background: linear-gradient(135deg, #e0f2fe, #ede9fe);
+}
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+.privacy.data-v-d015f332 {
+    padding: 48rpx;
+}
+}
+@media (min-width: 1200px) {
+.privacy.data-v-d015f332 {
+    padding: 60rpx;
+}
+}
+.privacy__container.data-v-d015f332 {
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 20rpx 60rpx rgba(15, 23, 42, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* 手机端样式 */
+  /* 平板端样式 */
+  /* PC端样式 */
+}
+@media (max-width: 767px) {
+.privacy__container.data-v-d015f332 {
+    border-radius: 32rpx;
+    min-height: 80vh;
+    max-height: 90vh;
+}
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+.privacy__container.data-v-d015f332 {
+    max-width: 90%;
+    max-height: 90vh;
+}
+}
+@media (min-width: 1200px) {
+.privacy__container.data-v-d015f332 {
+    max-width: 800px;
+    max-height: 80vh;
+}
+}
+.privacy__header.data-v-d015f332 {
+  padding: 48rpx 48rpx 32rpx;
+  border-bottom: 1rpx solid #e2e8f0;
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  flex-shrink: 0;
+  /* 手机端样式 */
+}
+@media (max-width: 767px) {
+.privacy__header.data-v-d015f332 {
+    padding: 40rpx 40rpx 24rpx;
+}
+}
+.privacy__title.data-v-d015f332 {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #0f172a;
+  display: block;
+  margin-bottom: 16rpx;
+  /* 手机端样式 */
+  /* PC端样式 */
+}
+@media (max-width: 767px) {
+.privacy__title.data-v-d015f332 {
+    font-size: 36rpx;
+}
+}
+@media (min-width: 1200px) {
+.privacy__title.data-v-d015f332 {
+    font-size: 44rpx;
+}
+}
+.privacy__subtitle.data-v-d015f332 {
+  font-size: 26rpx;
+  color: #64748b;
+  /* 手机端样式 */
+}
+@media (max-width: 767px) {
+.privacy__subtitle.data-v-d015f332 {
+    font-size: 24rpx;
+}
+}
+.privacy__content.data-v-d015f332 {
+  flex: 1;
+  padding: 32rpx 48rpx;
+  /* 手机端样式 */
+}
+@media (max-width: 767px) {
+.privacy__content.data-v-d015f332 {
+    padding: 24rpx 40rpx;
+}
+}
+.privacy__section.data-v-d015f332 {
+  margin-bottom: 48rpx;
+  /* 手机端样式 */
+}
+@media (max-width: 767px) {
+.privacy__section.data-v-d015f332 {
+    margin-bottom: 40rpx;
+}
+}
+.privacy__section-title.data-v-d015f332 {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #0f172a;
+  display: block;
+  margin-bottom: 24rpx;
+  /* 手机端样式 */
+  /* PC端样式 */
+}
+@media (max-width: 767px) {
+.privacy__section-title.data-v-d015f332 {
+    font-size: 30rpx;
+    margin-bottom: 20rpx;
+}
+}
+@media (min-width: 1200px) {
+.privacy__section-title.data-v-d015f332 {
+    font-size: 34rpx;
+}
+}
+.privacy__text.data-v-d015f332 {
+  font-size: 28rpx;
+  color: #475569;
+  line-height: 1.6;
+  display: block;
+  white-space: pre-line;
+  /* 手机端样式 */
+  /* PC端样式 */
+}
+@media (max-width: 767px) {
+.privacy__text.data-v-d015f332 {
+    font-size: 26rpx;
+    line-height: 1.5;
+}
+}
+@media (min-width: 1200px) {
+.privacy__text.data-v-d015f332 {
+    font-size: 30rpx;
+    line-height: 1.7;
+}
+}
+.privacy__actions.data-v-d015f332 {
+  padding: 32rpx 48rpx;
+  border-top: 1rpx solid #e2e8f0;
+  display: flex;
+  gap: 24rpx;
+  flex-shrink: 0;
+  /* 手机端样式 */
+  /* PC端样式 */
+}
+@media (max-width: 767px) {
+.privacy__actions.data-v-d015f332 {
+    padding: 24rpx 40rpx;
+    gap: 20rpx;
+}
+}
+@media (min-width: 1200px) {
+.privacy__actions.data-v-d015f332 {
+    padding: 40rpx 48rpx;
+}
+}
+.privacy__button.data-v-d015f332 {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  font-size: 28rpx;
+  border: none;
+  border-radius: 16rpx;
+  transition: all 0.3s ease;
+  /* 手机端样式 */
+  /* PC端样式 */
+}
+.privacy__button.data-v-d015f332:active {
+  transform: translateY(2rpx);
+}
+@media (max-width: 767px) {
+.privacy__button.data-v-d015f332 {
+    height: 80rpx;
+    line-height: 80rpx;
+    font-size: 26rpx;
+}
+}
+@media (min-width: 1200px) {
+.privacy__button.data-v-d015f332 {
+    height: 96rpx;
+    line-height: 96rpx;
+    font-size: 30rpx;
+}
+.privacy__button.data-v-d015f332:hover {
+    opacity: 0.9;
+}
+}
+.privacy__button--secondary.data-v-d015f332 {
+  background-color: #f1f5f9;
+  color: #475569;
+  /* PC端样式 */
+}
+@media (min-width: 1200px) {
+.privacy__button--secondary.data-v-d015f332:hover {
+    background-color: #e2e8f0;
+}
+}
+.privacy__button--primary.data-v-d015f332 {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #ffffff;
+  /* PC端样式 */
+}
+@media (min-width: 1200px) {
+.privacy__button--primary.data-v-d015f332:hover {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+}
+}

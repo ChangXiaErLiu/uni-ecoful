@@ -1,5 +1,6 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const stores_user = require("../../stores/user.js");
 if (!Array) {
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
   _easycom_uni_icons2();
@@ -11,7 +12,8 @@ if (!Math) {
 const _sfc_main = {
   __name: "login",
   setup(__props) {
-    const activeTab = common_vendor.ref("code");
+    const userStore = stores_user.useUserStore();
+    const activeTab = common_vendor.ref("password");
     const mobile = common_vendor.ref("");
     const code = common_vendor.ref("");
     const account = common_vendor.ref("");
@@ -37,7 +39,7 @@ const _sfc_main = {
       }
     }
     function generateQRCode() {
-      common_vendor.index.__f__("log", "at pages/auth/login.vue:174", "生成微信登录二维码");
+      common_vendor.index.__f__("log", "at pages/auth/login.vue:178", "生成微信登录二维码");
       common_vendor.index.showLoading({ title: "生成二维码中..." });
       setTimeout(() => {
         common_vendor.index.hideLoading();
@@ -52,7 +54,7 @@ const _sfc_main = {
     }
     function startPollingQRCode() {
       qrCodeTimer = setInterval(() => {
-        common_vendor.index.__f__("log", "at pages/auth/login.vue:198", "检查二维码扫码状态...");
+        common_vendor.index.__f__("log", "at pages/auth/login.vue:202", "检查二维码扫码状态...");
       }, 3e3);
     }
     function sendCode() {
@@ -85,14 +87,15 @@ const _sfc_main = {
         common_vendor.index.showToast({ title: "请输入验证码", icon: "none" });
         return;
       }
-      common_vendor.index.__f__("log", "at pages/auth/login.vue:256", "验证码登录", mobile.value, code.value);
+      common_vendor.index.__f__("log", "at pages/auth/login.vue:260", "验证码登录", mobile.value, code.value);
       common_vendor.index.showLoading({ title: "登录中..." });
       setTimeout(() => {
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({ title: "登录成功", icon: "success" });
       }, 1500);
     }
-    function loginWithPassword() {
+    async function loginWithPassword() {
+      var _a, _b, _c;
       if (!account.value) {
         common_vendor.index.showToast({ title: "请输入账号", icon: "none" });
         return;
@@ -101,12 +104,37 @@ const _sfc_main = {
         common_vendor.index.showToast({ title: "请输入密码", icon: "none" });
         return;
       }
-      common_vendor.index.__f__("log", "at pages/auth/login.vue:277", "密码登录", account.value, password.value);
-      common_vendor.index.showLoading({ title: "登录中..." });
-      setTimeout(() => {
+      common_vendor.index.showLoading({ title: "登录中...", mask: true });
+      try {
+        const result = await userStore.loginByPassword(account.value, password.value);
         common_vendor.index.hideLoading();
-        common_vendor.index.showToast({ title: "登录成功", icon: "success" });
-      }, 1500);
+        if (result.success) {
+          common_vendor.index.showToast({
+            title: "登录成功",
+            icon: "success",
+            duration: 1500
+          });
+          setTimeout(() => {
+            common_vendor.index.switchTab({
+              url: "/pages/home/index"
+            });
+          }, 1500);
+        } else {
+          const errorMsg = ((_a = result.error) == null ? void 0 : _a.message) || ((_c = (_b = result.error) == null ? void 0 : _b.data) == null ? void 0 : _c.detail) || "登录失败，请检查账号密码";
+          common_vendor.index.showToast({
+            title: errorMsg,
+            icon: "none",
+            duration: 2e3
+          });
+        }
+      } catch (error) {
+        common_vendor.index.hideLoading();
+        common_vendor.index.__f__("error", "at pages/auth/login.vue:315", "登录异常:", error);
+        common_vendor.index.showToast({
+          title: "登录失败，请稍后重试",
+          icon: "none"
+        });
+      }
     }
     function goForgotPassword() {
       common_vendor.index.navigateTo({ url: "/pages/auth/forgot-password" });

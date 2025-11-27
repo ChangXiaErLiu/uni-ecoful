@@ -18,7 +18,9 @@
     "pages/profile/devices",
     "pages/profile/operationLogs",
     "pages/profile/about",
-    "pages/profile/feedback"
+    "pages/profile/feedback",
+    "pages/agreement/user",
+    "pages/agreement/privacy"
   ],
   "window": {
     "navigationBarTextStyle": "black",

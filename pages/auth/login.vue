@@ -135,9 +135,13 @@
 
 <script setup>
 import { ref, onUnmounted } from 'vue'
+import { useUserStore } from '@/stores/user.js'
+
+// 用户状态管理
+const userStore = useUserStore()
 
 // 响应式数据
-const activeTab = ref('code') // 默认验证码登录
+const activeTab = ref('password') // 默认密码登录（因为验证码功能未开发）
 const mobile = ref('')
 const code = ref('')
 const account = ref('')
@@ -263,7 +267,8 @@ function loginWithCode() {
 }
 
 // 密码登录
-function loginWithPassword() {
+async function loginWithPassword() {
+  // 表单验证
   if (!account.value) {
     uni.showToast({ title: '请输入账号', icon: 'none' })
     return
@@ -274,13 +279,45 @@ function loginWithPassword() {
     return
   }
   
-  console.log('密码登录', account.value, password.value)
-  // 这里调用密码登录API
-  uni.showLoading({ title: '登录中...' })
-  setTimeout(() => {
+  // 调用登录接口
+  uni.showLoading({ title: '登录中...', mask: true })
+  
+  try {
+    const result = await userStore.loginByPassword(account.value, password.value)
+    
     uni.hideLoading()
-    uni.showToast({ title: '登录成功', icon: 'success' })
-  }, 1500)
+    
+    if (result.success) {
+      uni.showToast({ 
+        title: '登录成功', 
+        icon: 'success',
+        duration: 1500
+      })
+      
+      // 延迟跳转，让用户看到成功提示
+      setTimeout(() => {
+        // 跳转到首页
+        uni.switchTab({ 
+          url: '/pages/home/index' 
+        })
+      }, 1500)
+    } else {
+      // 登录失败
+      const errorMsg = result.error?.message || result.error?.data?.detail || '登录失败，请检查账号密码'
+      uni.showToast({ 
+        title: errorMsg, 
+        icon: 'none',
+        duration: 2000
+      })
+    }
+  } catch (error) {
+    uni.hideLoading()
+    console.error('登录异常:', error)
+    uni.showToast({ 
+      title: '登录失败，请稍后重试', 
+      icon: 'none' 
+    })
+  }
 }
 
 // 忘记密码

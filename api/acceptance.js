@@ -17,47 +17,32 @@ import {
  * @returns {Promise} 上传结果
  */
 export async function uploadFileToBackend(file) {
-	return new Promise((resolve, reject) => {
-		// 获取文件路径
-		const filePath = file.url || file.path || file.tempFilePath
-		const fileName = file.name || '环评报告.pdf'
+	// 获取文件路径
+	const filePath = file.url || file.path || file.tempFilePath
 
-		if (!filePath) {
-			reject(new Error('文件路径无效'))
-			return
-		}
+	if (!filePath) {
+		throw new Error('文件路径无效')
+	}
 
-		uni.uploadFile({
-			url: BASE_URL + '/api/v1/completion/documents/upload',
-			filePath: filePath,
+	try {
+		// 使用封装的 upload 方法
+		const data = await request.upload('/api/v1/completion/documents/upload', filePath, {
 			name: 'file',
 			formData: {
 				category: 'eia_report' // 标记为环评报告
-			},
-			success: (res) => {
-				try {
-					const data = JSON.parse(res.data)
-					if (res.statusCode === 200) {
-						resolve({
-							success: true,
-							document_id: data.document_id,
-							filename: data.filename,
-							size_bytes: data.size_bytes,
-							upload_time: data.upload_time
-						})
-
-					} else {
-						reject(new Error(data.detail || '上传失败'))
-					}
-				} catch (e) {
-					reject(new Error('解析响应失败'))
-				}
-			},
-			fail: (error) => {
-				reject(new Error('网络请求失败'))
 			}
 		})
-	})
+
+		return {
+			success: true,
+			document_id: data.document_id,
+			filename: data.filename,
+			size_bytes: data.size_bytes,
+			upload_time: data.upload_time
+		}
+	} catch (error) {
+		throw new Error(error.message || '上传失败')
+	}
 }
 
 /**
@@ -86,7 +71,6 @@ export async function fetchUploadedFiles() {
 			return res.map(file => ({
 				name: file.filename,
 				ext: file.metadata?.file_extension || '',
-				url: `BASE_URL/${file.file_path.replace(/\\\\/g, '/')}`, // 构造预览地址（可选）
 				document_id: file.document_id,
 				size: file.size_bytes,
 				upload_time: file.upload_time
@@ -361,8 +345,7 @@ export function downloadSignboardWord(signboard) {
 	};
 
 	// #ifdef H5
-	// H5 用 fetch 保证 arrayBuffer
-	// uni.request 在H5环境中不稳定，使用原生的 fetch API 是一个可靠且推荐的方案
+	// H5 环境：uni.request 的 arraybuffer 不稳定，使用原生 fetch
 	return fetch(BASE_URL + '/api/v1/completion/signboard/download', {
 		method: 'POST',
 		headers: {
@@ -370,13 +353,13 @@ export function downloadSignboardWord(signboard) {
 		},
 		body: JSON.stringify(payload)
 	}).then(res => {
-		if (!res.ok) throw new Error('生成失败');
-		return res.arrayBuffer(); // 浏览器原生一定返回 ArrayBuffer
-	});
+		if (!res.ok) throw new Error('生成失败')
+		return res.arrayBuffer()
+	})
 	// #endif
 
 	// #ifndef H5
-	// 小程序、App 用 uni.request
+	// 小程序/App 环境：直接使用 uni.request（因为 responseType 需要特殊处理）
 	return new Promise((resolve, reject) => {
 		uni.request({
 			url: BASE_URL + '/api/v1/completion/signboard/download',
@@ -387,15 +370,27 @@ export function downloadSignboardWord(signboard) {
 			},
 			responseType: 'arraybuffer',
 			success: (res) => {
-				if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
-					resolve(res.data);
+				console.log('标识牌下载响应:', res)
+				if (res.statusCode === 200 && res.data) {
+					// 检查是否是 ArrayBuffer
+					if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
+						resolve(res.data)
+					} else if (typeof res.data === 'string' && res.data.length > 0) {
+						// 如果返回的是字符串，说明小程序没有正确处理 arraybuffer
+						uni.showToast({ title: '文件格式错误', icon: 'none' })
+						reject(new Error('文件格式错误'))
+					} else {
+						reject(new Error('空文件'))
+					}
 				} else {
-					reject(new Error('空文件'));
+					reject(new Error('生成失败'))
 				}
 			},
-			fail: reject
-		});
-	});
+			fail: (error) => {
+				reject(new Error(error.errMsg || '网络请求失败'))
+			}
+		})
+	})
 	// #endif
 }
 
@@ -414,8 +409,7 @@ export function downloadMonitorPlan(options = {}) {
   } = options
 
   // #ifdef H5
-  // H5 环境使用 fetch
-  // 创建 AbortController 用于超时控制
+  // H5 环境：uni.request 的 arraybuffer 不稳定，使用原生 fetch
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
   
@@ -423,10 +417,8 @@ export function downloadMonitorPlan(options = {}) {
     method: 'GET',
     signal: controller.signal
   }).then(res => {
-    clearTimeout(timeoutId)  // 清除超时定时器
-    if (!res.ok) {
-      throw new Error(`生成失败: ${res.status} ${res.statusText}`)
-    }
+    clearTimeout(timeoutId)
+    if (!res.ok) throw new Error('生成失败')
     return res.arrayBuffer()
   }).catch(err => {
     clearTimeout(timeoutId)
@@ -438,7 +430,7 @@ export function downloadMonitorPlan(options = {}) {
   // #endif
 
   // #ifndef H5
-  // 小程序、App 环境使用 uni.request
+  // 小程序/App 环境：直接使用 uni.request
   return new Promise((resolve, reject) => {
     const requestTask = uni.request({
       url: BASE_URL + '/api/v1/completion/monitor-plan/generate',
@@ -446,10 +438,20 @@ export function downloadMonitorPlan(options = {}) {
       responseType: 'arraybuffer',
       timeout: timeout,
       success: (res) => {
-        if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
-          resolve(res.data)
+        console.log('监测方案下载响应:', res)
+        if (res.statusCode === 200 && res.data) {
+          // 检查是否是 ArrayBuffer
+          if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
+            resolve(res.data)
+          } else if (typeof res.data === 'string' && res.data.length > 0) {
+            // 如果返回的是字符串，说明小程序没有正确处理 arraybuffer
+            uni.showToast({ title: '文件格式错误', icon: 'none' })
+            reject(new Error('文件格式错误'))
+          } else {
+            reject(new Error('空文件'))
+          }
         } else {
-          reject(new Error(`生成失败: ${res.statusCode}`))
+          reject(new Error('生成失败'))
         }
       },
       fail: (error) => {

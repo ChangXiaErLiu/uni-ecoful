@@ -225,6 +225,99 @@ class Request {
       method: "DELETE"
     });
   }
+  /**
+   * 文件上传方法
+   * @param {String} url - 上传接口地址
+   * @param {String} filePath - 文件路径
+   * @param {Object} options - 配置项
+   * @param {String} options.name - 文件对应的 key，默认 'file'
+   * @param {Object} options.formData - 额外的表单数据
+   * @param {Object} options.header - 额外的请求头
+   * @param {Boolean} options.hideLoading - 是否隐藏 loading
+   * @returns {Promise}
+   */
+  upload(url, filePath, options = {}) {
+    const {
+      name = "file",
+      formData = {},
+      header = {},
+      hideLoading = false
+    } = options;
+    const token = common_vendor.index.getStorageSync("token");
+    const uploadHeader = {
+      ...this.baseOptions.header,
+      ...header
+    };
+    if (token) {
+      uploadHeader.Authorization = `Bearer ${token}`;
+    }
+    let requestId = null;
+    if (!hideLoading) {
+      requestId = Date.now();
+      this.requestQueue.push(requestId);
+      this.showLoading();
+    }
+    return new Promise((resolve, reject) => {
+      common_vendor.index.uploadFile({
+        url: url.startsWith("http") ? url : utils_config.BASE_URL + url,
+        filePath,
+        name,
+        formData,
+        header: uploadHeader,
+        success: (res) => {
+          if (requestId !== null) {
+            this.hideLoading(requestId);
+          }
+          try {
+            const data = typeof res.data === "string" ? JSON.parse(res.data) : res.data;
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve(data);
+            } else {
+              const error = {
+                code: res.statusCode,
+                message: (data == null ? void 0 : data.detail) || "上传失败",
+                data
+              };
+              common_vendor.index.showToast({
+                title: error.message,
+                icon: "none",
+                duration: 2e3
+              });
+              reject(error);
+            }
+          } catch (e) {
+            const parseError = {
+              code: "PARSE_ERROR",
+              message: "解析响应失败",
+              originalError: e
+            };
+            common_vendor.index.showToast({
+              title: parseError.message,
+              icon: "none",
+              duration: 2e3
+            });
+            reject(parseError);
+          }
+        },
+        fail: (error) => {
+          if (requestId !== null) {
+            this.hideLoading(requestId);
+          }
+          const netError = {
+            code: "UPLOAD_ERROR",
+            message: error.errMsg || "上传失败",
+            originalError: error
+          };
+          common_vendor.index.showToast({
+            title: netError.message,
+            icon: "none",
+            duration: 2e3
+          });
+          reject(netError);
+        }
+      });
+    });
+  }
 }
 const request = new Request();
 exports.request = request;

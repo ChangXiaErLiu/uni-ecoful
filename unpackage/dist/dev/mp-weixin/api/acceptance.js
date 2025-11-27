@@ -3,44 +3,28 @@ const common_vendor = require("../common/vendor.js");
 const utils_config = require("../utils/config.js");
 const utils_request = require("../utils/request.js");
 async function uploadFileToBackend(file) {
-  return new Promise((resolve, reject) => {
-    const filePath = file.url || file.path || file.tempFilePath;
-    file.name || "环评报告.pdf";
-    if (!filePath) {
-      reject(new Error("文件路径无效"));
-      return;
-    }
-    common_vendor.index.uploadFile({
-      url: utils_config.BASE_URL + "/api/v1/completion/documents/upload",
-      filePath,
+  const filePath = file.url || file.path || file.tempFilePath;
+  if (!filePath) {
+    throw new Error("文件路径无效");
+  }
+  try {
+    const data = await utils_request.request.upload("/api/v1/completion/documents/upload", filePath, {
       name: "file",
       formData: {
         category: "eia_report"
         // 标记为环评报告
-      },
-      success: (res) => {
-        try {
-          const data = JSON.parse(res.data);
-          if (res.statusCode === 200) {
-            resolve({
-              success: true,
-              document_id: data.document_id,
-              filename: data.filename,
-              size_bytes: data.size_bytes,
-              upload_time: data.upload_time
-            });
-          } else {
-            reject(new Error(data.detail || "上传失败"));
-          }
-        } catch (e) {
-          reject(new Error("解析响应失败"));
-        }
-      },
-      fail: (error) => {
-        reject(new Error("网络请求失败"));
       }
     });
-  });
+    return {
+      success: true,
+      document_id: data.document_id,
+      filename: data.filename,
+      size_bytes: data.size_bytes,
+      upload_time: data.upload_time
+    };
+  } catch (error) {
+    throw new Error(error.message || "上传失败");
+  }
 }
 async function fetchUploadedFiles() {
   try {
@@ -51,8 +35,6 @@ async function fetchUploadedFiles() {
         return {
           name: file.filename,
           ext: ((_a = file.metadata) == null ? void 0 : _a.file_extension) || "",
-          url: `BASE_URL/${file.file_path.replace(/\\\\/g, "/")}`,
-          // 构造预览地址（可选）
           document_id: file.document_id,
           size: file.size_bytes,
           upload_time: file.upload_time
@@ -61,7 +43,7 @@ async function fetchUploadedFiles() {
     }
     return [];
   } catch (error) {
-    common_vendor.index.__f__("error", "at api/acceptance.js:97", "自动刷新文件列表失败:", error);
+    common_vendor.index.__f__("error", "at api/acceptance.js:81", "自动刷新文件列表失败:", error);
     return [];
   }
 }
@@ -297,13 +279,23 @@ function downloadSignboardWord(signboard) {
       },
       responseType: "arraybuffer",
       success: (res) => {
-        if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
-          resolve(res.data);
+        common_vendor.index.__f__("log", "at api/acceptance.js:373", "标识牌下载响应:", res);
+        if (res.statusCode === 200 && res.data) {
+          if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
+            resolve(res.data);
+          } else if (typeof res.data === "string" && res.data.length > 0) {
+            common_vendor.index.showToast({ title: "文件格式错误", icon: "none" });
+            reject(new Error("文件格式错误"));
+          } else {
+            reject(new Error("空文件"));
+          }
         } else {
-          reject(new Error("空文件"));
+          reject(new Error("生成失败"));
         }
       },
-      fail: reject
+      fail: (error) => {
+        reject(new Error(error.errMsg || "网络请求失败"));
+      }
     });
   });
 }
@@ -320,10 +312,18 @@ function downloadMonitorPlan(options = {}) {
       responseType: "arraybuffer",
       timeout,
       success: (res) => {
-        if (res.statusCode === 200 && res.data && res.data.byteLength > 0) {
-          resolve(res.data);
+        common_vendor.index.__f__("log", "at api/acceptance.js:441", "监测方案下载响应:", res);
+        if (res.statusCode === 200 && res.data) {
+          if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
+            resolve(res.data);
+          } else if (typeof res.data === "string" && res.data.length > 0) {
+            common_vendor.index.showToast({ title: "文件格式错误", icon: "none" });
+            reject(new Error("文件格式错误"));
+          } else {
+            reject(new Error("空文件"));
+          }
         } else {
-          reject(new Error(`生成失败: ${res.statusCode}`));
+          reject(new Error("生成失败"));
         }
       },
       fail: (error) => {

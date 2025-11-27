@@ -2863,6 +2863,188 @@
 
 	/* 响应式设计 - 移动端 */
 	@media (max-width: 768px) {
+
+		// 项目基本信息表
+		.baseinfo__row {
+			display: block;
+			width: 54%;
+		}
+
+		.pollutants-container {
+			margin-bottom: 20rpx;
+			width: 56.2%;
+		}
+
+		.pollutants-table {
+			overflow-x: auto;
+		}
+
+		.pollutants-header,
+		.pollutants-row {
+			min-width: 1200rpx;
+			/* 保证表格有足够宽度可以横向滚动 */
+		}
+
+		.pollutants-col {
+			padding: 16rpx 10rpx;
+			font-size: 24rpx;
+		}
+
+		.pw-ico {
+			width: 140rpx;
+			height: 64rpx;
+			border: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: $white;
+			margin: 5rpx 0 0rpx 0;
+
+		}
+
+		.pw-ico text {
+			font-size: 22rpx;
+		}
+
+		.toolbar-content {
+			flex-direction: column;
+			gap: 16rpx;
+		}
+
+		.toolbar-left,
+		.toolbar-right {
+			width: 100%;
+		}
+
+		.toolbar-buttons {
+			width: 100%;
+			overflow-x: auto;
+			padding-bottom: 6rpx;
+		}
+
+		.acceptance-content {
+			padding: 16rpx;
+		}
+
+		.section-header {
+			padding: 20rpx 20rpx 0;
+		}
+
+		.section-body {
+			padding: 0 20rpx 20rpx;
+		}
+
+		.form-grid--base {
+			grid-template-columns: 1fr;
+			gap: 10rpx;
+		}
+
+		.form-item__label {
+			width: 160rpx;
+			min-width: 140rpx;
+			font-weight: 600;
+			font-size: 28rpx;
+		}
+
+		.form-item__title {
+			width: 160rpx;
+			min-width: 140rpx;
+		}
+
+		/* 表格卡片化：自动加标签（无须改模板） */
+		.table-header {
+			display: none;
+		}
+
+		.table-row {
+			display: grid;
+			grid-template-columns: 1fr;
+			border-bottom: 1rpx solid #f1f5f9;
+			padding: 10rpx 8rpx;
+			gap: 0;
+		}
+
+		.table-td {
+			position: relative;
+			padding: 14rpx 14rpx 14rpx 120rpx;
+			border-right: none;
+			border-bottom: 1rpx solid #f7f8fa;
+			min-height: 64rpx;
+		}
+
+		.table-td:last-child {
+			border-bottom: none;
+		}
+
+		/* 用 nth-child 给出列标题（与 header 顺序一致） */
+		.table-row .table-td:nth-child(1)::before {
+			content: '字段';
+		}
+
+		.table-row .table-td:nth-child(2)::before {
+			content: '当前值';
+		}
+
+		.table-row .table-td:nth-child(3)::before {
+			content: '类型';
+		}
+
+		.table-row .table-td:nth-child(4)::before {
+			content: '状态';
+		}
+
+		.table-row .table-td:nth-child(5)::before {
+			content: '操作';
+		}
+
+		.table-td::before {
+			position: absolute;
+			left: 14rpx;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 24rpx;
+			color: #6b7a8a;
+			font-weight: 600;
+			width: 96rpx;
+			text-align-last: justify;
+		}
+
+		/* 简化型行（标识牌）不需要五列标签 */
+		.table-row--simple .table-td {
+			padding: 14rpx;
+		}
+
+		.table-row--simple .table-td::before {
+			content: '';
+			display: none;
+		}
+
+		.acceptance-navigation {
+			padding: 16rpx;
+		}
+
+		.modal {
+			width: 92vw;
+		}
+
+		.update-actions {
+			flex-direction: column;
+		}
+
+		.generation-actions {
+			flex-direction: column;
+		}
+
+		.radio-group {
+			flex-direction: column;
+			gap: 12rpx;
+		}
+
+		.action-buttons {
+			flex-wrap: wrap;
+			justify-content: flex-start;
+		}
+
 		.tizidan-container {
 			margin: 10rpx;
 			border-radius: 12rpx;
@@ -2925,54 +3107,35 @@
 		}
 	}
 
-	/* 平板端适配 */
-	@media (min-width: 769px) and (max-width: 960px) {
-		.tizidan-container {
-			margin: 20rpx;
-		}
-
-		.tizidan-item-card {
-			flex-direction: row;
-			justify-content: space-between;
-			align-items: flex-start;
-		}
-
-		.tizidan-item-content {
-			margin-bottom: 0;
-			flex: 1;
-			max-width: 70%;
-		}
-
-		.tizidan-item-status {
-			flex-shrink: 0;
-			border-top: none;
-			padding-top: 0;
-			flex-direction: column;
-			align-items: flex-end;
-			gap: 12rpx;
-			min-width: 150rpx;
-		}
-
-		.tizidan-footer {
-			flex-direction: row;
-			justify-content: space-between;
-			align-items: center;
-		}
-
-		.tizidan-footer-text {
-			margin-bottom: 0;
-			flex: 1;
-			text-align: left;
-		}
-
-		.tizidan-footer .btn {
-			flex-shrink: 0;
-			margin-left: 20rpx;
-		}
-	}
-
 	/* 桌面端适配 */
-	@media (min-width: 1100px) {
+	@media (min-width: 1023px) {
+
+		// 全局设置
+		.btn--primary:hover {
+			box-shadow: 0 6rpx 16rpx rgba(22, 101, 52, .28);
+		}
+
+		.btn--secondary:hover {
+			background: #eef6f2;
+			border-color: #d7efe4;
+		}
+
+		.btn--ghost:hover {
+			background: #f7f9fb;
+		}
+
+		.btn--danger:hover {
+			box-shadow: 0 6rpx 16rpx rgba(217, 45, 32, .25);
+		}
+
+		.step-item:hover {
+			background: #f7fafc;
+		}
+
+		.icon-btn:hover {
+			background: #f3f6fa;
+		}
+
 		.tizidan-container {
 			max-width: 1000rpx;
 			margin: 0 auto;
@@ -3212,6 +3375,49 @@
 		.action-buttons {
 			flex-wrap: wrap;
 			justify-content: flex-start;
+		}
+
+		.tizidan-container {
+			margin: 20rpx;
+		}
+
+		.tizidan-item-card {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-start;
+		}
+
+		.tizidan-item-content {
+			margin-bottom: 0;
+			flex: 1;
+			max-width: 70%;
+		}
+
+		.tizidan-item-status {
+			flex-shrink: 0;
+			border-top: none;
+			padding-top: 0;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 12rpx;
+			min-width: 150rpx;
+		}
+
+		.tizidan-footer {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.tizidan-footer-text {
+			margin-bottom: 0;
+			flex: 1;
+			text-align: left;
+		}
+
+		.tizidan-footer .btn {
+			flex-shrink: 0;
+			margin-left: 20rpx;
 		}
 
 	}

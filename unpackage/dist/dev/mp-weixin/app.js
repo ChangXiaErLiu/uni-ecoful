@@ -23,6 +23,8 @@ if (!Math) {
   "./pages/profile/operationLogs.js";
   "./pages/profile/about.js";
   "./pages/profile/feedback.js";
+  "./pages/agreement/user.js";
+  "./pages/agreement/privacy.js";
 }
 const _sfc_main = {
   __name: "App",

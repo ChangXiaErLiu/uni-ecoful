@@ -274,6 +274,108 @@ class Request {
 			method: 'DELETE'
 		})
 	}
+
+	/**
+	 * 文件上传方法
+	 * @param {String} url - 上传接口地址
+	 * @param {String} filePath - 文件路径
+	 * @param {Object} options - 配置项
+	 * @param {String} options.name - 文件对应的 key，默认 'file'
+	 * @param {Object} options.formData - 额外的表单数据
+	 * @param {Object} options.header - 额外的请求头
+	 * @param {Boolean} options.hideLoading - 是否隐藏 loading
+	 * @returns {Promise}
+	 */
+	upload(url, filePath, options = {}) {
+		const {
+			name = 'file',
+			formData = {},
+			header = {},
+			hideLoading = false
+		} = options
+
+		const token = uni.getStorageSync('token')
+		const uploadHeader = {
+			...this.baseOptions.header,
+			...header
+		}
+		if (token) {
+			uploadHeader.Authorization = `Bearer ${token}`
+		}
+
+		// 显示 loading
+		let requestId = null
+		if (!hideLoading) {
+			requestId = Date.now()
+			this.requestQueue.push(requestId)
+			this.showLoading()
+		}
+
+		return new Promise((resolve, reject) => {
+			uni.uploadFile({
+				url: url.startsWith('http') ? url : (BASE_URL + url),
+				filePath,
+				name,
+				formData,
+				header: uploadHeader,
+				success: (res) => {
+					if (requestId !== null) {
+						this.hideLoading(requestId)
+					}
+
+					try {
+						// 解析响应数据
+						const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+
+						if (res.statusCode >= 200 && res.statusCode < 300) {
+							resolve(data)
+						} else {
+							const error = {
+								code: res.statusCode,
+								message: data?.detail || '上传失败',
+								data: data
+							}
+							uni.showToast({
+								title: error.message,
+								icon: 'none',
+								duration: 2000
+							})
+							reject(error)
+						}
+					} catch (e) {
+						const parseError = {
+							code: 'PARSE_ERROR',
+							message: '解析响应失败',
+							originalError: e
+						}
+						uni.showToast({
+							title: parseError.message,
+							icon: 'none',
+							duration: 2000
+						})
+						reject(parseError)
+					}
+				},
+				fail: (error) => {
+					if (requestId !== null) {
+						this.hideLoading(requestId)
+					}
+
+					const netError = {
+						code: 'UPLOAD_ERROR',
+						message: error.errMsg || '上传失败',
+						originalError: error
+					}
+					uni.showToast({
+						title: netError.message,
+						icon: 'none',
+						duration: 2000
+					})
+					reject(netError)
+				}
+			})
+		})
+	}
 }
 
 // 导出单例
