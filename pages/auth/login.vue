@@ -141,7 +141,7 @@ import { useUserStore } from '@/stores/user.js'
 const userStore = useUserStore()
 
 // 响应式数据
-const activeTab = ref('password') // 默认密码登录（因为验证码功能未开发）
+const activeTab = ref('code') // 默认验证码登录
 const mobile = ref('')
 const code = ref('')
 const account = ref('')
@@ -154,6 +154,9 @@ let qrCodeTimer = null // 用于轮询二维码状态
 
 // 切换登录方式
 function switchTab(tab) {
+  // 先停止之前的轮询
+  stopPolling()
+  
   activeTab.value = tab
   // 清空表单
   mobile.value = ''
@@ -161,62 +164,165 @@ function switchTab(tab) {
   account.value = ''
   password.value = ''
   
-  // 切换到微信登录时，生成二维码
-  if (tab === 'wechat') {
+  // 切换到微信登录时，只在没有二维码时生成
+  if (tab === 'wechat' && !qrcodeId.value) {
     generateQRCode()
-  } else {
-    // 清除二维码轮询
-    if (qrCodeTimer) {
-      clearInterval(qrCodeTimer)
-      qrCodeTimer = null
-    }
   }
 }
 
-// 生成二维码（模拟）
-function generateQRCode() {
-  console.log('生成微信登录二维码')
-  // 实际项目中这里应该调用后端接口生成二维码
-  // 模拟生成二维码的过程
-  uni.showLoading({ title: '生成二维码中...' })
+// 二维码ID
+const qrcodeId = ref('')
+const pollingCount = ref(0) // 轮询次数计数
+const MAX_POLLING_COUNT = 60 // 最多轮询60次（3分钟）
+
+// 停止轮询
+function stopPolling() {
+  if (qrCodeTimer) {
+    clearInterval(qrCodeTimer)
+    qrCodeTimer = null
+  }
+  pollingCount.value = 0
+  console.log('已停止二维码轮询')
+}
+
+// 生成二维码
+async function generateQRCode() {
+  // 先停止之前的轮询
+  stopPolling()
   
-  setTimeout(() => {
+  // 重置二维码ID
+  qrcodeId.value = ''
+  qrCodeUrl.value = ''
+  
+  // #ifdef H5
+  // H5 端：生成二维码并轮询状态
+  try {
+    uni.showLoading({ title: '生成二维码中...' })
+    
+    const { getWeChatQRCode } = await import('@/api/auth.js')
+    const res = await getWeChatQRCode()
+    
+    qrcodeId.value = res.qrcode_id
+    qrCodeUrl.value = res.qrcode_url
+    
     uni.hideLoading()
+    
+    console.log('二维码生成成功，ID:', qrcodeId.value)
+    
     // 开始轮询二维码状态
     startPollingQRCode()
-  }, 1000)
+  } catch (error) {
+    uni.hideLoading()
+    console.error('生成二维码失败:', error)
+    uni.showToast({ title: '生成二维码失败', icon: 'none' })
+  }
+  // #endif
+  
+  // #ifndef H5
+  // 小程序端：直接调用微信授权
+  uni.showToast({ 
+    title: '小程序端请使用微信授权登录', 
+    icon: 'none' 
+  })
+  // #endif
 }
 
 // 刷新二维码
 function refreshQRCode() {
-  if (qrCodeTimer) {
-    clearInterval(qrCodeTimer)
-  }
+  console.log('用户手动刷新二维码')
+  stopPolling()
   generateQRCode()
 }
 
 // 开始轮询二维码状态
-function startPollingQRCode() {
-  // 实际项目中这里应该轮询后端接口检查扫码状态
-  qrCodeTimer = setInterval(() => {
-    console.log('检查二维码扫码状态...')
-    // 模拟扫码成功
-    // if (scanned) {
-    //   clearInterval(qrCodeTimer)
-    //   handleWeChatLoginSuccess()
-    // }
-  }, 3000)
+async function startPollingQRCode() {
+  // 确保之前的定时器已清理
+  if (qrCodeTimer) {
+    clearInterval(qrCodeTimer)
+    qrCodeTimer = null
+  }
+  
+  const { checkQRCodeStatus } = await import('@/api/auth.js')
+  
+  pollingCount.value = 0
+  console.log('开始轮询二维码状态，ID:', qrcodeId.value)
+  
+  qrCodeTimer = setInterval(async () => {
+    // 检查轮询次数
+    pollingCount.value++
+    console.log(`轮询二维码状态 [${pollingCount.value}/${MAX_POLLING_COUNT}]`)
+    
+    if (pollingCount.value > MAX_POLLING_COUNT) {
+      stopPolling()
+      uni.showToast({ title: '二维码已过期，请刷新', icon: 'none' })
+      return
+    }
+    
+    // 如果不在微信登录tab，停止轮询
+    if (activeTab.value !== 'wechat') {
+      console.log('已切换到其他登录方式，停止轮询')
+      stopPolling()
+      return
+    }
+    
+    try {
+      const res = await checkQRCodeStatus(qrcodeId.value)
+      
+      if (res.status === 'confirmed') {
+        // 扫码确认，完成登录
+        console.log('二维码已确认，开始登录')
+        stopPolling()
+        await handleWeChatLogin()
+      } else if (res.status === 'expired') {
+        // 二维码过期
+        console.log('二维码已过期')
+        stopPolling()
+        uni.showToast({ title: '二维码已过期，请刷新', icon: 'none' })
+      }
+    } catch (error) {
+      console.error('轮询二维码状态失败:', error)
+      // 出错时停止轮询
+      stopPolling()
+      uni.showToast({ title: '网络错误，请刷新二维码', icon: 'none' })
+    }
+  }, 3000) // 每3秒轮询一次
 }
 
-// 微信登录成功处理
-function handleWeChatLoginSuccess() {
-  uni.showToast({ title: '微信登录成功', icon: 'success' })
-  // 跳转到首页或其他页面
-  // uni.switchTab({ url: '/pages/index/index' })
+// 微信登录
+async function handleWeChatLogin() {
+  try {
+    uni.showLoading({ title: '登录中...', mask: true })
+    
+    // 使用 mock_code 进行测试
+    const result = await userStore.loginByWechat('mock_code')
+    
+    uni.hideLoading()
+    
+    if (result.success) {
+      uni.showToast({ 
+        title: '登录成功', 
+        icon: 'success',
+        duration: 1500
+      })
+      
+      setTimeout(() => {
+        uni.switchTab({ url: '/pages/home/index' })
+      }, 1500)
+    } else {
+      uni.showToast({ 
+        title: result.error?.message || '登录失败', 
+        icon: 'none' 
+      })
+    }
+  } catch (error) {
+    uni.hideLoading()
+    console.error('微信登录失败:', error)
+    uni.showToast({ title: '登录失败', icon: 'none' })
+  }
 }
 
 // 发送验证码
-function sendCode() {
+async function sendCode() {
   if (!mobile.value) {
     uni.showToast({ title: '请输入手机号', icon: 'none' })
     return
@@ -227,17 +333,27 @@ function sendCode() {
     return
   }
   
-  // 模拟发送验证码
-  uni.showToast({ title: '验证码已发送', icon: 'success' })
-  
-  // 开始倒计时
-  codeCountdown.value = 60
-  countdownTimer = setInterval(() => {
-    codeCountdown.value--
-    if (codeCountdown.value <= 0) {
-      clearInterval(countdownTimer)
-    }
-  }, 1000)
+  try {
+    // 调用发送验证码接口
+    const { sendSmsCode } = await import('@/api/auth.js')
+    await sendSmsCode(mobile.value, 'login')
+    
+    uni.showToast({ title: '验证码已发送', icon: 'success' })
+    
+    // 开始倒计时
+    codeCountdown.value = 60
+    countdownTimer = setInterval(() => {
+      codeCountdown.value--
+      if (codeCountdown.value <= 0) {
+        clearInterval(countdownTimer)
+      }
+    }, 1000)
+  } catch (error) {
+    uni.showToast({ 
+      title: error.message || error.detail || '发送失败', 
+      icon: 'none' 
+    })
+  }
 }
 
 // 切换密码显示/隐藏
@@ -246,7 +362,7 @@ function togglePassword() {
 }
 
 // 验证码登录
-function loginWithCode() {
+async function loginWithCode() {
   if (!mobile.value) {
     uni.showToast({ title: '请输入手机号', icon: 'none' })
     return
@@ -257,13 +373,40 @@ function loginWithCode() {
     return
   }
   
-  console.log('验证码登录', mobile.value, code.value)
-  // 这里调用验证码登录API
-  uni.showLoading({ title: '登录中...' })
-  setTimeout(() => {
+  uni.showLoading({ title: '登录中...', mask: true })
+  
+  try {
+    const result = await userStore.loginByCode(mobile.value, code.value)
+    
     uni.hideLoading()
-    uni.showToast({ title: '登录成功', icon: 'success' })
-  }, 1500)
+    
+    if (result.success) {
+      uni.showToast({ 
+        title: '登录成功', 
+        icon: 'success',
+        duration: 1500
+      })
+      
+      // 延迟跳转
+      setTimeout(() => {
+        uni.switchTab({ url: '/pages/home/index' })
+      }, 1500)
+    } else {
+      const errorMsg = result.error?.message || result.error?.data?.detail || '登录失败'
+      uni.showToast({ 
+        title: errorMsg, 
+        icon: 'none',
+        duration: 2000
+      })
+    }
+  } catch (error) {
+    uni.hideLoading()
+    console.error('验证码登录异常:', error)
+    uni.showToast({ 
+      title: '登录失败，请稍后重试', 
+      icon: 'none' 
+    })
+  }
 }
 
 // 密码登录
@@ -334,10 +477,9 @@ function goRegister() {
 onUnmounted(() => {
   if (countdownTimer) {
     clearInterval(countdownTimer)
+    countdownTimer = null
   }
-  if (qrCodeTimer) {
-    clearInterval(qrCodeTimer)
-  }
+  stopPolling()
 })
 </script>
 

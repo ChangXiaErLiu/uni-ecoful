@@ -11,13 +11,18 @@ const useUserStore = common_vendor.defineStore("user", {
     isLoggedIn: (state) => !!state.token,
     // 用户名
     userName: (state) => {
-      var _a, _b;
-      return ((_a = state.userInfo) == null ? void 0 : _a.name) || ((_b = state.userInfo) == null ? void 0 : _b.username) || "未登录";
+      var _a;
+      return ((_a = state.userInfo) == null ? void 0 : _a.username) || "未登录";
     },
     // 企业名称
     companyName: (state) => {
       var _a;
       return ((_a = state.userInfo) == null ? void 0 : _a.company_name) || "";
+    },
+    // 手机号
+    phoneNum: (state) => {
+      var _a;
+      return ((_a = state.userInfo) == null ? void 0 : _a.phone_num) || "";
     }
   },
   actions: {
@@ -39,9 +44,24 @@ const useUserStore = common_vendor.defineStore("user", {
     /**
      * 验证码登录
      */
-    async loginByCode(phone, code) {
+    async loginByCode(phoneNum, code) {
       try {
-        const res = await api_auth.loginByCode(phone, code);
+        const res = await api_auth.loginByCode(phoneNum, code);
+        this.token = res.access_token;
+        common_vendor.index.setStorageSync("token", res.access_token);
+        this.userInfo = res.user;
+        common_vendor.index.setStorageSync("userInfo", JSON.stringify(res.user));
+        return { success: true, data: res };
+      } catch (error) {
+        return { success: false, error };
+      }
+    },
+    /**
+     * 用户注册
+     */
+    async register(data) {
+      try {
+        const res = await api_auth.register(data);
         this.token = res.access_token;
         common_vendor.index.setStorageSync("token", res.access_token);
         this.userInfo = res.user;
@@ -86,7 +106,7 @@ const useUserStore = common_vendor.defineStore("user", {
       try {
         await api_auth.logout();
       } catch (error) {
-        common_vendor.index.__f__("error", "at stores/user.js:105", "登出接口调用失败:", error);
+        common_vendor.index.__f__("error", "at stores/user.js:134", "登出接口调用失败:", error);
       } finally {
         this.token = "";
         this.userInfo = null;
@@ -107,7 +127,7 @@ const useUserStore = common_vendor.defineStore("user", {
           this.userInfo = JSON.parse(userInfoStr);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at stores/user.js:130", "初始化用户信息失败:", error);
+        common_vendor.index.__f__("error", "at stores/user.js:159", "初始化用户信息失败:", error);
       }
     }
   }

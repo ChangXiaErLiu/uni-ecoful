@@ -103,6 +103,11 @@
 		onUnmounted,
 		computed
 	} from 'vue'
+	import { useUserStore } from '@/stores/user.js'
+	import { sendSmsCode } from '@/api/auth.js'
+
+	// 用户状态管理
+	const userStore = useUserStore()
 
 	// 响应式数据
 	const company = ref('')
@@ -137,7 +142,7 @@
 	})
 
 	// 发送验证码
-	function sendCode() {
+	async function sendCode() {
 		if (!mobile.value) {
 			uni.showToast({
 				title: '请输入手机号',
@@ -154,20 +159,29 @@
 			return
 		}
 
-		// 模拟发送验证码
-		uni.showToast({
-			title: '验证码已发送',
-			icon: 'success'
-		})
+		try {
+			// 调用发送验证码接口
+			await sendSmsCode(mobile.value, 'register')
+			
+			uni.showToast({
+				title: '验证码已发送',
+				icon: 'success'
+			})
 
-		// 开始倒计时
-		codeCountdown.value = 60
-		countdownTimer = setInterval(() => {
-			codeCountdown.value--
-			if (codeCountdown.value <= 0) {
-				clearInterval(countdownTimer)
-			}
-		}, 1000)
+			// 开始倒计时
+			codeCountdown.value = 60
+			countdownTimer = setInterval(() => {
+				codeCountdown.value--
+				if (codeCountdown.value <= 0) {
+					clearInterval(countdownTimer)
+				}
+			}, 1000)
+		} catch (error) {
+			uni.showToast({
+				title: error.message || error.detail || '发送失败',
+				icon: 'none'
+			})
+		}
 	}
 
 	// 切换密码显示/隐藏
@@ -200,15 +214,8 @@
 	}
 
 	// 提交注册
-	function submit() {
-		if (!company.value) {
-			uni.showToast({
-				title: '请输入企业或组织名称',
-				icon: 'none'
-			})
-			return
-		}
-
+	async function submit() {
+		// 表单验证
 		if (!name.value) {
 			uni.showToast({
 				title: '请输入姓名',
@@ -220,6 +227,14 @@
 		if (!mobile.value) {
 			uni.showToast({
 				title: '请输入手机号',
+				icon: 'none'
+			})
+			return
+		}
+
+		if (!/^1[3-9]\d{9}$/.test(mobile.value)) {
+			uni.showToast({
+				title: '手机号格式不正确',
 				icon: 'none'
 			})
 			return
@@ -241,6 +256,14 @@
 			return
 		}
 
+		if (password.value.length < 6) {
+			uni.showToast({
+				title: '密码至少6个字符',
+				icon: 'none'
+			})
+			return
+		}
+
 		if (password.value !== confirmPassword.value) {
 			uni.showToast({
 				title: '两次输入的密码不一致',
@@ -257,33 +280,48 @@
 			return
 		}
 
-		console.log('提交注册信息', {
-			company: company.value,
-			name: name.value,
-			mobile: mobile.value,
-			code: code.value,
-			password: password.value
-		})
+		// 调用注册接口
+		uni.showLoading({ title: '注册中...', mask: true })
 
-		// 模拟注册请求
-		uni.showLoading({
-			title: '注册中...'
-		})
-		setTimeout(() => {
-			uni.hideLoading()
-			uni.showToast({
-				title: '注册成功',
-				icon: 'success',
-				success: () => {
-					// 注册成功后跳转到登录页
-					setTimeout(() => {
-						uni.navigateBack({
-							delta: 1
-						})
-					}, 1500)
-				}
+		try {
+			const result = await userStore.register({
+				username: name.value,        // 姓名作为用户名
+				password: password.value,
+				confirmPassword: confirmPassword.value,
+				companyName: company.value || null,  // 企业名称可选
+				phoneNum: mobile.value,
+				code: code.value
 			})
-		}, 2000)
+
+			uni.hideLoading()
+
+			if (result.success) {
+				uni.showToast({
+					title: '注册成功',
+					icon: 'success',
+					duration: 1500
+				})
+
+				// 注册成功后直接跳转到首页（已自动登录）
+				setTimeout(() => {
+					uni.switchTab({ url: '/pages/home/index' })
+				}, 1500)
+			} else {
+				const errorMsg = result.error?.message || result.error?.data?.detail || '注册失败'
+				uni.showToast({
+					title: errorMsg,
+					icon: 'none',
+					duration: 2000
+				})
+			}
+		} catch (error) {
+			uni.hideLoading()
+			console.error('注册异常:', error)
+			uni.showToast({
+				title: '注册失败，请稍后重试',
+				icon: 'none'
+			})
+		}
 	}
 
 	// 查看用户协议

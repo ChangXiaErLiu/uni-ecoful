@@ -2,7 +2,14 @@
  * 用户状态管理
  */
 import { defineStore } from 'pinia'
-import { loginByPassword, loginByCode, loginByWechat, getUserInfo, logout as logoutApi } from '@/api/auth.js'
+import { 
+	loginByPassword, 
+	loginByCode, 
+	loginByWechat, 
+	register,
+	getUserInfo, 
+	logout as logoutApi 
+} from '@/api/auth.js'
 
 export const useUserStore = defineStore('user', {
 	state: () => ({
@@ -15,10 +22,13 @@ export const useUserStore = defineStore('user', {
 		isLoggedIn: (state) => !!state.token,
 		
 		// 用户名
-		userName: (state) => state.userInfo?.name || state.userInfo?.username || '未登录',
+		userName: (state) => state.userInfo?.username || '未登录',
 		
 		// 企业名称
-		companyName: (state) => state.userInfo?.company_name || ''
+		companyName: (state) => state.userInfo?.company_name || '',
+		
+		// 手机号
+		phoneNum: (state) => state.userInfo?.phone_num || ''
 	},
 
 	actions: {
@@ -46,9 +56,28 @@ export const useUserStore = defineStore('user', {
 		/**
 		 * 验证码登录
 		 */
-		async loginByCode(phone, code) {
+		async loginByCode(phoneNum, code) {
 			try {
-				const res = await loginByCode(phone, code)
+				const res = await loginByCode(phoneNum, code)
+				
+				this.token = res.access_token
+				uni.setStorageSync('token', res.access_token)
+				
+				this.userInfo = res.user
+				uni.setStorageSync('userInfo', JSON.stringify(res.user))
+				
+				return { success: true, data: res }
+			} catch (error) {
+				return { success: false, error }
+			}
+		},
+
+		/**
+		 * 用户注册
+		 */
+		async register(data) {
+			try {
+				const res = await register(data)
 				
 				this.token = res.access_token
 				uni.setStorageSync('token', res.access_token)

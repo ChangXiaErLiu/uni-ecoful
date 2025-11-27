@@ -1,5 +1,7 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const stores_user = require("../../stores/user.js");
+const api_auth = require("../../api/auth.js");
 if (!Array) {
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
   _easycom_uni_icons2();
@@ -11,6 +13,7 @@ if (!Math) {
 const _sfc_main = {
   __name: "register",
   setup(__props) {
+    const userStore = stores_user.useUserStore();
     const company = common_vendor.ref("");
     const name = common_vendor.ref("");
     const mobile = common_vendor.ref("");
@@ -38,7 +41,7 @@ const _sfc_main = {
         strength++;
       return Math.min(Math.floor(strength / 2), 3);
     });
-    function sendCode() {
+    async function sendCode() {
       if (!mobile.value) {
         common_vendor.index.showToast({
           title: "请输入手机号",
@@ -53,17 +56,25 @@ const _sfc_main = {
         });
         return;
       }
-      common_vendor.index.showToast({
-        title: "验证码已发送",
-        icon: "success"
-      });
-      codeCountdown.value = 60;
-      countdownTimer = setInterval(() => {
-        codeCountdown.value--;
-        if (codeCountdown.value <= 0) {
-          clearInterval(countdownTimer);
-        }
-      }, 1e3);
+      try {
+        await api_auth.sendSmsCode(mobile.value, "register");
+        common_vendor.index.showToast({
+          title: "验证码已发送",
+          icon: "success"
+        });
+        codeCountdown.value = 60;
+        countdownTimer = setInterval(() => {
+          codeCountdown.value--;
+          if (codeCountdown.value <= 0) {
+            clearInterval(countdownTimer);
+          }
+        }, 1e3);
+      } catch (error) {
+        common_vendor.index.showToast({
+          title: error.message || error.detail || "发送失败",
+          icon: "none"
+        });
+      }
     }
     function togglePassword() {
       showPassword.value = !showPassword.value;
@@ -84,14 +95,8 @@ const _sfc_main = {
       }
       return "";
     }
-    function submit() {
-      if (!company.value) {
-        common_vendor.index.showToast({
-          title: "请输入企业或组织名称",
-          icon: "none"
-        });
-        return;
-      }
+    async function submit() {
+      var _a, _b, _c;
       if (!name.value) {
         common_vendor.index.showToast({
           title: "请输入姓名",
@@ -102,6 +107,13 @@ const _sfc_main = {
       if (!mobile.value) {
         common_vendor.index.showToast({
           title: "请输入手机号",
+          icon: "none"
+        });
+        return;
+      }
+      if (!/^1[3-9]\d{9}$/.test(mobile.value)) {
+        common_vendor.index.showToast({
+          title: "手机号格式不正确",
           icon: "none"
         });
         return;
@@ -120,6 +132,13 @@ const _sfc_main = {
         });
         return;
       }
+      if (password.value.length < 6) {
+        common_vendor.index.showToast({
+          title: "密码至少6个字符",
+          icon: "none"
+        });
+        return;
+      }
       if (password.value !== confirmPassword.value) {
         common_vendor.index.showToast({
           title: "两次输入的密码不一致",
@@ -134,30 +153,44 @@ const _sfc_main = {
         });
         return;
       }
-      common_vendor.index.__f__("log", "at pages/auth/register.vue:260", "提交注册信息", {
-        company: company.value,
-        name: name.value,
-        mobile: mobile.value,
-        code: code.value,
-        password: password.value
-      });
-      common_vendor.index.showLoading({
-        title: "注册中..."
-      });
-      setTimeout(() => {
-        common_vendor.index.hideLoading();
-        common_vendor.index.showToast({
-          title: "注册成功",
-          icon: "success",
-          success: () => {
-            setTimeout(() => {
-              common_vendor.index.navigateBack({
-                delta: 1
-              });
-            }, 1500);
-          }
+      common_vendor.index.showLoading({ title: "注册中...", mask: true });
+      try {
+        const result = await userStore.register({
+          username: name.value,
+          // 姓名作为用户名
+          password: password.value,
+          confirmPassword: confirmPassword.value,
+          companyName: company.value || null,
+          // 企业名称可选
+          phoneNum: mobile.value,
+          code: code.value
         });
-      }, 2e3);
+        common_vendor.index.hideLoading();
+        if (result.success) {
+          common_vendor.index.showToast({
+            title: "注册成功",
+            icon: "success",
+            duration: 1500
+          });
+          setTimeout(() => {
+            common_vendor.index.switchTab({ url: "/pages/home/index" });
+          }, 1500);
+        } else {
+          const errorMsg = ((_a = result.error) == null ? void 0 : _a.message) || ((_c = (_b = result.error) == null ? void 0 : _b.data) == null ? void 0 : _c.detail) || "注册失败";
+          common_vendor.index.showToast({
+            title: errorMsg,
+            icon: "none",
+            duration: 2e3
+          });
+        }
+      } catch (error) {
+        common_vendor.index.hideLoading();
+        common_vendor.index.__f__("error", "at pages/auth/register.vue:319", "注册异常:", error);
+        common_vendor.index.showToast({
+          title: "注册失败，请稍后重试",
+          icon: "none"
+        });
+      }
     }
     function goAgreement() {
       common_vendor.index.navigateTo({
