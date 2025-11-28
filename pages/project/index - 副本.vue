@@ -9,8 +9,54 @@
           <text class="projects__subtitle">统筹环保项目执行，确保按时高质量完成</text>
         </view>
         <view class="projects__header-actions">
-          
-          
+          <button class="projects__button projects__button--secondary" @tap="exportProjects">
+            <uni-icons type="download" size="16" color="#3b82f6" />
+            <text>导出项目</text>
+          </button>
+          <button class="projects__button projects__button--primary" @tap="createProject">
+            <uni-icons type="plus" size="16" color="#ffffff" />
+            <text>新建项目</text>
+          </button>
+        </view>
+      </view>
+
+      <!-- 统计卡片 -->
+      <view class="projects__stats">
+        <view class="projects__stat-card">
+          <view class="projects__stat-icon" style="background: rgba(59, 130, 246, 0.1);">
+            <uni-icons type="folder" size="24" color="#3b82f6" />
+          </view>
+          <view class="projects__stat-content">
+            <text class="projects__stat-value">{{ stats.totalProjects }}</text>
+            <text class="projects__stat-label">项目总数</text>
+          </view>
+        </view>
+        <view class="projects__stat-card">
+          <view class="projects__stat-icon" style="background: rgba(16, 185, 129, 0.1);">
+            <uni-icons type="checkmark" size="24" color="#10b981" />
+          </view>
+          <view class="projects__stat-content">
+            <text class="projects__stat-value">{{ stats.completedProjects }}</text>
+            <text class="projects__stat-label">已完成</text>
+          </view>
+        </view>
+        <view class="projects__stat-card">
+          <view class="projects__stat-icon" style="background: rgba(245, 158, 11, 0.1);">
+            <uni-icons type="gear" size="24" color="#f59e0b" />
+          </view>
+          <view class="projects__stat-content">
+            <text class="projects__stat-value">{{ stats.inProgressProjects }}</text>
+            <text class="projects__stat-label">进行中</text>
+          </view>
+        </view>
+        <view class="projects__stat-card">
+          <view class="projects__stat-icon" style="background: rgba(239, 68, 68, 0.1);">
+            <uni-icons type="clock" size="24" color="#ef4444" />
+          </view>
+          <view class="projects__stat-content">
+            <text class="projects__stat-value">{{ stats.delayedProjects }}</text>
+            <text class="projects__stat-label">已延期</text>
+          </view>
         </view>
       </view>
 
@@ -20,10 +66,17 @@
         <view class="projects__list-panel">
           <view class="projects__panel-header">
             <text class="projects__panel-title">项目列表</text>
-			<button class="projects__button projects__button--primary" @tap="createProject">
-			  <uni-icons type="plus" size="16" color="#ffffff" />
-			  <text>新建项目</text>
-			</button>
+            <view class="projects__filter-tabs">
+              <view 
+                v-for="tab in filterTabs" 
+                :key="tab.id"
+                class="projects__filter-tab"
+                :class="{ 'projects__filter-tab--active': activeFilter === tab.id }"
+                @tap="() => switchFilter(tab.id)"
+              >
+                <text>{{ tab.name }}</text>
+              </view>
+            </view>
           </view>
           
           <scroll-view scroll-y class="projects__scroll">
@@ -43,9 +96,27 @@
               <view class="projects__item-content">
                 <view class="projects__item-header">
                   <text class="projects__item-name">{{ project.name }}</text>
+                  <view class="projects__item-badge" :class="`projects__item-badge--${project.status}`">
+                    {{ getProjectStatusText(project.status) }}
+                  </view>
                 </view>
                 <text class="projects__item-desc">{{ project.description }}</text>
                 
+                <!-- 进度条 -->
+                <view class="projects__progress">
+                  <view class="projects__progress-info">
+                    <text class="projects__progress-text">项目进度</text>
+                    <text class="projects__progress-percent">{{ project.progress }}%</text>
+                  </view>
+                  <view class="projects__progress-bar">
+                    <view 
+                      class="projects__progress-fill" 
+                      :class="`projects__progress-fill--${project.status}`"
+                      :style="{ width: `${project.progress}%` }"
+                    ></view>
+                  </view>
+                </view>
+
                 <view class="projects__item-meta">
                   <view class="projects__item-meta-item">
                     <uni-icons type="person" size="14" color="#94a3b8" />
@@ -78,11 +149,18 @@
           <view class="projects__panel-header">
             <view class="projects__detail-header">
               <text class="projects__panel-title">项目详情</text>
+              <text class="projects__detail-status" v-if="activeProject">
+                {{ getProjectStatusText(activeProject.status) }}
+              </text>
             </view>
             <view class="projects__detail-actions">
+              <button class="projects__button projects__button--outline" @tap="addTask" :disabled="!activeProject">
+                <uni-icons type="plus" size="16" color="#64748b" />
+                <text>添加任务</text>
+              </button>
               <button class="projects__button projects__button--primary" @tap="updateProgress" :disabled="!activeProject">
-                <uni-icons type="plus" size="16" color="#ffffff" />
-                <text>上传项目文件</text>
+                <uni-icons type="checkmark" size="16" color="#ffffff" />
+                <text>更新进度</text>
               </button>
             </view>
           </view>
@@ -122,6 +200,93 @@
                   </view>
                 </view>
                 <text class="projects__overview-desc">{{ activeProject.fullDescription }}</text>
+              </view>
+
+              <!-- 项目进度 -->
+              <view class="projects__section">
+                <view class="projects__section-header">
+                  <uni-icons type="graph" size="18" color="#10b981" />
+                  <text class="projects__section-title">项目进度</text>
+                  <text class="projects__section-count">{{ activeProject.progress }}%</text>
+                </view>
+                <view class="projects__progress-detail">
+                  <view class="projects__progress-visual">
+                    <view class="projects__progress-circle">
+                      <text class="projects__progress-circle-text">{{ activeProject.progress }}%</text>
+                    </view>
+                  </view>
+                  <view class="projects__progress-stats">
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">总任务数</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.totalTasks }}</text>
+                    </view>
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">已完成</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.completedTasks }}</text>
+                    </view>
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">进行中</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.inProgressTasks }}</text>
+                    </view>
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">待开始</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.pendingTasks }}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 项目任务 -->
+              <view class="projects__section">
+                <view class="projects__section-header">
+                  <uni-icons type="list" size="18" color="#f59e0b" />
+                  <text class="projects__section-title">项目任务</text>
+                  <text class="projects__section-count">{{ activeProject.tasks?.length || 0 }} 个任务</text>
+                </view>
+                <view v-if="activeProject.tasks && activeProject.tasks.length > 0" class="projects__tasks-list">
+                  <view 
+                    v-for="task in activeProject.tasks" 
+                    :key="task.id"
+                    class="projects__task-item"
+                    :class="`projects__task-item--${task.status}`"
+                  >
+                    <view class="projects__task-checkbox" @tap="() => toggleTask(task.id)">
+                      <uni-icons 
+                        :type="task.status === 'completed' ? 'checkbox-filled' : 'checkbox'" 
+                        size="20" 
+                        :color="task.status === 'completed' ? '#10b981' : '#cbd5e1'" 
+                      />
+                    </view>
+                    <view class="projects__task-content">
+                      <view class="projects__task-header">
+                        <text class="projects__task-title">{{ task.title }}</text>
+                        <view class="projects__task-badge" :class="`projects__task-badge--${task.priority}`">
+                          {{ getTaskPriorityText(task.priority) }}
+                        </view>
+                      </view>
+                      <text class="projects__task-desc">{{ task.description }}</text>
+                      <view class="projects__task-meta">
+                        <view class="projects__task-meta-item">
+                          <uni-icons type="person" size="12" color="#94a3b8" />
+                          <text class="projects__task-meta-text">{{ task.assignee }}</text>
+                        </view>
+                        <view class="projects__task-meta-item">
+                          <uni-icons type="calendar" size="12" color="#94a3b8" />
+                          <text class="projects__task-meta-text">{{ task.dueDate }}</text>
+                        </view>
+                      </view>
+                    </view>
+                    <view class="projects__task-actions">
+                      <view class="projects__task-action" @tap.stop="() => editTask(task.id)">
+                        <uni-icons type="compose" size="16" color="#64748b" />
+                      </view>
+                    </view>
+                  </view>
+                </view>
+                <view v-else class="projects__empty-section">
+                  <uni-icons type="list" size="32" color="#cbd5e1" />
+                  <text class="projects__empty-section-text">暂无任务</text>
+                </view>
               </view>
 
               <!-- 项目文档 -->
@@ -193,6 +358,13 @@ const stats = ref({
   delayedProjects: 4
 })
 
+// 筛选标签
+const filterTabs = ref([
+  { id: 'all', name: '全部' },
+  { id: 'in-progress', name: '进行中' },
+  { id: 'completed', name: '已完成' },
+  { id: 'delayed', name: '已延期' }
+])
 
 const activeFilter = ref('all')
 
@@ -414,6 +586,28 @@ function editProject(projectId) {
   })
 }
 
+function addTask() {
+  if (!activeProject.value) return
+  
+  const newTask = {
+    id: 'task-new-' + Date.now(),
+    title: '新任务',
+    description: '请描述任务内容',
+    status: 'pending',
+    priority: 'medium',
+    assignee: '待分配',
+    dueDate: '待设定'
+  }
+  
+  if (!activeProject.value.tasks) {
+    activeProject.value.tasks = []
+  }
+  activeProject.value.tasks.push(newTask)
+  
+  // 更新项目统计
+  activeProject.value.totalTasks += 1
+  activeProject.value.pendingTasks += 1
+}
 
 function editTask(taskId) {
   uni.showToast({
@@ -477,7 +671,12 @@ function downloadDocument(document) {
   })
 }
 
-
+function exportProjects() {
+  uni.showToast({
+    title: '导出项目数据',
+    icon: 'none'
+  })
+}
 
 function getProjectIcon(type) {
   const iconMap = {
@@ -584,6 +783,52 @@ function getDocumentIcon(type) {
   gap: 16rpx;
 }
 
+/* 统计卡片 */
+.projects__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200rpx, 1fr));
+  gap: 20rpx;
+}
+
+.projects__stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.06);
+  border: 1rpx solid #f1f5f9;
+}
+
+.projects__stat-icon {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.projects__stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.projects__stat-value {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.projects__stat-label {
+  font-size: 24rpx;
+  color: #64748b;
+}
+
 /* 主要内容区域 */
 .projects__content {
   display: flex;
@@ -650,7 +895,31 @@ function getDocumentIcon(type) {
   gap: 12rpx;
 }
 
+/* 筛选标签 */
+.projects__filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background: #f1f5f9;
+  border-radius: 8rpx;
+  padding: 4rpx;
+}
 
+.projects__filter-tab {
+  padding: 8rpx 16rpx;
+  border-radius: 6rpx;
+  font-size: 24rpx;
+  color: #64748b;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.projects__filter-tab--active {
+  background: #ffffff;
+  color: #3b82f6;
+  box-shadow: 0 2rpx 8rpx rgba(15, 23, 42, 0.08);
+}
 
 /* 按钮样式 */
 .projects__button {
@@ -1324,6 +1593,9 @@ function getDocumentIcon(type) {
     justify-content: flex-start;
   }
   
+  .projects__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
   
   .projects__panel-header {
     flex-direction: column;
@@ -1347,7 +1619,9 @@ function getDocumentIcon(type) {
 }
 
 @media (max-width: 767px) {
-  
+  .projects__stats {
+    grid-template-columns: 1fr;
+  }
   
   .projects__header-actions {
     flex-direction: column;
@@ -1362,7 +1636,9 @@ function getDocumentIcon(type) {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  
+  .projects__filter-tabs {
+    flex-wrap: wrap;
+  }
 }
 
 /* 桌面端悬停效果 */

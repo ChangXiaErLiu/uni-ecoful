@@ -15,18 +15,12 @@ const _sfc_main = {
   setup(__props) {
     const navTitle = stores_navTitle.navTitleStore();
     common_vendor.onShow(() => navTitle.setTitle("项目管理"));
-    const stats = common_vendor.ref({
+    common_vendor.ref({
       totalProjects: 18,
       completedProjects: 6,
       inProgressProjects: 8,
       delayedProjects: 4
     });
-    const filterTabs = common_vendor.ref([
-      { id: "all", name: "全部" },
-      { id: "in-progress", name: "进行中" },
-      { id: "completed", name: "已完成" },
-      { id: "delayed", name: "已延期" }
-    ]);
     const activeFilter = common_vendor.ref("all");
     const projects = common_vendor.ref([
       {
@@ -201,9 +195,6 @@ const _sfc_main = {
       }
       return projects.value.filter((project) => project.status === activeFilter.value);
     });
-    function switchFilter(filterId) {
-      activeFilter.value = filterId;
-    }
     function switchProject(projectId) {
       activeProjectId.value = projectId;
     }
@@ -237,59 +228,6 @@ const _sfc_main = {
         icon: "none"
       });
     }
-    function addTask() {
-      if (!activeProject.value)
-        return;
-      const newTask = {
-        id: "task-new-" + Date.now(),
-        title: "新任务",
-        description: "请描述任务内容",
-        status: "pending",
-        priority: "medium",
-        assignee: "待分配",
-        dueDate: "待设定"
-      };
-      if (!activeProject.value.tasks) {
-        activeProject.value.tasks = [];
-      }
-      activeProject.value.tasks.push(newTask);
-      activeProject.value.totalTasks += 1;
-      activeProject.value.pendingTasks += 1;
-    }
-    function editTask(taskId) {
-      common_vendor.index.showToast({
-        title: "编辑任务功能开发中",
-        icon: "none"
-      });
-    }
-    function toggleTask(taskId) {
-      const task = activeProject.value.tasks.find((t) => t.id === taskId);
-      if (task) {
-        const oldStatus = task.status;
-        task.status = task.status === "completed" ? "pending" : "completed";
-        if (oldStatus === "completed") {
-          activeProject.value.completedTasks -= 1;
-          if (task.status === "pending") {
-            activeProject.value.pendingTasks += 1;
-          }
-        } else {
-          activeProject.value.completedTasks += 1;
-          if (oldStatus === "pending") {
-            activeProject.value.pendingTasks -= 1;
-          } else if (oldStatus === "in-progress") {
-            activeProject.value.inProgressTasks -= 1;
-          }
-        }
-        updateProjectProgress();
-      }
-    }
-    function updateProjectProgress() {
-      if (!activeProject.value || !activeProject.value.tasks.length)
-        return;
-      const completedTasks = activeProject.value.tasks.filter((task) => task.status === "completed").length;
-      const progress = Math.round(completedTasks / activeProject.value.tasks.length * 100);
-      activeProject.value.progress = progress;
-    }
     function updateProgress() {
       common_vendor.index.showToast({
         title: "更新进度功能开发中",
@@ -305,12 +243,6 @@ const _sfc_main = {
     function downloadDocument(document) {
       common_vendor.index.showToast({
         title: `下载文档: ${document.name}`,
-        icon: "none"
-      });
-    }
-    function exportProjects() {
-      common_vendor.index.showToast({
-        title: "导出项目数据",
         icon: "none"
       });
     }
@@ -333,15 +265,6 @@ const _sfc_main = {
       };
       return colorMap[status] || "#64748b";
     }
-    function getProjectStatusText(status) {
-      const statusMap = {
-        planning: "规划中",
-        "in-progress": "进行中",
-        completed: "已完成",
-        delayed: "已延期"
-      };
-      return statusMap[status] || "未知";
-    }
     function getProjectTypeText(type) {
       const typeMap = {
         water: "水处理",
@@ -351,14 +274,6 @@ const _sfc_main = {
         general: "综合项目"
       };
       return typeMap[type] || "其他";
-    }
-    function getTaskPriorityText(priority) {
-      const priorityMap = {
-        low: "低",
-        medium: "中",
-        high: "高"
-      };
-      return priorityMap[priority] || "中";
     }
     function getDocumentIcon(type) {
       const iconMap = {
@@ -370,209 +285,91 @@ const _sfc_main = {
       return iconMap[type] || "document";
     }
     return (_ctx, _cache) => {
-      var _a, _b;
+      var _a;
       return common_vendor.e({
         a: common_vendor.p({
-          type: "download",
-          size: "16",
-          color: "#3b82f6"
-        }),
-        b: common_vendor.o(exportProjects),
-        c: common_vendor.p({
           type: "plus",
           size: "16",
           color: "#ffffff"
         }),
-        d: common_vendor.o(createProject),
-        e: common_vendor.p({
-          type: "folder",
-          size: "24",
-          color: "#3b82f6"
-        }),
-        f: common_vendor.t(stats.value.totalProjects),
-        g: common_vendor.p({
-          type: "checkmark",
-          size: "24",
-          color: "#10b981"
-        }),
-        h: common_vendor.t(stats.value.completedProjects),
-        i: common_vendor.p({
-          type: "gear",
-          size: "24",
-          color: "#f59e0b"
-        }),
-        j: common_vendor.t(stats.value.inProgressProjects),
-        k: common_vendor.p({
-          type: "clock",
-          size: "24",
-          color: "#ef4444"
-        }),
-        l: common_vendor.t(stats.value.delayedProjects),
-        m: common_vendor.f(filterTabs.value, (tab, k0, i0) => {
+        b: common_vendor.o(createProject),
+        c: common_vendor.f(filteredProjects.value, (project, k0, i0) => {
           return {
-            a: common_vendor.t(tab.name),
-            b: tab.id,
-            c: activeFilter.value === tab.id ? 1 : "",
-            d: common_vendor.o(() => switchFilter(tab.id), tab.id)
-          };
-        }),
-        n: common_vendor.f(filteredProjects.value, (project, k0, i0) => {
-          return {
-            a: "47879d53-7-" + i0 + ",47879d53-0",
+            a: "47879d53-2-" + i0 + ",47879d53-0",
             b: common_vendor.p({
               type: getProjectIcon(project.type),
               size: "20",
               color: getProjectColor(project.status)
             }),
             c: common_vendor.t(project.name),
-            d: common_vendor.t(getProjectStatusText(project.status)),
-            e: common_vendor.n(`projects__item-badge--${project.status}`),
-            f: common_vendor.t(project.description),
-            g: common_vendor.t(project.progress),
-            h: common_vendor.n(`projects__progress-fill--${project.status}`),
-            i: `${project.progress}%`,
-            j: "47879d53-8-" + i0 + ",47879d53-0",
-            k: common_vendor.t(project.manager),
-            l: "47879d53-9-" + i0 + ",47879d53-0",
-            m: common_vendor.t(project.deadline),
-            n: "47879d53-10-" + i0 + ",47879d53-0",
-            o: common_vendor.o(() => editProject(project.id), project.id),
-            p: project.id,
-            q: project.id === activeProjectId.value ? 1 : "",
-            r: project.status === "delayed" ? 1 : "",
-            s: common_vendor.o(() => switchProject(project.id), project.id)
+            d: common_vendor.t(project.description),
+            e: "47879d53-3-" + i0 + ",47879d53-0",
+            f: common_vendor.t(project.manager),
+            g: "47879d53-4-" + i0 + ",47879d53-0",
+            h: common_vendor.t(project.deadline),
+            i: "47879d53-5-" + i0 + ",47879d53-0",
+            j: common_vendor.o(() => editProject(project.id), project.id),
+            k: project.id,
+            l: project.id === activeProjectId.value ? 1 : "",
+            m: project.status === "delayed" ? 1 : "",
+            n: common_vendor.o(() => switchProject(project.id), project.id)
           };
         }),
-        o: common_vendor.p({
+        d: common_vendor.p({
           type: "person",
           size: "14",
           color: "#94a3b8"
         }),
-        p: common_vendor.p({
+        e: common_vendor.p({
           type: "calendar",
           size: "14",
           color: "#94a3b8"
         }),
-        q: common_vendor.p({
+        f: common_vendor.p({
           type: "compose",
           size: "16",
           color: "#64748b"
         }),
-        r: filteredProjects.value.length === 0
+        g: filteredProjects.value.length === 0
       }, filteredProjects.value.length === 0 ? {
-        s: common_vendor.p({
+        h: common_vendor.p({
           type: "folder",
           size: "60",
           color: "#cbd5e1"
         })
       } : {}, {
-        t: activeProject.value
-      }, activeProject.value ? {
-        v: common_vendor.t(getProjectStatusText(activeProject.value.status))
-      } : {}, {
-        w: common_vendor.p({
+        i: common_vendor.p({
           type: "plus",
-          size: "16",
-          color: "#64748b"
-        }),
-        x: common_vendor.o(addTask),
-        y: !activeProject.value,
-        z: common_vendor.p({
-          type: "checkmark",
           size: "16",
           color: "#ffffff"
         }),
-        A: common_vendor.o(updateProgress),
-        B: !activeProject.value,
-        C: activeProject.value
+        j: common_vendor.o(updateProgress),
+        k: !activeProject.value,
+        l: activeProject.value
       }, activeProject.value ? common_vendor.e({
-        D: common_vendor.p({
+        m: common_vendor.p({
           type: "info",
           size: "18",
           color: "#3b82f6"
         }),
-        E: common_vendor.t(activeProject.value.code),
-        F: common_vendor.t(activeProject.value.manager),
-        G: common_vendor.t(activeProject.value.startDate),
-        H: common_vendor.t(activeProject.value.deadline),
-        I: common_vendor.t(activeProject.value.budget),
-        J: common_vendor.t(getProjectTypeText(activeProject.value.type)),
-        K: common_vendor.t(activeProject.value.fullDescription),
-        L: common_vendor.p({
-          type: "graph",
-          size: "18",
-          color: "#10b981"
-        }),
-        M: common_vendor.t(activeProject.value.progress),
-        N: common_vendor.t(activeProject.value.progress),
-        O: common_vendor.t(activeProject.value.totalTasks),
-        P: common_vendor.t(activeProject.value.completedTasks),
-        Q: common_vendor.t(activeProject.value.inProgressTasks),
-        R: common_vendor.t(activeProject.value.pendingTasks),
-        S: common_vendor.p({
-          type: "list",
-          size: "18",
-          color: "#f59e0b"
-        }),
-        T: common_vendor.t(((_a = activeProject.value.tasks) == null ? void 0 : _a.length) || 0),
-        U: activeProject.value.tasks && activeProject.value.tasks.length > 0
-      }, activeProject.value.tasks && activeProject.value.tasks.length > 0 ? {
-        V: common_vendor.f(activeProject.value.tasks, (task, k0, i0) => {
-          return {
-            a: "47879d53-17-" + i0 + ",47879d53-0",
-            b: common_vendor.p({
-              type: task.status === "completed" ? "checkbox-filled" : "checkbox",
-              size: "20",
-              color: task.status === "completed" ? "#10b981" : "#cbd5e1"
-            }),
-            c: common_vendor.o(() => toggleTask(task.id), task.id),
-            d: common_vendor.t(task.title),
-            e: common_vendor.t(getTaskPriorityText(task.priority)),
-            f: common_vendor.n(`projects__task-badge--${task.priority}`),
-            g: common_vendor.t(task.description),
-            h: "47879d53-18-" + i0 + ",47879d53-0",
-            i: common_vendor.t(task.assignee),
-            j: "47879d53-19-" + i0 + ",47879d53-0",
-            k: common_vendor.t(task.dueDate),
-            l: "47879d53-20-" + i0 + ",47879d53-0",
-            m: common_vendor.o(() => editTask(task.id), task.id),
-            n: task.id,
-            o: common_vendor.n(`projects__task-item--${task.status}`)
-          };
-        }),
-        W: common_vendor.p({
-          type: "person",
-          size: "12",
-          color: "#94a3b8"
-        }),
-        X: common_vendor.p({
-          type: "calendar",
-          size: "12",
-          color: "#94a3b8"
-        }),
-        Y: common_vendor.p({
-          type: "compose",
-          size: "16",
-          color: "#64748b"
-        })
-      } : {
-        Z: common_vendor.p({
-          type: "list",
-          size: "32",
-          color: "#cbd5e1"
-        })
-      }, {
-        aa: common_vendor.p({
+        n: common_vendor.t(activeProject.value.code),
+        o: common_vendor.t(activeProject.value.manager),
+        p: common_vendor.t(activeProject.value.startDate),
+        q: common_vendor.t(activeProject.value.deadline),
+        r: common_vendor.t(activeProject.value.budget),
+        s: common_vendor.t(getProjectTypeText(activeProject.value.type)),
+        t: common_vendor.t(activeProject.value.fullDescription),
+        v: common_vendor.p({
           type: "document",
           size: "18",
           color: "#8b5cf6"
         }),
-        ab: common_vendor.t(((_b = activeProject.value.documents) == null ? void 0 : _b.length) || 0),
-        ac: activeProject.value.documents && activeProject.value.documents.length > 0
+        w: common_vendor.t(((_a = activeProject.value.documents) == null ? void 0 : _a.length) || 0),
+        x: activeProject.value.documents && activeProject.value.documents.length > 0
       }, activeProject.value.documents && activeProject.value.documents.length > 0 ? {
-        ad: common_vendor.f(activeProject.value.documents, (document, k0, i0) => {
+        y: common_vendor.f(activeProject.value.documents, (document, k0, i0) => {
           return {
-            a: "47879d53-23-" + i0 + ",47879d53-0",
+            a: "47879d53-10-" + i0 + ",47879d53-0",
             b: common_vendor.p({
               type: getDocumentIcon(document.type),
               size: "20",
@@ -581,37 +378,37 @@ const _sfc_main = {
             c: common_vendor.t(document.name),
             d: common_vendor.t(document.size),
             e: common_vendor.t(document.uploadDate),
-            f: "47879d53-24-" + i0 + ",47879d53-0",
+            f: "47879d53-11-" + i0 + ",47879d53-0",
             g: common_vendor.o(() => previewDocument(document), document.id),
-            h: "47879d53-25-" + i0 + ",47879d53-0",
+            h: "47879d53-12-" + i0 + ",47879d53-0",
             i: common_vendor.o(() => downloadDocument(document), document.id),
             j: document.id
           };
         }),
-        ae: common_vendor.p({
+        z: common_vendor.p({
           type: "eye",
           size: "16",
           color: "#64748b"
         }),
-        af: common_vendor.p({
+        A: common_vendor.p({
           type: "download",
           size: "16",
           color: "#64748b"
         })
       } : {
-        ag: common_vendor.p({
+        B: common_vendor.p({
           type: "document",
           size: "32",
           color: "#cbd5e1"
         })
       }) : {
-        ah: common_vendor.p({
+        C: common_vendor.p({
           type: "folder",
           size: "60",
           color: "#cbd5e1"
         })
       }, {
-        ai: common_vendor.p({
+        D: common_vendor.p({
           current: "pages/projects/index"
         })
       });

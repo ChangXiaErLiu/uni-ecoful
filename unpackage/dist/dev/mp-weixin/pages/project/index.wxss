@@ -61,47 +61,6 @@
   gap: 16rpx;
 }
 
-/* 统计卡片 */
-.projects__stats.data-v-47879d53 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200rpx, 1fr));
-  gap: 20rpx;
-}
-.projects__stat-card.data-v-47879d53 {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  padding: 24rpx;
-  background: #ffffff;
-  border-radius: 16rpx;
-  box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.06);
-  border: 1rpx solid #f1f5f9;
-}
-.projects__stat-icon.data-v-47879d53 {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.projects__stat-content.data-v-47879d53 {
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
-.projects__stat-value.data-v-47879d53 {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #0f172a;
-  line-height: 1;
-}
-.projects__stat-label.data-v-47879d53 {
-  font-size: 24rpx;
-  color: #64748b;
-}
-
 /* 主要内容区域 */
 .projects__content.data-v-47879d53 {
   display: flex;
@@ -160,30 +119,6 @@
   display: flex;
   align-items: center;
   gap: 12rpx;
-}
-
-/* 筛选标签 */
-.projects__filter-tabs.data-v-47879d53 {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  background: #f1f5f9;
-  border-radius: 8rpx;
-  padding: 4rpx;
-}
-.projects__filter-tab.data-v-47879d53 {
-  padding: 8rpx 16rpx;
-  border-radius: 6rpx;
-  font-size: 24rpx;
-  color: #64748b;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-.projects__filter-tab--active.data-v-47879d53 {
-  background: #ffffff;
-  color: #3b82f6;
-  box-shadow: 0 2rpx 8rpx rgba(15, 23, 42, 0.08);
 }
 
 /* 按钮样式 */
@@ -761,9 +696,6 @@
 .projects__header-actions.data-v-47879d53 {
     justify-content: flex-start;
 }
-.projects__stats.data-v-47879d53 {
-    grid-template-columns: repeat(2, 1fr);
-}
 .projects__panel-header.data-v-47879d53 {
     flex-direction: column;
     align-items: stretch;
@@ -782,9 +714,6 @@
 }
 }
 @media (max-width: 767px) {
-.projects__stats.data-v-47879d53 {
-    grid-template-columns: 1fr;
-}
 .projects__header-actions.data-v-47879d53 {
     flex-direction: column;
     align-items: stretch;
@@ -794,9 +723,6 @@
 }
 .projects__progress-stats.data-v-47879d53 {
     grid-template-columns: repeat(2, 1fr);
-}
-.projects__filter-tabs.data-v-47879d53 {
-    flex-wrap: wrap;
 }
 }
 /* 桌面端悬停效果 */
