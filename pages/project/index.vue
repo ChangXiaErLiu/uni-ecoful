@@ -1,4 +1,3 @@
-<!-- 项目管理页面 -->
 <template>
   <AppLayout current="pages/projects/index">
     <view class="projects">
@@ -43,8 +42,26 @@
               <view class="projects__item-content">
                 <view class="projects__item-header">
                   <text class="projects__item-name">{{ project.name }}</text>
+                  <view class="projects__item-badge" :class="`projects__item-badge--${project.status}`">
+                    {{ getProjectStatusText(project.status) }}
+                  </view>
                 </view>
                 <text class="projects__item-desc">{{ project.description }}</text>
+                
+                <!-- 项目进度条 -->
+                <view class="projects__progress">
+                  <view class="projects__progress-info">
+                    <text class="projects__progress-text">项目进度</text>
+                    <text class="projects__progress-percent">{{ project.progress }}%</text>
+                  </view>
+                  <view class="projects__progress-bar">
+                    <view 
+                      class="projects__progress-fill" 
+                      :class="`projects__progress-fill--${project.status}`"
+                      :style="{ width: `${project.progress}%` }"
+                    ></view>
+                  </view>
+                </view>
                 
                 <view class="projects__item-meta">
                   <view class="projects__item-meta-item">
@@ -58,8 +75,13 @@
                 </view>
               </view>
               <view class="projects__item-actions">
+                <!-- 新增编辑按钮 -->
                 <view class="projects__item-action" @tap.stop="() => editProject(project.id)">
                   <uni-icons type="compose" size="16" color="#64748b" />
+                </view>
+                <!-- 新增删除按钮 -->
+                <view class="projects__item-action" @tap.stop="() => deleteProject(project.id)">
+                  <uni-icons type="trash" size="16" color="#ef4444" />
                 </view>
               </view>
             </view>
@@ -78,9 +100,12 @@
           <view class="projects__panel-header">
             <view class="projects__detail-header">
               <text class="projects__panel-title">项目详情</text>
+              <view v-if="activeProject" class="projects__detail-status">
+                {{ getProjectStatusText(activeProject.status) }}
+              </view>
             </view>
             <view class="projects__detail-actions">
-              <button class="projects__button projects__button--primary" @tap="updateProgress" :disabled="!activeProject">
+              <button class="projects__button projects__button--primary" @tap="uploadFile" :disabled="!activeProject">
                 <uni-icons type="plus" size="16" color="#ffffff" />
                 <text>上传项目文件</text>
               </button>
@@ -124,6 +149,96 @@
                 <text class="projects__overview-desc">{{ activeProject.fullDescription }}</text>
               </view>
 
+              <!-- 项目进度 -->
+              <view class="projects__section">
+                <view class="projects__section-header">
+                  <uni-icons type="bars" size="18" color="#10b981" />
+                  <text class="projects__section-title">项目进度</text>
+                  <text class="projects__section-count">{{ activeProject.completedTasks }}/{{ activeProject.totalTasks }} 个任务</text>
+                </view>
+                <view class="projects__progress-detail">
+                  <view class="projects__progress-visual">
+                    <view 
+                      class="projects__progress-circle" 
+                      :style="{ '--progress': `${activeProject.progress}%` }"
+                    >
+                      <text class="projects__progress-circle-text">{{ activeProject.progress }}%</text>
+                    </view>
+                  </view>
+                  <view class="projects__progress-stats">
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">已完成</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.completedTasks }}</text>
+                    </view>
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">进行中</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.inProgressTasks }}</text>
+                    </view>
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">待处理</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.pendingTasks }}</text>
+                    </view>
+                    <view class="projects__progress-stat">
+                      <text class="projects__progress-stat-label">总任务</text>
+                      <text class="projects__progress-stat-value">{{ activeProject.totalTasks }}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 项目任务 -->
+              <view class="projects__section">
+                <view class="projects__section-header">
+                  <uni-icons type="list" size="18" color="#f59e0b" />
+                  <text class="projects__section-title">项目任务</text>
+                  <text class="projects__section-count">{{ activeProject.tasks?.length || 0 }} 个任务</text>
+                </view>
+                <view v-if="activeProject.tasks && activeProject.tasks.length > 0" class="projects__tasks-list">
+                  <view 
+                    v-for="task in activeProject.tasks" 
+                    :key="task.id"
+                    class="projects__task-item"
+                    :class="{ 'projects__task-item--completed': task.status === 'completed' }"
+                  >
+                    <view class="projects__task-checkbox" @tap.stop="() => toggleTask(task.id)">
+                      <uni-icons 
+                        :type="task.status === 'completed' ? 'checkmarkempty' : 'circle'" 
+                        size="20" 
+                        :color="task.status === 'completed' ? '#10b981' : '#64748b'" 
+                      />
+                    </view>
+                    <view class="projects__task-content">
+                      <view class="projects__task-header">
+                        <text class="projects__task-title">{{ task.title }}</text>
+                        <view class="projects__task-badge" :class="`projects__task-badge--${task.priority}`">
+                          {{ getTaskPriorityText(task.priority) }}优先级
+                        </view>
+                      </view>
+                      <text class="projects__task-desc">{{ task.description }}</text>
+                      <view class="projects__task-meta">
+                        <view class="projects__task-meta-item">
+                          <uni-icons type="person" size="14" color="#94a3b8" />
+                          <text class="projects__task-meta-text">{{ task.assignee }}</text>
+                        </view>
+                        <view class="projects__task-meta-item">
+                          <uni-icons type="calendar" size="14" color="#94a3b8" />
+                          <text class="projects__task-meta-text">{{ task.dueDate }}</text>
+                        </view>
+                      </view>
+                    </view>
+                    <view class="projects__task-actions">
+                      <view class="projects__task-action" @tap.stop="() => editTask(task.id)">
+                        <uni-icons type="compose" size="16" color="#64748b" />
+                      </view>
+                    </view>
+                  </view>
+                </view>
+                <view v-else class="projects__empty-section">
+                  <uni-icons type="list" size="32" color="#cbd5e1" />
+                  <text class="projects__empty-section-text">暂无任务</text>
+                </view>
+              </view>
+
               <!-- 项目文档 -->
               <view class="projects__section">
                 <view class="projects__section-header">
@@ -145,11 +260,13 @@
                       <text class="projects__document-meta">{{ document.size }} • {{ document.uploadDate }}</text>
                     </view>
                     <view class="projects__document-actions">
-                      <view class="projects__document-action" @tap.stop="() => previewDocument(document)">
-                        <uni-icons type="eye" size="16" color="#64748b" />
-                      </view>
+                      <!-- 新增下载按钮 -->
                       <view class="projects__document-action" @tap.stop="() => downloadDocument(document)">
                         <uni-icons type="download" size="16" color="#64748b" />
+                      </view>
+                      <!-- 新增删除按钮 -->
+                      <view class="projects__document-action" @tap.stop="() => deleteDocument(document.id)">
+                        <uni-icons type="trash" size="16" color="#ef4444" />
                       </view>
                     </view>
                   </view>
@@ -168,6 +285,120 @@
               <text class="projects__empty-subtext">点击左侧项目查看详情</text>
             </view>
           </scroll-view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 新增项目模态框 -->
+    <view v-if="showAddProjectModal" class="modal-overlay">
+      <view class="modal-container">
+        <view class="modal-header">
+          <text class="modal-title">新建项目</text>
+          <uni-icons type="close" size="20" color="#64748b" @tap="closeAddProjectModal" />
+        </view>
+        <view class="modal-content">
+          <view class="form-group">
+            <text class="form-label">项目名称</text>
+            <input 
+              v-model="newProjectForm.name" 
+              class="form-input" 
+              placeholder="请输入项目名称" 
+              type="text"
+            />
+          </view>
+          <view class="form-group">
+            <text class="form-label">项目备注</text>
+            <textarea 
+              v-model="newProjectForm.description" 
+              class="form-textarea" 
+              placeholder="请输入项目备注" 
+              maxlength="200"
+            />
+          </view>
+          <view class="form-group">
+            <text class="form-label">项目背景</text>
+            <textarea 
+              v-model="newProjectForm.fullDescription" 
+              class="form-textarea" 
+              placeholder="请输入项目背景信息" 
+              maxlength="500"
+            />
+          </view>
+        </view>
+        <view class="modal-actions">
+          <button class="modal-button modal-button--cancel" @tap="closeAddProjectModal">取消</button>
+          <button class="modal-button modal-button--confirm" @tap="confirmAddProject">确认</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 编辑项目模态框 -->
+    <view v-if="showEditProjectModal" class="modal-overlay">
+      <view class="modal-container">
+        <view class="modal-header">
+          <text class="modal-title">编辑项目</text>
+          <uni-icons type="close" size="20" color="#64748b" @tap="closeEditProjectModal" />
+        </view>
+        <view class="modal-content">
+          <view class="form-group">
+            <text class="form-label">项目名称</text>
+            <input 
+              v-model="editProjectForm.name" 
+              class="form-input" 
+              placeholder="请输入项目名称" 
+              type="text"
+            />
+          </view>
+          <view class="form-group">
+            <text class="form-label">项目备注</text>
+            <textarea 
+              v-model="editProjectForm.description" 
+              class="form-textarea" 
+              placeholder="请输入项目备注" 
+              maxlength="200"
+            />
+          </view>
+          <view class="form-group">
+            <text class="form-label">项目背景</text>
+            <textarea 
+              v-model="editProjectForm.fullDescription" 
+              class="form-textarea" 
+              placeholder="请输入项目背景信息" 
+              maxlength="500"
+            />
+          </view>
+        </view>
+        <view class="modal-actions">
+          <button class="modal-button modal-button--cancel" @tap="closeEditProjectModal">取消</button>
+          <button class="modal-button modal-button--confirm" @tap="confirmEditProject">确认</button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 文件上传模态框 -->
+    <view v-if="showUploadModal" class="modal-overlay">
+      <view class="modal-container">
+        <view class="modal-header">
+          <text class="modal-title">上传文件</text>
+          <uni-icons type="close" size="20" color="#64748b" @tap="closeUploadModal" />
+        </view>
+        <view class="modal-content">
+          <view class="upload-area" @tap="chooseFile">
+            <uni-icons type="plus" size="48" color="#3b82f6" />
+            <text class="upload-text">点击选择文件</text>
+            <text class="upload-subtext">支持图片、文档、压缩包等格式</text>
+          </view>
+          <view v-if="selectedFile" class="selected-file">
+            <uni-icons type="document" size="20" color="#3b82f6" />
+            <text class="file-name">{{ selectedFile.name }}</text>
+            <text class="file-size">{{ formatFileSize(selectedFile.size) }}</text>
+          </view>
+        </view>
+        <view class="modal-actions">
+          <button class="modal-button modal-button--cancel" @tap="closeUploadModal">取消</button>
+          <button class="modal-button modal-button--confirm" @tap="confirmUpload" :disabled="!selectedFile">
+            上传
+          </button>
         </view>
       </view>
     </view>
@@ -374,6 +605,27 @@ const filteredProjects = computed(() => {
   return projects.value.filter(project => project.status === activeFilter.value)
 })
 
+// 新增：模态框状态
+const showAddProjectModal = ref(false)
+const showEditProjectModal = ref(false)
+const showUploadModal = ref(false)
+
+// 新增：表单数据
+const newProjectForm = ref({
+  name: '',
+  description: '',
+  fullDescription: ''
+})
+
+const editProjectForm = ref({
+  id: '',
+  name: '',
+  description: '',
+  fullDescription: ''
+})
+
+const selectedFile = ref(null)
+
 function switchFilter(filterId) {
   activeFilter.value = filterId
 }
@@ -382,18 +634,80 @@ function switchProject(projectId) {
   activeProjectId.value = projectId
 }
 
+// 修改：createProject 函数，改为打开模态框
 function createProject() {
+  newProjectForm.value = {
+    name: '',
+    description: '',
+    fullDescription: ''
+  }
+  showAddProjectModal.value = true
+}
+
+// 修改：editProject 函数，改为打开编辑模态框
+function editProject(projectId) {
+  const project = projects.value.find(p => p.id === projectId)
+  if (project) {
+    editProjectForm.value = {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      fullDescription: project.fullDescription
+    }
+    showEditProjectModal.value = true
+  }
+}
+
+// 新增：删除项目函数
+function deleteProject(projectId) {
+  uni.showModal({
+    title: '确认删除',
+    content: '确定要删除这个项目吗？项目相关的所有文件和任务也将被删除，此操作不可恢复。',
+    confirmColor: '#ef4444',
+    success: (res) => {
+      if (res.confirm) {
+        const index = projects.value.findIndex(p => p.id === projectId)
+        if (index !== -1) {
+          projects.value.splice(index, 1)
+          
+          // 如果删除的是当前激活的项目，切换到第一个项目
+          if (activeProjectId.value === projectId && projects.value.length > 0) {
+            activeProjectId.value = projects.value[0].id
+          } else if (projects.value.length === 0) {
+            activeProjectId.value = null
+          }
+          
+          uni.showToast({
+            title: '项目删除成功',
+            icon: 'success'
+          })
+        }
+      }
+    }
+  })
+}
+
+// 新增：确认添加项目
+function confirmAddProject() {
+  if (!newProjectForm.value.name.trim()) {
+    uni.showToast({
+      title: '请输入项目名称',
+      icon: 'none'
+    })
+    return
+  }
+
   const newProject = {
-    id: 'project-new-' + Date.now(),
-    name: '新项目',
-    code: 'EP-2024-NEW',
-    description: '请描述项目内容',
-    fullDescription: '请详细描述项目目标、范围和要求',
+    id: 'project-' + Date.now(),
+    name: newProjectForm.value.name,
+    code: 'EP-2024-' + (projects.value.length + 1).toString().padStart(3, '0'),
+    description: newProjectForm.value.description || '请描述项目内容',
+    fullDescription: newProjectForm.value.fullDescription || '请详细描述项目目标、范围和要求',
     type: 'general',
     status: 'planning',
     progress: 0,
     manager: '当前用户',
-    startDate: new Date().toLocaleDateString(),
+    startDate: new Date().toLocaleDateString('zh-CN'),
     deadline: '待设定',
     budget: '待预算',
     totalTasks: 0,
@@ -403,15 +717,152 @@ function createProject() {
     tasks: [],
     documents: []
   }
+  
   projects.value.unshift(newProject)
   activeProjectId.value = newProject.id
+  closeAddProjectModal()
+  
+  uni.showToast({
+    title: '项目创建成功',
+    icon: 'success'
+  })
 }
 
-function editProject(projectId) {
-  uni.showToast({
-    title: '编辑项目功能开发中',
-    icon: 'none'
+// 新增：确认编辑项目
+function confirmEditProject() {
+  if (!editProjectForm.value.name.trim()) {
+    uni.showToast({
+      title: '请输入项目名称',
+      icon: 'none'
+    })
+    return
+  }
+
+  const projectIndex = projects.value.findIndex(p => p.id === editProjectForm.value.id)
+  if (projectIndex !== -1) {
+    projects.value[projectIndex].name = editProjectForm.value.name
+    projects.value[projectIndex].description = editProjectForm.value.description
+    projects.value[projectIndex].fullDescription = editProjectForm.value.fullDescription
+    
+    closeEditProjectModal()
+    
+    uni.showToast({
+      title: '项目更新成功',
+      icon: 'success'
+    })
+  }
+}
+
+// 新增：关闭模态框函数
+function closeAddProjectModal() {
+  showAddProjectModal.value = false
+}
+
+function closeEditProjectModal() {
+  showEditProjectModal.value = false
+}
+
+// 修改：uploadFile 函数
+function uploadFile() {
+  if (!activeProject.value) {
+    uni.showToast({
+      title: '请先选择项目',
+      icon: 'none'
+    })
+    return
+  }
+  
+  selectedFile.value = null
+  showUploadModal.value = true
+}
+
+// 新增：选择文件
+function chooseFile() {
+  uni.chooseFile({
+    count: 1,
+    type: 'all',
+    success: (res) => {
+      selectedFile.value = res.tempFiles[0]
+    }
   })
+}
+
+// 新增：确认上传文件
+function confirmUpload() {
+  if (!selectedFile.value) {
+    uni.showToast({
+      title: '请选择文件',
+      icon: 'none'
+    })
+    return
+  }
+
+  // 模拟文件上传
+  const newDocument = {
+    id: 'doc-' + Date.now(),
+    name: selectedFile.value.name,
+    type: getFileType(selectedFile.value.name),
+    size: formatFileSize(selectedFile.value.size),
+    uploadDate: new Date().toLocaleDateString('zh-CN')
+  }
+
+  if (!activeProject.value.documents) {
+    activeProject.value.documents = []
+  }
+  
+  activeProject.value.documents.push(newDocument)
+  closeUploadModal()
+  
+  uni.showToast({
+    title: '文件上传成功',
+    icon: 'success'
+  })
+}
+
+// 新增：关闭上传模态框
+function closeUploadModal() {
+  showUploadModal.value = false
+  selectedFile.value = null
+}
+
+// 新增：删除文档
+function deleteDocument(documentId) {
+  uni.showModal({
+    title: '确认删除',
+    content: '确定要删除这个文件吗？此操作不可恢复。',
+    confirmColor: '#ef4444',
+    success: (res) => {
+      if (res.confirm && activeProject.value && activeProject.value.documents) {
+        const docIndex = activeProject.value.documents.findIndex(d => d.id === documentId)
+        if (docIndex !== -1) {
+          activeProject.value.documents.splice(docIndex, 1)
+          uni.showToast({
+            title: '文件删除成功',
+            icon: 'success'
+          })
+        }
+      }
+    }
+  })
+}
+
+// 新增：文件类型判断
+function getFileType(filename) {
+  const ext = filename.split('.').pop().toLowerCase()
+  if (['pdf'].includes(ext)) return 'pdf'
+  if (['doc', 'docx'].includes(ext)) return 'word'
+  if (['xls', 'xlsx'].includes(ext)) return 'excel'
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) return 'image'
+  return 'document'
+}
+
+// 新增：文件大小格式化
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 
@@ -1298,6 +1749,208 @@ function getDocumentIcon(type) {
   color: #94a3b8;
 }
 
+/* 新增模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 32rpx;
+}
+
+.modal-container {
+  background: #ffffff;
+  border-radius: 20rpx;
+  width: 100%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba(15, 23, 42, 0.2);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-40rpx) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 32rpx 0;
+  margin-bottom: 24rpx;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.modal-content {
+  padding: 0 32rpx;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 24rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #0f172a;
+  margin-bottom: 8rpx;
+}
+
+.form-input {
+  width: 100%;
+  height: 80rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid #e2e8f0;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #0f172a;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  padding: 20rpx;
+  border: 2rpx solid #e2e8f0;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #0f172a;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  resize: none;
+}
+
+.form-textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 32rpx;
+  border: 2rpx dashed #cbd5e1;
+  border-radius: 12rpx;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.upload-area:active {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.upload-text {
+  font-size: 28rpx;
+  color: #0f172a;
+  font-weight: 500;
+  margin-top: 16rpx;
+}
+
+.upload-subtext {
+  font-size: 24rpx;
+  color: #64748b;
+  margin-top: 8rpx;
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx;
+  background: #f1f5f9;
+  border-radius: 12rpx;
+  margin-top: 16rpx;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 26rpx;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.file-size {
+  font-size: 22rpx;
+  color: #64748b;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 16rpx;
+  padding: 24rpx 32rpx;
+  border-top: 1rpx solid #e2e8f0;
+  margin-top: 24rpx;
+}
+
+.modal-button {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.modal-button--cancel {
+  background: transparent;
+  color: #64748b;
+  border: 2rpx solid #e2e8f0;
+}
+
+.modal-button--cancel:active {
+  background: #f8fafc;
+}
+
+.modal-button--confirm {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+}
+
+.modal-button--confirm:active {
+  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.4);
+  transform: translateY(2rpx);
+}
+
+.modal-button--confirm:disabled {
+  background: #cbd5e1;
+  box-shadow: none;
+  transform: none;
+}
+
 /* 响应式设计 */
 @media (max-width: 1023px) {
   .projects {
@@ -1310,7 +1963,7 @@ function getDocumentIcon(type) {
   }
   
   .projects__list-panel {
-    width: 100%;
+    width: 93%;
     min-width: auto;
   }
   
@@ -1326,7 +1979,7 @@ function getDocumentIcon(type) {
   
   
   .projects__panel-header {
-    flex-direction: column;
+    // flex-direction: column;
     align-items: stretch;
     gap: 16rpx;
   }
@@ -1346,9 +1999,7 @@ function getDocumentIcon(type) {
   }
 }
 
-@media (max-width: 767px) {
-  
-  
+@media (max-width: 768px) {
   .projects__header-actions {
     flex-direction: column;
     align-items: stretch;

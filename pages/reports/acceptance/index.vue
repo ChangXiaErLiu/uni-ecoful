@@ -370,19 +370,19 @@
 							</view>
 
 							<view class="tizidan-footer">
-							  <text class="tizidan-footer-text">请确保所有资料完整准确</text>
-							  <button class="btn btn--primary"
-							    @tap="downloadFile(downloadUrls.acceptance_report, '验收报告提资单.docx')"
-							    :disabled="!downloadUrls.acceptance_report">
-							    下载验收报告提资单
-							  </button>
-							  <button class="btn btn--secondary"
-							    @tap="downloadFile(downloadUrls.comparison_list, '建设内容详细对比清单.docx')"
-							    :disabled="!downloadUrls.comparison_list">
-							    下载建设内容详细对比清单
-							  </button>
+								<text class="tizidan-footer-text">请确保所有资料完整准确</text>
+								<button class="btn btn--primary"
+									@tap="downloadFile(downloadUrls.acceptance_report, '验收报告提资单.docx')"
+									:disabled="!downloadUrls.acceptance_report">
+									下载验收报告提资单
+								</button>
+								<button class="btn btn--secondary"
+									@tap="downloadFile(downloadUrls.comparison_list, '建设内容详细对比清单.docx')"
+									:disabled="!downloadUrls.comparison_list">
+									下载建设内容详细对比清单
+								</button>
 							</view>
-							
+
 						</view>
 					</view>
 
@@ -1629,210 +1629,210 @@
 		} finally {
 			uni.hideLoading()
 		}
-	  try {
-	    uni.showLoading({
-	      title: '加载中...'
-	    })
-	
-	    const response = await new Promise((resolve, reject) => {
-	      uni.request({
-	        url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
-	        method: 'GET',
-	        timeout: 10000,
-	        data: {
-	          memberId: 3,
-	        },
-	        success: (res) => {
-	          console.log('请求成功:', res)
-	          resolve(res)
-	        },
-	        fail: (err) => {
-	          console.log('请求失败:', err)
-	          reject(err)
-	        }
-	      })
-	    })
-	
-	    if (response && response.statusCode === 200) {
-	      const data = response.data
-	
-	      if (!data.items || !Array.isArray(data.items)) {
-	        throw new Error('数据格式不正确: items 不存在或不是数组')
-	      }
-	
-	      tizidanItems.value = data.items
-	      console.log("test",data.download_urls)
-	      // 处理下载URL，确保格式正确
-	      const downloadUrlsData = data.download_urls || {}
-	      downloadUrls.value = {
-	        acceptance_report: formatDownloadUrl(downloadUrlsData.tzd_doc),
-	        comparison_list: formatDownloadUrl(downloadUrlsData.comparison_list)
-	      }
-	
-	      console.log('下载URL设置:', downloadUrls.value)
-	
-	      uni.showToast({
-	        title: '数据加载成功',
-	        icon: 'success'
-	      })
-	    } else {
-	      throw new Error(`请求失败，状态码：${response?.statusCode || '未知'}`)
-	    }
-	  } catch (error) {
-	    console.error('获取提资单数据失败:', error)
-	    uni.showToast({
-	      title: '加载失败，请重新刷新！',
-	      icon: 'none',
-	      duration: 3000
-	    })
-	    tizidanItems.value = []
-	    downloadUrls.value = {
-	      acceptance_report: '',
-	      comparison_list: ''
-	    }
-	  } finally {
-	    uni.hideLoading()
-	  }
+		try {
+			uni.showLoading({
+				title: '加载中...'
+			})
+
+			const response = await new Promise((resolve, reject) => {
+				uni.request({
+					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
+					method: 'GET',
+					timeout: 10000,
+					data: {
+						memberId: 3,
+					},
+					success: (res) => {
+						console.log('请求成功:', res)
+						resolve(res)
+					},
+					fail: (err) => {
+						console.log('请求失败:', err)
+						reject(err)
+					}
+				})
+			})
+
+			if (response && response.statusCode === 200) {
+				const data = response.data
+
+				if (!data.items || !Array.isArray(data.items)) {
+					throw new Error('数据格式不正确: items 不存在或不是数组')
+				}
+
+				tizidanItems.value = data.items
+				console.log("test", data.download_urls)
+				// 处理下载URL，确保格式正确
+				const downloadUrlsData = data.download_urls || {}
+				downloadUrls.value = {
+					acceptance_report: formatDownloadUrl(downloadUrlsData.tzd_doc),
+					comparison_list: formatDownloadUrl(downloadUrlsData.comparison_list)
+				}
+
+				console.log('下载URL设置:', downloadUrls.value)
+
+				uni.showToast({
+					title: '数据加载成功',
+					icon: 'success'
+				})
+			} else {
+				throw new Error(`请求失败，状态码：${response?.statusCode || '未知'}`)
+			}
+		} catch (error) {
+			console.error('获取提资单数据失败:', error)
+			uni.showToast({
+				title: '加载失败，请重新刷新！',
+				icon: 'none',
+				duration: 3000
+			})
+			tizidanItems.value = []
+			downloadUrls.value = {
+				acceptance_report: '',
+				comparison_list: ''
+			}
+		} finally {
+			uni.hideLoading()
+		}
 	}
-	
+
 	// 添加URL格式化函数，确保URL格式正确
 	function formatDownloadUrl(url) {
-	  if (!url) return ''
-	  
-	  // 如果URL是相对路径，添加基础URL
-	  if (url.startsWith('/')) {
-	    return `http://127.0.0.1:8000${url}`
-	  }
-	  
-	  // 如果URL已经是完整路径，直接返回
-	  if (url.startsWith('http://') || url.startsWith('https://')) {
-	    return url
-	  }
-	  return url
+		if (!url) return ''
+
+		// 如果URL是相对路径，添加基础URL
+		if (url.startsWith('/')) {
+			return `http://127.0.0.1:8000${url}`
+		}
+
+		// 如果URL已经是完整路径，直接返回
+		if (url.startsWith('http://') || url.startsWith('https://')) {
+			return url
+		}
+		return url
 	}
 	// 下载提资对比清单
 
 	// 修改下载文件函数，适配不同平台
 	async function downloadFile(url, filename) {
-	  if (!url) {
-	    uni.showToast({
-	      title: '下载链接不存在',
-	      icon: 'none'
-	    })
-	    return
-	  }
-	
-	  // 显示下载中提示
-	  uni.showLoading({
-	    title: '下载中...',
-	    mask: true
-	  })
-	
-	  try {
-	    // #ifdef H5
-	    // H5环境：使用a标签下载
-	    await downloadFileH5(url, filename)
-	    // #endif
-	
-	    // #ifdef MP-WEIXIN
-	    // 微信小程序环境
-	    await downloadFileWechat(url, filename)
-	    // #endif
-	
-	    // #ifdef APP-PLUS
-	    // App环境
-	    await downloadFileApp(url, filename)
-	    // #endif
-	
-	    uni.hideLoading()
-	    uni.showToast({
-	      title: '下载成功',
-	      icon: 'success'
-	    })
-	
-	  } catch (error) {
-	    uni.hideLoading()
-	    console.error('下载失败:', error)
-	    uni.showToast({
-	      title: '下载失败: ' + (error.message || '未知错误'),
-	      icon: 'none',
-	      duration: 3000
-	    })
-	  }
+		if (!url) {
+			uni.showToast({
+				title: '下载链接不存在',
+				icon: 'none'
+			})
+			return
+		}
+
+		// 显示下载中提示
+		uni.showLoading({
+			title: '下载中...',
+			mask: true
+		})
+
+		try {
+			// #ifdef H5
+			// H5环境：使用a标签下载
+			await downloadFileH5(url, filename)
+			// #endif
+
+			// #ifdef MP-WEIXIN
+			// 微信小程序环境
+			await downloadFileWechat(url, filename)
+			// #endif
+
+			// #ifdef APP-PLUS
+			// App环境
+			await downloadFileApp(url, filename)
+			// #endif
+
+			uni.hideLoading()
+			uni.showToast({
+				title: '下载成功',
+				icon: 'success'
+			})
+
+		} catch (error) {
+			uni.hideLoading()
+			console.error('下载失败:', error)
+			uni.showToast({
+				title: '下载失败: ' + (error.message || '未知错误'),
+				icon: 'none',
+				duration: 3000
+			})
+		}
 	}
-	
+
 	// H5环境下载
 	function downloadFileH5(url, filename) {
-	  return new Promise((resolve, reject) => {
-	    try {
-	      const a = document.createElement('a')
-	      a.href = url
-	      a.download = filename || 'download'
-	      a.style.display = 'none'
-	      
-	      document.body.appendChild(a)
-	      a.click()
-	      document.body.removeChild(a)
-	      
-	      // H5下载无法准确判断是否成功，延迟一下再resolve
-	      setTimeout(resolve, 1000)
-	    } catch (error) {
-	      reject(error)
-	    }
-	  })
+		return new Promise((resolve, reject) => {
+			try {
+				const a = document.createElement('a')
+				a.href = url
+				a.download = filename || 'download'
+				a.style.display = 'none'
+
+				document.body.appendChild(a)
+				a.click()
+				document.body.removeChild(a)
+
+				// H5下载无法准确判断是否成功，延迟一下再resolve
+				setTimeout(resolve, 1000)
+			} catch (error) {
+				reject(error)
+			}
+		})
 	}
-	
+
 	// 微信小程序环境下载
 	function downloadFileWechat(url, filename) {
-	  return new Promise((resolve, reject) => {
-	    uni.downloadFile({
-	      url: url,
-	      success: (res) => {
-	        if (res.statusCode === 200) {
-	          // 下载成功，保存到本地
-	          const filePath = res.tempFilePath
-	          uni.saveFile({
-	            tempFilePath: filePath,
-	            success: (saveRes) => {
-	              console.log('文件保存成功:', saveRes.savedFilePath)
-	              resolve(saveRes)
-	            },
-	            fail: (saveErr) => {
-	              reject(new Error('保存文件失败: ' + (saveErr.errMsg || '未知错误')))
-	            }
-	          })
-	        } else {
-	          reject(new Error(`下载失败，状态码: ${res.statusCode}`))
-	        }
-	      },
-	      fail: (err) => {
-	        reject(new Error('下载请求失败: ' + (err.errMsg || '未知错误')))
-	      }
-	    })
-	  })
+		return new Promise((resolve, reject) => {
+			uni.downloadFile({
+				url: url,
+				success: (res) => {
+					if (res.statusCode === 200) {
+						// 下载成功，保存到本地
+						const filePath = res.tempFilePath
+						uni.saveFile({
+							tempFilePath: filePath,
+							success: (saveRes) => {
+								console.log('文件保存成功:', saveRes.savedFilePath)
+								resolve(saveRes)
+							},
+							fail: (saveErr) => {
+								reject(new Error('保存文件失败: ' + (saveErr.errMsg || '未知错误')))
+							}
+						})
+					} else {
+						reject(new Error(`下载失败，状态码: ${res.statusCode}`))
+					}
+				},
+				fail: (err) => {
+					reject(new Error('下载请求失败: ' + (err.errMsg || '未知错误')))
+				}
+			})
+		})
 	}
-	
+
 	// App环境下载
 	function downloadFileApp(url, filename) {
-	  return new Promise((resolve, reject) => {
-	    uni.downloadFile({
-	      url: url,
-	      success: (res) => {
-	        if (res.statusCode === 200) {
-	          // 在App中，下载的文件会保存到系统下载目录
-	          // 可以提示用户查看下载目录
-	          resolve(res)
-	        } else {
-	          reject(new Error(`下载失败，状态码: ${res.statusCode}`))
-	        }
-	      },
-	      fail: (err) => {
-	        reject(new Error('下载请求失败: ' + (err.errMsg || '未知错误')))
-	      }
-	    })
-	  })
+		return new Promise((resolve, reject) => {
+			uni.downloadFile({
+				url: url,
+				success: (res) => {
+					if (res.statusCode === 200) {
+						// 在App中，下载的文件会保存到系统下载目录
+						// 可以提示用户查看下载目录
+						resolve(res)
+					} else {
+						reject(new Error(`下载失败，状态码: ${res.statusCode}`))
+					}
+				},
+				fail: (err) => {
+					reject(new Error('下载请求失败: ' + (err.errMsg || '未知错误')))
+				}
+			})
+		})
 	}
-	
+
 	// 提交提资单项
 	async function submitTizidanItem(index) {
 		uni.showModal({
@@ -1903,7 +1903,7 @@
 		})
 	}
 
-	
+
 	// 监听步骤变化
 	watch(currentStep, (newVal) => {
 		if (newVal === 2) {
@@ -2903,387 +2903,816 @@
 
 	/* 提资单界面样式 */
 	.tizidan-container {
-	    display: flex;
-	    flex-direction: column;
-	    min-height: 80vh;
-	    background-color: #ffffff;
-	    border-radius: 16rpx;
-	    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-	    overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		min-height: 80vh;
+		background-color: #ffffff;
+		border-radius: 16rpx;
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+		overflow: hidden;
 	}
-	
+
 	.tizidan-header {
-	    display: flex;
-	    flex-direction: column;
-	    align-items: center;
-	    padding: 60rpx 40rpx;
-	    background: linear-gradient(135deg, #166534 0%, #17834a 100%);
-	    color: #ffffff;
-	    text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 60rpx 40rpx;
+		background: linear-gradient(135deg, #166534 0%, #17834a 100%);
+		color: #ffffff;
+		text-align: center;
 	}
-	
+
 	.tizidan-title {
-	    font-size: 44rpx;
-	    font-weight: bold;
-	    margin-bottom: 16rpx;
+		font-size: 44rpx;
+		font-weight: bold;
+		margin-bottom: 16rpx;
 	}
-	
+
 	.tizidan-subtitle {
-	    font-size: 32rpx;
-	    opacity: 0.9;
+		font-size: 32rpx;
+		opacity: 0.9;
 	}
-	
+
 	.tizidan-content {
-	    flex: 1;
-	    display: flex;
-	    flex-direction: column;
-	    gap: 24rpx;
-	    padding: 40rpx;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+		padding: 40rpx;
 	}
-	
+
 	.tizidan-item-card {
-	    display: flex;
-	    flex-direction: column;
-	    background-color: #f8fafc;
-	    border-radius: 16rpx;
-	    padding: 32rpx;
-	    border: 1rpx solid #e2e8f0;
-	    transition: all 0.3s ease;
+		display: flex;
+		flex-direction: column;
+		background-color: #f8fafc;
+		border-radius: 16rpx;
+		padding: 32rpx;
+		border: 1rpx solid #e2e8f0;
+		transition: all 0.3s ease;
 	}
-	
+
 	.tizidan-item-card:hover {
-	    transform: translateY(-2rpx);
-	    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+		transform: translateY(-2rpx);
+		box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
 	}
-	
+
 	.tizidan-item-content {
-	    display: flex;
-	    margin-bottom: 20rpx;
+		display: flex;
+		margin-bottom: 20rpx;
 	}
-	
+
 	.tizidan-item-number {
-	    font-size: 32rpx;
-	    font-weight: bold;
-	    color: #166534;
-	    margin-right: 16rpx;
-	    min-width: 50rpx;
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #166534;
+		margin-right: 16rpx;
+		min-width: 50rpx;
 	}
-	
+
 	.tizidan-item-text {
-	    font-size: 32rpx;
-	    color: #2d3748;
-	    line-height: 1.6;
-	    flex: 1;
+		font-size: 32rpx;
+		color: #2d3748;
+		line-height: 1.6;
+		flex: 1;
 	}
-	
+
 	.tizidan-item-status {
-	    display: flex;
-	    justify-content: space-between;
-	    align-items: center;
-	    padding-top: 20rpx;
-	    border-top: 1rpx solid #e2e8f0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding-top: 20rpx;
+		border-top: 1rpx solid #e2e8f0;
 	}
-	
+
 	.tizidan-status-text {
-	    font-size: 30rpx;
-	    font-weight: bold;
+		font-size: 30rpx;
+		font-weight: bold;
 	}
-	
+
 	.tizidan-status-text.tizidan-submitted {
-	    color: #27ae60;
+		color: #27ae60;
 	}
-	
+
 	.tizidan-status-text.tizidan-unsubmitted {
-	    color: #e74c3c;
+		color: #e74c3c;
 	}
-	
+
 	.tizidan-submit-btn {
-	    background-color: #3498db;
-	    color: #ffffff;
-	    border: none;
-	    border-radius: 10rpx;
-	    padding: 16rpx 32rpx;
-	    font-size: 28rpx;
-	    font-weight: 600;
-	    box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
-	    transition: background-color 0.3s;
+		background-color: #3498db;
+		color: #ffffff;
+		border: none;
+		border-radius: 10rpx;
+		padding: 16rpx 32rpx;
+		font-size: 28rpx;
+		font-weight: 600;
+		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
+		transition: background-color 0.3s;
 	}
-	
+
 	.tizidan-submit-btn:active {
-	    background-color: #2980b9;
+		background-color: #2980b9;
 	}
-	
+
 	.tizidan-footer {
-	    display: flex;
-	    flex-direction: column;
-	    gap: 24rpx;
-	    padding: 40rpx;
-	    background-color: #f8fafc;
-	    border-top: 1rpx solid #e2e8f0;
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+		padding: 40rpx;
+		background-color: #f8fafc;
+		border-top: 1rpx solid #e2e8f0;
 	}
-	
+
 	.tizidan-footer-text {
-	    font-size: 30rpx;
-	    color: #64748b;
-	    text-align: center;
-	    margin-bottom: 10rpx;
-	    font-weight: 600;
+		font-size: 30rpx;
+		color: #64748b;
+		text-align: center;
+		margin-bottom: 10rpx;
+		font-weight: 600;
 	}
-	
+
 	/* 响应式设计 - 移动端 */
 	@media (max-width: 768px) {
-	    .tizidan-container {
-	        margin: 10rpx;
-	        border-radius: 12rpx;
-	    }
-	    
-	    .tizidan-header {
-	        padding: 30rpx 20rpx;
-	    }
-	    
-	    .tizidan-title {
-	        font-size: 32rpx;
-	    }
-	    
-	    .tizidan-subtitle {
-	        font-size: 26rpx;
-	    }
-	    
-	    .tizidan-content {
-	        padding: 20rpx;
-	        gap: 16rpx;
-	    }
-	    
-	    .tizidan-item-card {
-	        padding: 20rpx;
-	    }
-	    
-	    .tizidan-item-content {
-	        flex-direction: column;
-	    }
-	    
-	    .tizidan-item-number {
-	        margin-bottom: 8rpx;
-	        font-size: 28rpx;
-	    }
-	    
-	    .tizidan-item-text {
-	        font-size: 26rpx;
-	    }
-	    
-	    .tizidan-item-status {
-	        flex-direction: column;
-	        align-items: flex-start;
-	        gap: 12rpx;
-	    }
-	    
-	    .tizidan-status-text {
-	        font-size: 26rpx;
-	    }
-	    
-	    .tizidan-submit-btn {
-	        width: 100%;
-	        padding: 16rpx;
-	        font-size: 28rpx;
-	    }
-	    
-	    .tizidan-footer {
-	        padding: 24rpx 20rpx;
-	        gap: 16rpx;
-	    }
-	    
-	    .tizidan-footer-text {
-	        font-size: 26rpx;
-	    }
-	    
-	    .tizidan-footer .btn {
-	        width: 100%;
-	        margin: 0;
-	        justify-content: center;
-	    }
+
+		// 项目基本信息表
+		.baseinfo__row {
+			display: block;
+			width: 54%;
+		}
+
+		.pollutants-container {
+			margin-bottom: 20rpx;
+			width: 56.2%;
+		}
+
+		.pollutants-table {
+			overflow-x: auto;
+		}
+
+		.pollutants-header,
+		.pollutants-row {
+			min-width: 1200rpx;
+			/* 保证表格有足够宽度可以横向滚动 */
+		}
+
+		.pollutants-col {
+			padding: 16rpx 10rpx;
+			font-size: 24rpx;
+		}
+
+		.pw-ico {
+			width: 140rpx;
+			height: 64rpx;
+			border: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: $white;
+			margin: 5rpx 0 0rpx 0;
+
+		}
+
+		.pw-ico text {
+			font-size: 22rpx;
+		}
+
+		.toolbar-content {
+			flex-direction: column;
+			gap: 16rpx;
+		}
+
+		.toolbar-left,
+		.toolbar-right {
+			width: 100%;
+		}
+
+		.toolbar-buttons {
+			width: 100%;
+			overflow-x: auto;
+			padding-bottom: 6rpx;
+		}
+
+		.acceptance-content {
+			padding: 16rpx;
+		}
+
+		.section-header {
+			padding: 20rpx 20rpx 0;
+		}
+
+		.section-body {
+			padding: 0 20rpx 20rpx;
+		}
+
+		.form-grid--base {
+			grid-template-columns: 1fr;
+			gap: 10rpx;
+		}
+
+		.form-item__label {
+			width: 160rpx;
+			min-width: 140rpx;
+			font-weight: 600;
+			font-size: 28rpx;
+		}
+
+		.form-item__title {
+			width: 160rpx;
+			min-width: 140rpx;
+		}
+
+		/* 表格卡片化：自动加标签（无须改模板） */
+		.table-header {
+			display: none;
+		}
+
+		.table-row {
+			display: grid;
+			grid-template-columns: 1fr;
+			border-bottom: 1rpx solid #f1f5f9;
+			padding: 10rpx 8rpx;
+			gap: 0;
+		}
+
+		.table-td {
+			position: relative;
+			padding: 14rpx 14rpx 14rpx 120rpx;
+			border-right: none;
+			border-bottom: 1rpx solid #f7f8fa;
+			min-height: 64rpx;
+		}
+
+		.table-td:last-child {
+			border-bottom: none;
+		}
+
+		/* 用 nth-child 给出列标题（与 header 顺序一致） */
+		.table-row .table-td:nth-child(1)::before {
+			content: '字段';
+		}
+
+		.table-row .table-td:nth-child(2)::before {
+			content: '当前值';
+		}
+
+		.table-row .table-td:nth-child(3)::before {
+			content: '类型';
+		}
+
+		.table-row .table-td:nth-child(4)::before {
+			content: '状态';
+		}
+
+		.table-row .table-td:nth-child(5)::before {
+			content: '操作';
+		}
+
+		.table-td::before {
+			position: absolute;
+			left: 14rpx;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 24rpx;
+			color: #6b7a8a;
+			font-weight: 600;
+			width: 96rpx;
+			text-align-last: justify;
+		}
+
+		/* 简化型行（标识牌）不需要五列标签 */
+		.table-row--simple .table-td {
+			padding: 14rpx;
+		}
+
+		.table-row--simple .table-td::before {
+			content: '';
+			display: none;
+		}
+
+		.acceptance-navigation {
+			padding: 16rpx;
+		}
+
+		.modal {
+			width: 92vw;
+		}
+
+		.update-actions {
+			flex-direction: column;
+		}
+
+		.generation-actions {
+			flex-direction: column;
+		}
+
+		.radio-group {
+			flex-direction: column;
+			gap: 12rpx;
+		}
+
+		.action-buttons {
+			flex-wrap: wrap;
+			justify-content: flex-start;
+		}
+
+		.tizidan-container {
+			margin: 10rpx;
+			border-radius: 12rpx;
+		}
+
+		.tizidan-header {
+			padding: 30rpx 20rpx;
+		}
+
+		.tizidan-title {
+			font-size: 32rpx;
+		}
+
+		.tizidan-subtitle {
+			font-size: 26rpx;
+		}
+
+		.tizidan-content {
+			padding: 20rpx;
+			gap: 16rpx;
+		}
+
+		.tizidan-item-card {
+			padding: 20rpx;
+		}
+
+		.tizidan-item-content {
+			flex-direction: column;
+		}
+
+		.tizidan-item-number {
+			margin-bottom: 8rpx;
+			font-size: 28rpx;
+		}
+
+		.tizidan-item-text {
+			font-size: 26rpx;
+		}
+
+		.tizidan-item-status {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 12rpx;
+		}
+
+		.tizidan-status-text {
+			font-size: 26rpx;
+		}
+
+		.tizidan-submit-btn {
+			width: 100%;
+			padding: 16rpx;
+			font-size: 28rpx;
+		}
+
+		.tizidan-footer {
+			padding: 24rpx 20rpx;
+			gap: 16rpx;
+		}
+
+		.tizidan-footer-text {
+			font-size: 26rpx;
+		}
+
+		.tizidan-footer .btn {
+			width: 100%;
+			margin: 0;
+			justify-content: center;
+		}
 	}
-	
+
 	/* 平板端适配 */
 	@media (min-width: 769px) and (max-width: 960px) {
-	    .tizidan-container {
-	        margin: 20rpx;
-	        max-width: 90%;
-	    }
-	    
-	    .tizidan-header {
-	        padding: 40rpx 30rpx;
-	    }
-	    
-	    .tizidan-title {
-	        font-size: 38rpx;
-	    }
-	    
-	    .tizidan-subtitle {
-	        font-size: 30rpx;
-	    }
-	    
-	    .tizidan-content {
-	        padding: 30rpx;
-	    }
-	    
-	    .tizidan-item-card {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: flex-start;
-	    }
-	    
-	    .tizidan-item-content {
-	        margin-bottom: 0;
-	        flex: 1;
-	        max-width: 70%;
-	    }
-	    
-	    .tizidan-item-status {
-	        flex-shrink: 0;
-	        border-top: none;
-	        padding-top: 0;
-	        flex-direction: column;
-	        align-items: flex-end;
-	        gap: 12rpx;
-	        min-width: 180rpx;
-	    }
-	    
-	    .tizidan-footer {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: center;
-	    }
-	    
-	    .tizidan-footer-text {
-	        margin-bottom: 0;
-	        flex: 1;
-	        text-align: left;
-	        font-size: 28rpx;
-	    }
-	    
-	    .tizidan-footer .btn {
-	        flex-shrink: 0;
-	        margin-left: 20rpx;
-	    }
+
+		// 步骤导航
+		.desktop-steps {
+			display: block;
+		}
+
+		.step-connector {
+			width: 0;
+		}
+
+		// 项目基本信息表
+		.baseinfo__row {
+			display: block;
+			width: 50%;
+		}
+
+		.pollutants-container {
+			margin-bottom: 20rpx;
+			width: 52.2%;
+		}
+
+		.pollutants-table {
+			overflow-x: auto;
+		}
+
+		.pollutants-header,
+		.pollutants-row {
+			min-width: 1200rpx;
+			/* 保证表格有足够宽度可以横向滚动 */
+		}
+
+		.pollutants-col {
+			padding: 16rpx 10rpx;
+			font-size: 24rpx;
+		}
+
+		.pw-ico {
+			width: 140rpx;
+			height: 64rpx;
+			border: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			background: $white;
+			margin: 5rpx 0 0rpx 0;
+
+		}
+
+		.pw-ico text {
+			font-size: 22rpx;
+		}
+
+		.toolbar-content {
+			flex-direction: column;
+			gap: 16rpx;
+		}
+
+		.toolbar-left,
+		.toolbar-right {
+			width: 100%;
+		}
+
+		.toolbar-buttons {
+			width: 100%;
+			overflow-x: auto;
+			padding-bottom: 6rpx;
+		}
+
+		.acceptance-content {
+			padding: 16rpx;
+		}
+
+		.section-header {
+			padding: 20rpx 20rpx 0;
+		}
+
+		.section-body {
+			padding: 0 20rpx 20rpx;
+		}
+
+		.form-grid--base {
+			grid-template-columns: 1fr;
+			gap: 10rpx;
+		}
+
+		.form-item__label {
+			width: 160rpx;
+			min-width: 140rpx;
+			font-weight: 600;
+			font-size: 28rpx;
+		}
+
+		.form-item__title {
+			width: 160rpx;
+			min-width: 140rpx;
+		}
+
+		/* 表格卡片化：自动加标签（无须改模板） */
+		.table-header {
+			display: none;
+		}
+
+		.table-row {
+			display: grid;
+			grid-template-columns: 1fr;
+			border-bottom: 1rpx solid #f1f5f9;
+			padding: 10rpx 8rpx;
+			gap: 0;
+		}
+
+		.table-td {
+			position: relative;
+			padding: 14rpx 14rpx 14rpx 120rpx;
+			border-right: none;
+			border-bottom: 1rpx solid #f7f8fa;
+			min-height: 64rpx;
+		}
+
+		.table-td:last-child {
+			border-bottom: none;
+		}
+
+		/* 用 nth-child 给出列标题（与 header 顺序一致） */
+		.table-row .table-td:nth-child(1)::before {
+			content: '字段';
+		}
+
+		.table-row .table-td:nth-child(2)::before {
+			content: '当前值';
+		}
+
+		.table-row .table-td:nth-child(3)::before {
+			content: '类型';
+		}
+
+		.table-row .table-td:nth-child(4)::before {
+			content: '状态';
+		}
+
+		.table-row .table-td:nth-child(5)::before {
+			content: '操作';
+		}
+
+		.table-td::before {
+			position: absolute;
+			left: 14rpx;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 24rpx;
+			color: #6b7a8a;
+			font-weight: 600;
+			width: 96rpx;
+			text-align-last: justify;
+		}
+
+		/* 简化型行（标识牌）不需要五列标签 */
+		.table-row--simple .table-td {
+			padding: 14rpx;
+		}
+
+		.table-row--simple .table-td::before {
+			content: '';
+			display: none;
+		}
+
+		.acceptance-navigation {
+			padding: 16rpx;
+		}
+
+		.modal {
+			width: 92vw;
+		}
+
+		.update-actions {
+			flex-direction: column;
+		}
+
+		.generation-actions {
+			flex-direction: column;
+		}
+
+		.radio-group {
+			flex-direction: column;
+			gap: 12rpx;
+		}
+
+		.action-buttons {
+			flex-wrap: wrap;
+			justify-content: flex-start;
+		}
+
+		.tizidan-container {
+			margin: 20rpx;
+		}
+
+		.tizidan-container {
+			margin: 20rpx;
+			max-width: 90%;
+		}
+
+		.tizidan-header {
+			padding: 40rpx 30rpx;
+		}
+
+		.tizidan-title {
+			font-size: 38rpx;
+		}
+
+		.tizidan-subtitle {
+			font-size: 30rpx;
+		}
+
+		.tizidan-content {
+			padding: 30rpx;
+		}
+
+		.tizidan-item-card {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-start;
+		}
+
+		.tizidan-item-content {
+			margin-bottom: 0;
+			flex: 1;
+			max-width: 70%;
+		}
+
+		.tizidan-item-status {
+			flex-shrink: 0;
+			border-top: none;
+			padding-top: 0;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 12rpx;
+			min-width: 180rpx;
+		}
+
+		.tizidan-footer {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.tizidan-footer-text {
+			margin-bottom: 0;
+			flex: 1;
+			text-align: left;
+			font-size: 28rpx;
+		}
+
+		.tizidan-footer .btn {
+			flex-shrink: 0;
+			margin-left: 20rpx;
+		}
 	}
-	
+
 	/* 桌面端适配 - 最大化宽度和字体 */
 	@media (min-width: 961px) {
-	    .tizidan-container {
-	        max-width: 1400rpx; /* 增大最大宽度 */
-	        margin: 0 auto;
-	        width: 95%; /* 使用百分比宽度，充分利用屏幕空间 */
-	    }
-	    
-	    .tizidan-header {
-	        padding: 80rpx 60rpx; /* 增大头部内边距 */
-	    }
-	    
-	    .tizidan-title {
-	        font-size: 48rpx; /* 增大标题字体 */
-	    }
-	    
-	    .tizidan-subtitle {
-	        font-size: 36rpx; /* 增大副标题字体 */
-	    }
-	    
-	    .tizidan-content {
-	        padding: 50rpx 60rpx; /* 增大内容区域内边距 */
-	        gap: 30rpx; /* 增大卡片间距 */
-	    }
-	    
-	    .tizidan-item-card {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: center;
-	        padding: 40rpx; /* 增大卡片内边距 */
-	    }
-	    
-	    .tizidan-item-content {
-	        margin-bottom: 0;
-	        flex: 1;
-	        max-width: 80%; /* 增大内容区域最大宽度 */
-	    }
-	    
-	    .tizidan-item-number {
-	        font-size: 36rpx; /* 增大序号字体 */
-	        min-width: 60rpx;
-	    }
-	    
-	    .tizidan-item-text {
-	        font-size: 36rpx; /* 增大内容字体 */
-	        line-height: 1.7; /* 增大行高，提高可读性 */
-	    }
-	    
-	    .tizidan-item-status {
-	        border-top: none;
-	        padding-top: 0;
-	        flex-shrink: 0;
-	        min-width: 220rpx; /* 增大状态区域最小宽度 */
-	        justify-content: flex-end;
-	    }
-	    
-	    .tizidan-status-text {
-	        font-size: 32rpx; /* 增大状态字体 */
-	    }
-	    
-	    .tizidan-submit-btn {
-	        padding: 18rpx 36rpx; /* 增大按钮内边距 */
-	        font-size: 30rpx; /* 增大按钮字体 */
-	    }
-	    
-	    .tizidan-footer {
-	        flex-direction: row;
-	        justify-content: space-between;
-	        align-items: center;
-	        padding: 50rpx 60rpx; /* 增大底部内边距 */
-	    }
-	    
-	    .tizidan-footer-text {
-	        margin-bottom: 0;
-	        flex: 1;
-	        text-align: left;
-	        font-size: 32rpx; /* 增大底部文字字体 */
-	    }
-	    
-	    .tizidan-footer .btn {
-	        flex-shrink: 0;
-	        margin-left: 30rpx;
-	        padding: 20rpx 40rpx; /* 增大底部按钮内边距 */
-	        font-size: 30rpx; /* 增大底部按钮字体 */
-	    }
-	    
-	    .tizidan-submit-btn:hover {
-	        background-color: #2980b9;
-	        cursor: pointer;
-	    }
+
+		// 全局设置
+		.btn--primary:hover {
+			box-shadow: 0 6rpx 16rpx rgba(22, 101, 52, .28);
+		}
+
+		.btn--secondary:hover {
+			background: #eef6f2;
+			border-color: #d7efe4;
+		}
+
+		.btn--ghost:hover {
+			background: #f7f9fb;
+		}
+
+		.btn--danger:hover {
+			box-shadow: 0 6rpx 16rpx rgba(217, 45, 32, .25);
+		}
+
+		.step-item:hover {
+			background: #f7fafc;
+		}
+
+		.icon-btn:hover {
+			background: #f3f6fa;
+		}
+
+		.tizidan-container {
+			max-width: 1400rpx;
+			/* 增大最大宽度 */
+			margin: 0 auto;
+			width: 95%;
+			/* 使用百分比宽度，充分利用屏幕空间 */
+		}
+
+		.tizidan-header {
+			padding: 80rpx 60rpx;
+			/* 增大头部内边距 */
+		}
+
+		.tizidan-title {
+			font-size: 48rpx;
+			/* 增大标题字体 */
+		}
+
+		.tizidan-subtitle {
+			font-size: 36rpx;
+			/* 增大副标题字体 */
+		}
+
+		.tizidan-content {
+			padding: 50rpx 60rpx;
+			/* 增大内容区域内边距 */
+			gap: 30rpx;
+			/* 增大卡片间距 */
+		}
+
+		.tizidan-item-card {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			padding: 40rpx;
+			/* 增大卡片内边距 */
+		}
+
+		.tizidan-item-content {
+			margin-bottom: 0;
+			flex: 1;
+			max-width: 80%;
+			/* 增大内容区域最大宽度 */
+		}
+
+		.tizidan-item-number {
+			font-size: 36rpx;
+			/* 增大序号字体 */
+			min-width: 60rpx;
+		}
+
+		.tizidan-item-text {
+			font-size: 36rpx;
+			/* 增大内容字体 */
+			line-height: 1.7;
+			/* 增大行高，提高可读性 */
+		}
+
+		.tizidan-item-status {
+			border-top: none;
+			padding-top: 0;
+			flex-shrink: 0;
+			min-width: 220rpx;
+			/* 增大状态区域最小宽度 */
+			justify-content: flex-end;
+		}
+
+		.tizidan-status-text {
+			font-size: 32rpx;
+			/* 增大状态字体 */
+		}
+
+		.tizidan-submit-btn {
+			padding: 18rpx 36rpx;
+			/* 增大按钮内边距 */
+			font-size: 30rpx;
+			/* 增大按钮字体 */
+		}
+
+		.tizidan-footer {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			padding: 50rpx 60rpx;
+			/* 增大底部内边距 */
+		}
+
+		.tizidan-footer-text {
+			margin-bottom: 0;
+			flex: 1;
+			text-align: left;
+			font-size: 32rpx;
+			/* 增大底部文字字体 */
+		}
+
+		.tizidan-footer .btn {
+			flex-shrink: 0;
+			margin-left: 30rpx;
+			padding: 20rpx 40rpx;
+			/* 增大底部按钮内边距 */
+			font-size: 30rpx;
+			/* 增大底部按钮字体 */
+		}
+
+		.tizidan-submit-btn:hover {
+			background-color: #2980b9;
+			cursor: pointer;
+		}
 	}
-	
+
 	/* 超大屏幕适配 */
 	@media (min-width: 1200px) {
-	    .tizidan-container {
-	        max-width: 1600rpx; /* 在超大屏幕上进一步增大宽度 */
-	    }
-	    
-	    .tizidan-content {
-	        padding: 60rpx 80rpx; /* 进一步增大内边距 */
-	    }
-	    
-	    .tizidan-item-card {
-	        padding: 45rpx; /* 进一步增大卡片内边距 */
-	    }
-	    
-	    .tizidan-item-number {
-	        font-size: 38rpx; /* 进一步增大序号字体 */
-	    }
-	    
-	    .tizidan-item-text {
-	        font-size: 38rpx; /* 进一步增大内容字体 */
-	    }
-	    
-	    .tizidan-footer {
-	        padding: 60rpx 80rpx; /* 进一步增大底部内边距 */
-	    }
+		.tizidan-container {
+			max-width: 1600rpx;
+			/* 在超大屏幕上进一步增大宽度 */
+		}
+
+		.tizidan-content {
+			padding: 60rpx 80rpx;
+			/* 进一步增大内边距 */
+		}
+
+		.tizidan-item-card {
+			padding: 45rpx;
+			/* 进一步增大卡片内边距 */
+		}
+
+		.tizidan-item-number {
+			font-size: 38rpx;
+			/* 进一步增大序号字体 */
+		}
+
+		.tizidan-item-text {
+			font-size: 38rpx;
+			/* 进一步增大内容字体 */
+		}
+
+		.tizidan-footer {
+			padding: 60rpx 80rpx;
+			/* 进一步增大底部内边距 */
+		}
 	}
-	
 </style>

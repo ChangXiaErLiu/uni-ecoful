@@ -672,66 +672,66 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40rpx 24rpx;
+  padding: 60rpx 40rpx;
   background: linear-gradient(135deg, #166534 0%, #17834a 100%);
   color: #ffffff;
   text-align: center;
 }
 .tizidan-title.data-v-41308e16 {
-  font-size: 36rpx;
+  font-size: 44rpx;
   font-weight: bold;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 .tizidan-subtitle.data-v-41308e16 {
-  font-size: 28rpx;
+  font-size: 32rpx;
   opacity: 0.9;
 }
 .tizidan-content.data-v-41308e16 {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
-  padding: 30rpx 24rpx;
+  gap: 24rpx;
+  padding: 40rpx;
 }
 .tizidan-item-card.data-v-41308e16 {
   display: flex;
   flex-direction: column;
   background-color: #f8fafc;
-  border-radius: 12rpx;
-  padding: 24rpx;
+  border-radius: 16rpx;
+  padding: 32rpx;
   border: 1rpx solid #e2e8f0;
   transition: all 0.3s ease;
 }
 .tizidan-item-card.data-v-41308e16:hover {
   transform: translateY(-2rpx);
-  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
 }
 .tizidan-item-content.data-v-41308e16 {
   display: flex;
-  margin-bottom: 16rpx;
+  margin-bottom: 20rpx;
 }
 .tizidan-item-number.data-v-41308e16 {
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: bold;
   color: #166534;
-  margin-right: 12rpx;
-  min-width: 40rpx;
+  margin-right: 16rpx;
+  min-width: 50rpx;
 }
 .tizidan-item-text.data-v-41308e16 {
-  font-size: 28rpx;
+  font-size: 32rpx;
   color: #2d3748;
-  line-height: 1.5;
+  line-height: 1.6;
   flex: 1;
 }
 .tizidan-item-status.data-v-41308e16 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 16rpx;
+  padding-top: 20rpx;
   border-top: 1rpx solid #e2e8f0;
 }
 .tizidan-status-text.data-v-41308e16 {
-  font-size: 26rpx;
+  font-size: 30rpx;
   font-weight: bold;
 }
 .tizidan-status-text.tizidan-submitted.data-v-41308e16 {
@@ -744,9 +744,10 @@
   background-color: #3498db;
   color: #ffffff;
   border: none;
-  border-radius: 8rpx;
-  padding: 12rpx 24rpx;
-  font-size: 26rpx;
+  border-radius: 10rpx;
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
   box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
   transition: background-color 0.3s;
 }
@@ -756,16 +757,17 @@
 .tizidan-footer.data-v-41308e16 {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
-  padding: 30rpx 24rpx;
+  gap: 24rpx;
+  padding: 40rpx;
   background-color: #f8fafc;
   border-top: 1rpx solid #e2e8f0;
 }
 .tizidan-footer-text.data-v-41308e16 {
-  font-size: 26rpx;
+  font-size: 30rpx;
   color: #64748b;
   text-align: center;
   margin-bottom: 10rpx;
+  font-weight: 600;
 }
 
 /* 响应式设计 - 移动端 */
@@ -943,6 +945,7 @@
 }
 .tizidan-item-number.data-v-41308e16 {
     margin-bottom: 8rpx;
+    font-size: 28rpx;
 }
 .tizidan-item-text.data-v-41308e16 {
     font-size: 26rpx;
@@ -951,6 +954,9 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12rpx;
+}
+.tizidan-status-text.data-v-41308e16 {
+    font-size: 26rpx;
 }
 .tizidan-submit-btn.data-v-41308e16 {
     width: 100%;
@@ -961,74 +967,16 @@
     padding: 24rpx 20rpx;
     gap: 16rpx;
 }
+.tizidan-footer-text.data-v-41308e16 {
+    font-size: 26rpx;
+}
 .tizidan-footer .btn.data-v-41308e16 {
     width: 100%;
     margin: 0;
     justify-content: center;
 }
 }
-/* 桌面端适配 */
-@media (min-width: 1023px) {
-.btn--primary.data-v-41308e16:hover {
-    box-shadow: 0 6rpx 16rpx rgba(22, 101, 52, 0.28);
-}
-.btn--secondary.data-v-41308e16:hover {
-    background: #eef6f2;
-    border-color: #d7efe4;
-}
-.btn--ghost.data-v-41308e16:hover {
-    background: #f7f9fb;
-}
-.btn--danger.data-v-41308e16:hover {
-    box-shadow: 0 6rpx 16rpx rgba(217, 45, 32, 0.25);
-}
-.step-item.data-v-41308e16:hover {
-    background: #f7fafc;
-}
-.icon-btn.data-v-41308e16:hover {
-    background: #f3f6fa;
-}
-.tizidan-container.data-v-41308e16 {
-    max-width: 1000rpx;
-    margin: 0 auto;
-}
-.tizidan-item-card.data-v-41308e16 {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-}
-.tizidan-item-content.data-v-41308e16 {
-    margin-bottom: 0;
-    flex: 1;
-    max-width: 75%;
-}
-.tizidan-item-status.data-v-41308e16 {
-    border-top: none;
-    padding-top: 0;
-    flex-shrink: 0;
-    min-width: 180rpx;
-    justify-content: flex-end;
-}
-.tizidan-footer.data-v-41308e16 {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-}
-.tizidan-footer-text.data-v-41308e16 {
-    margin-bottom: 0;
-    flex: 1;
-    text-align: left;
-}
-.tizidan-footer .btn.data-v-41308e16 {
-    flex-shrink: 0;
-    margin-left: 20rpx;
-}
-.tizidan-submit-btn.data-v-41308e16:hover {
-    background-color: #2980b9;
-    cursor: pointer;
-}
-}
-/* 平板端：769px - 960px */
+/* 平板端适配 */
 @media (min-width: 769px) and (max-width: 960px) {
 .desktop-steps.data-v-41308e16 {
     display: block;
@@ -1187,6 +1135,22 @@
 .tizidan-container.data-v-41308e16 {
     margin: 20rpx;
 }
+.tizidan-container.data-v-41308e16 {
+    margin: 20rpx;
+    max-width: 90%;
+}
+.tizidan-header.data-v-41308e16 {
+    padding: 40rpx 30rpx;
+}
+.tizidan-title.data-v-41308e16 {
+    font-size: 38rpx;
+}
+.tizidan-subtitle.data-v-41308e16 {
+    font-size: 30rpx;
+}
+.tizidan-content.data-v-41308e16 {
+    padding: 30rpx;
+}
 .tizidan-item-card.data-v-41308e16 {
     flex-direction: row;
     justify-content: space-between;
@@ -1204,7 +1168,7 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 12rpx;
-    min-width: 150rpx;
+    min-width: 180rpx;
 }
 .tizidan-footer.data-v-41308e16 {
     flex-direction: row;
@@ -1215,9 +1179,152 @@
     margin-bottom: 0;
     flex: 1;
     text-align: left;
+    font-size: 28rpx;
 }
 .tizidan-footer .btn.data-v-41308e16 {
     flex-shrink: 0;
     margin-left: 20rpx;
+}
+}
+/* 桌面端适配 - 最大化宽度和字体 */
+@media (min-width: 961px) {
+.btn--primary.data-v-41308e16:hover {
+    box-shadow: 0 6rpx 16rpx rgba(22, 101, 52, 0.28);
+}
+.btn--secondary.data-v-41308e16:hover {
+    background: #eef6f2;
+    border-color: #d7efe4;
+}
+.btn--ghost.data-v-41308e16:hover {
+    background: #f7f9fb;
+}
+.btn--danger.data-v-41308e16:hover {
+    box-shadow: 0 6rpx 16rpx rgba(217, 45, 32, 0.25);
+}
+.step-item.data-v-41308e16:hover {
+    background: #f7fafc;
+}
+.icon-btn.data-v-41308e16:hover {
+    background: #f3f6fa;
+}
+.tizidan-container.data-v-41308e16 {
+    max-width: 1400rpx;
+    /* 增大最大宽度 */
+    margin: 0 auto;
+    width: 95%;
+    /* 使用百分比宽度，充分利用屏幕空间 */
+}
+.tizidan-header.data-v-41308e16 {
+    padding: 80rpx 60rpx;
+    /* 增大头部内边距 */
+}
+.tizidan-title.data-v-41308e16 {
+    font-size: 48rpx;
+    /* 增大标题字体 */
+}
+.tizidan-subtitle.data-v-41308e16 {
+    font-size: 36rpx;
+    /* 增大副标题字体 */
+}
+.tizidan-content.data-v-41308e16 {
+    padding: 50rpx 60rpx;
+    /* 增大内容区域内边距 */
+    gap: 30rpx;
+    /* 增大卡片间距 */
+}
+.tizidan-item-card.data-v-41308e16 {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40rpx;
+    /* 增大卡片内边距 */
+}
+.tizidan-item-content.data-v-41308e16 {
+    margin-bottom: 0;
+    flex: 1;
+    max-width: 80%;
+    /* 增大内容区域最大宽度 */
+}
+.tizidan-item-number.data-v-41308e16 {
+    font-size: 36rpx;
+    /* 增大序号字体 */
+    min-width: 60rpx;
+}
+.tizidan-item-text.data-v-41308e16 {
+    font-size: 36rpx;
+    /* 增大内容字体 */
+    line-height: 1.7;
+    /* 增大行高，提高可读性 */
+}
+.tizidan-item-status.data-v-41308e16 {
+    border-top: none;
+    padding-top: 0;
+    flex-shrink: 0;
+    min-width: 220rpx;
+    /* 增大状态区域最小宽度 */
+    justify-content: flex-end;
+}
+.tizidan-status-text.data-v-41308e16 {
+    font-size: 32rpx;
+    /* 增大状态字体 */
+}
+.tizidan-submit-btn.data-v-41308e16 {
+    padding: 18rpx 36rpx;
+    /* 增大按钮内边距 */
+    font-size: 30rpx;
+    /* 增大按钮字体 */
+}
+.tizidan-footer.data-v-41308e16 {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 50rpx 60rpx;
+    /* 增大底部内边距 */
+}
+.tizidan-footer-text.data-v-41308e16 {
+    margin-bottom: 0;
+    flex: 1;
+    text-align: left;
+    font-size: 32rpx;
+    /* 增大底部文字字体 */
+}
+.tizidan-footer .btn.data-v-41308e16 {
+    flex-shrink: 0;
+    margin-left: 30rpx;
+    padding: 20rpx 40rpx;
+    /* 增大底部按钮内边距 */
+    font-size: 30rpx;
+    /* 增大底部按钮字体 */
+}
+.tizidan-submit-btn.data-v-41308e16:hover {
+    background-color: #2980b9;
+    cursor: pointer;
+}
+}
+/* 超大屏幕适配 */
+@media (min-width: 1200px) {
+.tizidan-container.data-v-41308e16 {
+    max-width: 1600rpx;
+    /* 在超大屏幕上进一步增大宽度 */
+}
+.tizidan-content.data-v-41308e16 {
+    padding: 60rpx 80rpx;
+    /* 进一步增大内边距 */
+}
+.tizidan-item-card.data-v-41308e16 {
+    padding: 45rpx;
+    /* 进一步增大卡片内边距 */
+}
+.tizidan-item-number.data-v-41308e16 {
+    font-size: 38rpx;
+    /* 进一步增大序号字体 */
+}
+.tizidan-item-text.data-v-41308e16 {
+    font-size: 38rpx;
+    /* 进一步增大内容字体 */
+}
+.tizidan-footer.data-v-41308e16 {
+    padding: 60rpx 80rpx;
+    /* 进一步增大底部内边距 */
 }
 }
