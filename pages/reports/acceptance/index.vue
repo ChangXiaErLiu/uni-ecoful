@@ -655,7 +655,7 @@
 				return false
 		}
 	}
-	
+
 	// 以下提取项目基本信息模块的方法--------------------------
 	// 限制文件格式
 	const ALLOWED_EXTS = [
@@ -1555,7 +1555,7 @@
 			// 使用 Promise 包装 uni.request 以确保正确解析
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
-					url: 'http://127.0.0.1:8000/api/v1/completion/datasheet',
+					url: 'http://172.16.1.61:8000/api/v1/completion/datasheet',
 					method: 'GET',
 					timeout: 10000,
 					data: {
@@ -1644,7 +1644,7 @@
 						// 使用 Promise 包装 uni.request
 						const response = await new Promise((resolve, reject) => {
 							uni.request({
-								url: 'http://127.0.0.1:8000/api/v1/tzdDetail/submit-item',
+								url: 'http://172.16.1.61:8000/api/v1/completion/submit-item',
 								method: 'POST',
 								header: {
 									'Content-Type': 'application/json'

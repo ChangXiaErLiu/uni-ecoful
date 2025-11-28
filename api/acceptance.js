@@ -118,9 +118,15 @@ export async function runTask(options = {}) {
 			throw new Error(result?.message || '任务执行失败')
 		}
 
-		// 适配新接口：从 extract_info.result 中提取数据
-		if (!result.extract_info?.result || Object.keys(result.extract_info.result).length === 0) {
-			throw new Error('未提取到任何项目信息，请检查文件内容是否完整')
+		// 适配后端实际返回
+		const data = result.result
+		if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+		  throw new Error('未提取到任何项目信息，请检查文件内容是否完整')
+		}
+		
+		return {
+		  status: result.status,
+		  result: data
 		}
 
 		// 返回前端期望的格式（保持向后兼容）

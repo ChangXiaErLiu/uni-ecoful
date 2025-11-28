@@ -53,7 +53,6 @@ async function deleteFile(document_id) {
   await utils_request.request.delete(`/api/v1/completion/documents/${document_id}`);
 }
 async function runTask(options = {}) {
-  var _a;
   const {
     hideLoading = false,
     timeout = 6e5
@@ -67,9 +66,14 @@ async function runTask(options = {}) {
     if (!result || result.status !== "success") {
       throw new Error((result == null ? void 0 : result.message) || "任务执行失败");
     }
-    if (!((_a = result.extract_info) == null ? void 0 : _a.result) || Object.keys(result.extract_info.result).length === 0) {
+    const data = result.result;
+    if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
       throw new Error("未提取到任何项目信息，请检查文件内容是否完整");
     }
+    return {
+      status: result.status,
+      result: data
+    };
     return {
       status: result.status,
       result: result.extract_info.result
@@ -279,7 +283,7 @@ function downloadSignboardWord(signboard) {
       },
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:373", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:379", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -312,7 +316,7 @@ function downloadMonitorPlan(options = {}) {
       responseType: "arraybuffer",
       timeout,
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:441", "监测方案下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:447", "监测方案下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);

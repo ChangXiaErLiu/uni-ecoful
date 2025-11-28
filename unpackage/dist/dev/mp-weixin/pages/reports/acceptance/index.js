@@ -724,7 +724,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1553", "开始请求数据...");
         const response = await new Promise((resolve, reject) => {
           common_vendor.index.request({
-            url: "http://127.0.0.1:8000/api/v1/tzdDetail/datasheet",
+            url: "http://172.16.1.61:8000/api/v1/completion/datasheet",
             method: "GET",
             timeout: 1e4,
             data: {
@@ -795,7 +795,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
               common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1642", "开始提交项目:", index, tizidanItems.value[index].text);
               const response = await new Promise((resolve, reject) => {
                 common_vendor.index.request({
-                  url: "http://127.0.0.1:8000/api/v1/tzdDetail/submit-item",
+                  url: "http://172.16.1.61:8000/api/v1/completion/submit-item",
                   method: "POST",
                   header: {
                     "Content-Type": "application/json"
