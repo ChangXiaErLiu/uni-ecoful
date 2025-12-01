@@ -12,7 +12,7 @@ const useUserStore = common_vendor.defineStore("user", {
     // 用户名
     userName: (state) => {
       var _a;
-      return ((_a = state.userInfo) == null ? void 0 : _a.username) || "未登录";
+      return ((_a = state.userInfo) == null ? void 0 : _a.username) || "请登录";
     },
     // 企业名称
     companyName: (state) => {

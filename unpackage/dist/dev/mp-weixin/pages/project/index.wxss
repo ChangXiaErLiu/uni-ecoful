@@ -189,6 +189,7 @@
   margin-bottom: 16rpx;
   transition: all 0.3s ease;
   position: relative;
+  margin-top: 10rpx;
 }
 .projects__item.data-v-47879d53:active {
   transform: translateY(2rpx);
@@ -693,7 +694,7 @@
   background: #ffffff;
   border-radius: 20rpx;
   width: 100%;
-  max-width: 600rpx;
+  max-width: 1000rpx;
   max-height: 80vh;
   overflow: hidden;
   box-shadow: 0 20rpx 60rpx rgba(15, 23, 42, 0.2);
@@ -737,7 +738,7 @@ to {
   margin-bottom: 8rpx;
 }
 .form-input.data-v-47879d53 {
-  width: 100%;
+  width: 95%;
   height: 80rpx;
   padding: 0 20rpx;
   border: 2rpx solid #e2e8f0;
@@ -752,7 +753,7 @@ to {
   outline: none;
 }
 .form-textarea.data-v-47879d53 {
-  width: 100%;
+  width: 95%;
   min-height: 160rpx;
   padding: 20rpx;
   border: 2rpx solid #e2e8f0;

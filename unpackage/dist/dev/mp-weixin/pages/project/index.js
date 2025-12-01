@@ -407,40 +407,6 @@ const _sfc_main = {
       const i = Math.floor(Math.log(bytes) / Math.log(k));
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     }
-    function editTask(taskId) {
-      common_vendor.index.showToast({
-        title: "编辑任务功能开发中",
-        icon: "none"
-      });
-    }
-    function toggleTask(taskId) {
-      const task = activeProject.value.tasks.find((t) => t.id === taskId);
-      if (task) {
-        const oldStatus = task.status;
-        task.status = task.status === "completed" ? "pending" : "completed";
-        if (oldStatus === "completed") {
-          activeProject.value.completedTasks -= 1;
-          if (task.status === "pending") {
-            activeProject.value.pendingTasks += 1;
-          }
-        } else {
-          activeProject.value.completedTasks += 1;
-          if (oldStatus === "pending") {
-            activeProject.value.pendingTasks -= 1;
-          } else if (oldStatus === "in-progress") {
-            activeProject.value.inProgressTasks -= 1;
-          }
-        }
-        updateProjectProgress();
-      }
-    }
-    function updateProjectProgress() {
-      if (!activeProject.value || !activeProject.value.tasks.length)
-        return;
-      const completedTasks = activeProject.value.tasks.filter((task) => task.status === "completed").length;
-      const progress = Math.round(completedTasks / activeProject.value.tasks.length * 100);
-      activeProject.value.progress = progress;
-    }
     function downloadDocument(document) {
       common_vendor.index.showToast({
         title: `下载文档: ${document.name}`,
@@ -466,15 +432,6 @@ const _sfc_main = {
       };
       return colorMap[status] || "#64748b";
     }
-    function getProjectStatusText(status) {
-      const statusMap = {
-        planning: "规划中",
-        "in-progress": "进行中",
-        completed: "已完成",
-        delayed: "已延期"
-      };
-      return statusMap[status] || "未知";
-    }
     function getProjectTypeText(type) {
       const typeMap = {
         water: "水处理",
@@ -484,14 +441,6 @@ const _sfc_main = {
         general: "综合项目"
       };
       return typeMap[type] || "其他";
-    }
-    function getTaskPriorityText(priority) {
-      const priorityMap = {
-        low: "低",
-        medium: "中",
-        high: "高"
-      };
-      return priorityMap[priority] || "中";
     }
     function getDocumentIcon(type) {
       const iconMap = {
@@ -503,7 +452,7 @@ const _sfc_main = {
       return iconMap[type] || "document";
     }
     return (_ctx, _cache) => {
-      var _a, _b;
+      var _a;
       return common_vendor.e({
         a: common_vendor.p({
           type: "plus",
@@ -520,24 +469,19 @@ const _sfc_main = {
               color: getProjectColor(project.status)
             }),
             c: common_vendor.t(project.name),
-            d: common_vendor.t(getProjectStatusText(project.status)),
-            e: common_vendor.n(`projects__item-badge--${project.status}`),
-            f: common_vendor.t(project.description),
-            g: common_vendor.t(project.progress),
-            h: common_vendor.n(`projects__progress-fill--${project.status}`),
-            i: `${project.progress}%`,
-            j: "47879d53-3-" + i0 + ",47879d53-0",
-            k: common_vendor.t(project.manager),
-            l: "47879d53-4-" + i0 + ",47879d53-0",
-            m: common_vendor.t(project.deadline),
-            n: "47879d53-5-" + i0 + ",47879d53-0",
-            o: common_vendor.o(() => editProject(project.id), project.id),
-            p: "47879d53-6-" + i0 + ",47879d53-0",
-            q: common_vendor.o(() => deleteProject(project.id), project.id),
-            r: project.id,
-            s: project.id === activeProjectId.value ? 1 : "",
-            t: project.status === "delayed" ? 1 : "",
-            v: common_vendor.o(() => switchProject(project.id), project.id)
+            d: common_vendor.t(project.description),
+            e: "47879d53-3-" + i0 + ",47879d53-0",
+            f: common_vendor.t(project.manager),
+            g: "47879d53-4-" + i0 + ",47879d53-0",
+            h: common_vendor.t(project.deadline),
+            i: "47879d53-5-" + i0 + ",47879d53-0",
+            j: common_vendor.o(() => editProject(project.id), project.id),
+            k: "47879d53-6-" + i0 + ",47879d53-0",
+            l: common_vendor.o(() => deleteProject(project.id), project.id),
+            m: project.id,
+            n: project.id === activeProjectId.value ? 1 : "",
+            o: project.status === "delayed" ? 1 : "",
+            p: common_vendor.o(() => switchProject(project.id), project.id)
           };
         }),
         d: common_vendor.p({
@@ -568,108 +512,34 @@ const _sfc_main = {
           color: "#cbd5e1"
         })
       } : {}, {
-        j: activeProject.value
-      }, activeProject.value ? {
-        k: common_vendor.t(getProjectStatusText(activeProject.value.status))
-      } : {}, {
-        l: common_vendor.p({
-          type: "plus",
+        j: common_vendor.p({
+          type: "cloud-upload",
           size: "16",
           color: "#ffffff"
         }),
-        m: common_vendor.o(uploadFile),
-        n: !activeProject.value,
-        o: activeProject.value
+        k: common_vendor.o(uploadFile),
+        l: !activeProject.value,
+        m: activeProject.value
       }, activeProject.value ? common_vendor.e({
-        p: common_vendor.p({
+        n: common_vendor.p({
           type: "info",
           size: "18",
           color: "#3b82f6"
         }),
-        q: common_vendor.t(activeProject.value.code),
-        r: common_vendor.t(activeProject.value.manager),
-        s: common_vendor.t(activeProject.value.startDate),
-        t: common_vendor.t(activeProject.value.deadline),
-        v: common_vendor.t(activeProject.value.budget),
-        w: common_vendor.t(getProjectTypeText(activeProject.value.type)),
-        x: common_vendor.t(activeProject.value.fullDescription),
-        y: common_vendor.p({
-          type: "bars",
-          size: "18",
-          color: "#10b981"
-        }),
-        z: common_vendor.t(activeProject.value.completedTasks),
-        A: common_vendor.t(activeProject.value.totalTasks),
-        B: common_vendor.t(activeProject.value.progress),
-        C: `${activeProject.value.progress}%`,
-        D: common_vendor.t(activeProject.value.completedTasks),
-        E: common_vendor.t(activeProject.value.inProgressTasks),
-        F: common_vendor.t(activeProject.value.pendingTasks),
-        G: common_vendor.t(activeProject.value.totalTasks),
-        H: common_vendor.p({
-          type: "list",
-          size: "18",
-          color: "#f59e0b"
-        }),
-        I: common_vendor.t(((_a = activeProject.value.tasks) == null ? void 0 : _a.length) || 0),
-        J: activeProject.value.tasks && activeProject.value.tasks.length > 0
-      }, activeProject.value.tasks && activeProject.value.tasks.length > 0 ? {
-        K: common_vendor.f(activeProject.value.tasks, (task, k0, i0) => {
-          return {
-            a: "47879d53-12-" + i0 + ",47879d53-0",
-            b: common_vendor.p({
-              type: task.status === "completed" ? "checkmarkempty" : "circle",
-              size: "20",
-              color: task.status === "completed" ? "#10b981" : "#64748b"
-            }),
-            c: common_vendor.o(() => toggleTask(task.id), task.id),
-            d: common_vendor.t(task.title),
-            e: common_vendor.t(getTaskPriorityText(task.priority)),
-            f: common_vendor.n(`projects__task-badge--${task.priority}`),
-            g: common_vendor.t(task.description),
-            h: "47879d53-13-" + i0 + ",47879d53-0",
-            i: common_vendor.t(task.assignee),
-            j: "47879d53-14-" + i0 + ",47879d53-0",
-            k: common_vendor.t(task.dueDate),
-            l: "47879d53-15-" + i0 + ",47879d53-0",
-            m: common_vendor.o(() => editTask(task.id), task.id),
-            n: task.id,
-            o: task.status === "completed" ? 1 : ""
-          };
-        }),
-        L: common_vendor.p({
-          type: "person",
-          size: "14",
-          color: "#94a3b8"
-        }),
-        M: common_vendor.p({
-          type: "calendar",
-          size: "14",
-          color: "#94a3b8"
-        }),
-        N: common_vendor.p({
-          type: "compose",
-          size: "16",
-          color: "#64748b"
-        })
-      } : {
-        O: common_vendor.p({
-          type: "list",
-          size: "32",
-          color: "#cbd5e1"
-        })
-      }, {
-        P: common_vendor.p({
+        o: common_vendor.t(activeProject.value.manager),
+        p: common_vendor.t(activeProject.value.budget),
+        q: common_vendor.t(getProjectTypeText(activeProject.value.type)),
+        r: common_vendor.p({
           type: "document",
           size: "18",
           color: "#8b5cf6"
         }),
-        Q: common_vendor.t(((_b = activeProject.value.documents) == null ? void 0 : _b.length) || 0),
-        R: activeProject.value.documents && activeProject.value.documents.length > 0
+        s: common_vendor.t(((_a = activeProject.value.documents) == null ? void 0 : _a.length) || 0),
+        t: activeProject.value.documents && activeProject.value.documents.length > 0
       }, activeProject.value.documents && activeProject.value.documents.length > 0 ? {
-        S: common_vendor.f(activeProject.value.documents, (document, k0, i0) => {
+        v: common_vendor.f(activeProject.value.documents, (document, k0, i0) => {
           return {
-            a: "47879d53-18-" + i0 + ",47879d53-0",
+            a: "47879d53-11-" + i0 + ",47879d53-0",
             b: common_vendor.p({
               type: getDocumentIcon(document.type),
               size: "20",
@@ -678,99 +548,99 @@ const _sfc_main = {
             c: common_vendor.t(document.name),
             d: common_vendor.t(document.size),
             e: common_vendor.t(document.uploadDate),
-            f: "47879d53-19-" + i0 + ",47879d53-0",
+            f: "47879d53-12-" + i0 + ",47879d53-0",
             g: common_vendor.o(() => downloadDocument(document), document.id),
-            h: "47879d53-20-" + i0 + ",47879d53-0",
+            h: "47879d53-13-" + i0 + ",47879d53-0",
             i: common_vendor.o(() => deleteDocument(document.id), document.id),
             j: document.id
           };
         }),
-        T: common_vendor.p({
+        w: common_vendor.p({
           type: "download",
           size: "16",
           color: "#64748b"
         }),
-        U: common_vendor.p({
+        x: common_vendor.p({
           type: "trash",
           size: "16",
           color: "#ef4444"
         })
       } : {
-        V: common_vendor.p({
+        y: common_vendor.p({
           type: "document",
           size: "32",
           color: "#cbd5e1"
         })
       }) : {
-        W: common_vendor.p({
+        z: common_vendor.p({
           type: "folder",
           size: "60",
           color: "#cbd5e1"
         })
       }, {
-        X: showAddProjectModal.value
+        A: showAddProjectModal.value
       }, showAddProjectModal.value ? {
-        Y: common_vendor.o(closeAddProjectModal),
-        Z: common_vendor.p({
+        B: common_vendor.o(closeAddProjectModal),
+        C: common_vendor.p({
           type: "close",
           size: "20",
           color: "#64748b"
         }),
-        aa: newProjectForm.value.name,
-        ab: common_vendor.o(($event) => newProjectForm.value.name = $event.detail.value),
-        ac: newProjectForm.value.description,
-        ad: common_vendor.o(($event) => newProjectForm.value.description = $event.detail.value),
-        ae: newProjectForm.value.fullDescription,
-        af: common_vendor.o(($event) => newProjectForm.value.fullDescription = $event.detail.value),
-        ag: common_vendor.o(closeAddProjectModal),
-        ah: common_vendor.o(confirmAddProject)
+        D: newProjectForm.value.name,
+        E: common_vendor.o(($event) => newProjectForm.value.name = $event.detail.value),
+        F: newProjectForm.value.description,
+        G: common_vendor.o(($event) => newProjectForm.value.description = $event.detail.value),
+        H: newProjectForm.value.fullDescription,
+        I: common_vendor.o(($event) => newProjectForm.value.fullDescription = $event.detail.value),
+        J: common_vendor.o(closeAddProjectModal),
+        K: common_vendor.o(confirmAddProject)
       } : {}, {
-        ai: showEditProjectModal.value
+        L: showEditProjectModal.value
       }, showEditProjectModal.value ? {
-        aj: common_vendor.o(closeEditProjectModal),
-        ak: common_vendor.p({
+        M: common_vendor.o(closeEditProjectModal),
+        N: common_vendor.p({
           type: "close",
           size: "20",
           color: "#64748b"
         }),
-        al: editProjectForm.value.name,
-        am: common_vendor.o(($event) => editProjectForm.value.name = $event.detail.value),
-        an: editProjectForm.value.description,
-        ao: common_vendor.o(($event) => editProjectForm.value.description = $event.detail.value),
-        ap: editProjectForm.value.fullDescription,
-        aq: common_vendor.o(($event) => editProjectForm.value.fullDescription = $event.detail.value),
-        ar: common_vendor.o(closeEditProjectModal),
-        as: common_vendor.o(confirmEditProject)
+        O: editProjectForm.value.name,
+        P: common_vendor.o(($event) => editProjectForm.value.name = $event.detail.value),
+        Q: editProjectForm.value.description,
+        R: common_vendor.o(($event) => editProjectForm.value.description = $event.detail.value),
+        S: editProjectForm.value.fullDescription,
+        T: common_vendor.o(($event) => editProjectForm.value.fullDescription = $event.detail.value),
+        U: common_vendor.o(closeEditProjectModal),
+        V: common_vendor.o(confirmEditProject)
       } : {}, {
-        at: showUploadModal.value
+        W: showUploadModal.value
       }, showUploadModal.value ? common_vendor.e({
-        av: common_vendor.o(closeUploadModal),
-        aw: common_vendor.p({
+        X: common_vendor.o(closeUploadModal),
+        Y: common_vendor.p({
           type: "close",
           size: "20",
           color: "#64748b"
         }),
-        ax: common_vendor.p({
+        Z: common_vendor.p({
           type: "plus",
           size: "48",
           color: "#3b82f6"
         }),
-        ay: common_vendor.o(chooseFile),
-        az: selectedFile.value
+        aa: common_vendor.o(chooseFile),
+        ab: selectedFile.value
       }, selectedFile.value ? {
-        aA: common_vendor.p({
+        ac: common_vendor.p({
           type: "document",
           size: "20",
           color: "#3b82f6"
         }),
-        aB: common_vendor.t(selectedFile.value.name),
-        aC: common_vendor.t(formatFileSize(selectedFile.value.size))
+        ad: common_vendor.t(selectedFile.value.name),
+        ae: common_vendor.t(formatFileSize(selectedFile.value.size))
       } : {}, {
-        aD: common_vendor.o(closeUploadModal),
-        aE: common_vendor.o(confirmUpload),
-        aF: !selectedFile.value
+        af: common_vendor.o(closeUploadModal),
+        ag: common_vendor.o(confirmUpload),
+        ah: !selectedFile.value
       }) : {}, {
-        aG: common_vendor.p({
+        ai: common_vendor.p({
           current: "pages/projects/index"
         })
       });

@@ -29,6 +29,8 @@
   flex-direction: column;
   gap: 24rpx;
   background-color: #f5f7fa;
+  padding: 32rpx;
+  height: 96vh;
 }
 
 /* 用户信息头部 */

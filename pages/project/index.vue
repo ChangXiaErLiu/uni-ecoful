@@ -42,26 +42,8 @@
               <view class="projects__item-content">
                 <view class="projects__item-header">
                   <text class="projects__item-name">{{ project.name }}</text>
-                  <view class="projects__item-badge" :class="`projects__item-badge--${project.status}`">
-                    {{ getProjectStatusText(project.status) }}
-                  </view>
                 </view>
                 <text class="projects__item-desc">{{ project.description }}</text>
-                
-                <!-- 项目进度条 -->
-                <view class="projects__progress">
-                  <view class="projects__progress-info">
-                    <text class="projects__progress-text">项目进度</text>
-                    <text class="projects__progress-percent">{{ project.progress }}%</text>
-                  </view>
-                  <view class="projects__progress-bar">
-                    <view 
-                      class="projects__progress-fill" 
-                      :class="`projects__progress-fill--${project.status}`"
-                      :style="{ width: `${project.progress}%` }"
-                    ></view>
-                  </view>
-                </view>
                 
                 <view class="projects__item-meta">
                   <view class="projects__item-meta-item">
@@ -100,13 +82,10 @@
           <view class="projects__panel-header">
             <view class="projects__detail-header">
               <text class="projects__panel-title">项目详情</text>
-              <view v-if="activeProject" class="projects__detail-status">
-                {{ getProjectStatusText(activeProject.status) }}
-              </view>
             </view>
             <view class="projects__detail-actions">
               <button class="projects__button projects__button--primary" @tap="uploadFile" :disabled="!activeProject">
-                <uni-icons type="plus" size="16" color="#ffffff" />
+                <uni-icons type="cloud-upload" size="16" color="#ffffff" />
                 <text>上传项目文件</text>
               </button>
             </view>
@@ -122,20 +101,8 @@
                 </view>
                 <view class="projects__overview-grid">
                   <view class="projects__overview-item">
-                    <text class="projects__overview-label">项目编号</text>
-                    <text class="projects__overview-value">{{ activeProject.code }}</text>
-                  </view>
-                  <view class="projects__overview-item">
                     <text class="projects__overview-label">负责人</text>
                     <text class="projects__overview-value">{{ activeProject.manager }}</text>
-                  </view>
-                  <view class="projects__overview-item">
-                    <text class="projects__overview-label">开始日期</text>
-                    <text class="projects__overview-value">{{ activeProject.startDate }}</text>
-                  </view>
-                  <view class="projects__overview-item">
-                    <text class="projects__overview-label">截止日期</text>
-                    <text class="projects__overview-value">{{ activeProject.deadline }}</text>
                   </view>
                   <view class="projects__overview-item">
                     <text class="projects__overview-label">项目预算</text>
@@ -145,97 +112,6 @@
                     <text class="projects__overview-label">项目类型</text>
                     <text class="projects__overview-value">{{ getProjectTypeText(activeProject.type) }}</text>
                   </view>
-                </view>
-                <text class="projects__overview-desc">{{ activeProject.fullDescription }}</text>
-              </view>
-
-              <!-- 项目进度 -->
-              <view class="projects__section">
-                <view class="projects__section-header">
-                  <uni-icons type="bars" size="18" color="#10b981" />
-                  <text class="projects__section-title">项目进度</text>
-                  <text class="projects__section-count">{{ activeProject.completedTasks }}/{{ activeProject.totalTasks }} 个任务</text>
-                </view>
-                <view class="projects__progress-detail">
-                  <view class="projects__progress-visual">
-                    <view 
-                      class="projects__progress-circle" 
-                      :style="{ '--progress': `${activeProject.progress}%` }"
-                    >
-                      <text class="projects__progress-circle-text">{{ activeProject.progress }}%</text>
-                    </view>
-                  </view>
-                  <view class="projects__progress-stats">
-                    <view class="projects__progress-stat">
-                      <text class="projects__progress-stat-label">已完成</text>
-                      <text class="projects__progress-stat-value">{{ activeProject.completedTasks }}</text>
-                    </view>
-                    <view class="projects__progress-stat">
-                      <text class="projects__progress-stat-label">进行中</text>
-                      <text class="projects__progress-stat-value">{{ activeProject.inProgressTasks }}</text>
-                    </view>
-                    <view class="projects__progress-stat">
-                      <text class="projects__progress-stat-label">待处理</text>
-                      <text class="projects__progress-stat-value">{{ activeProject.pendingTasks }}</text>
-                    </view>
-                    <view class="projects__progress-stat">
-                      <text class="projects__progress-stat-label">总任务</text>
-                      <text class="projects__progress-stat-value">{{ activeProject.totalTasks }}</text>
-                    </view>
-                  </view>
-                </view>
-              </view>
-
-              <!-- 项目任务 -->
-              <view class="projects__section">
-                <view class="projects__section-header">
-                  <uni-icons type="list" size="18" color="#f59e0b" />
-                  <text class="projects__section-title">项目任务</text>
-                  <text class="projects__section-count">{{ activeProject.tasks?.length || 0 }} 个任务</text>
-                </view>
-                <view v-if="activeProject.tasks && activeProject.tasks.length > 0" class="projects__tasks-list">
-                  <view 
-                    v-for="task in activeProject.tasks" 
-                    :key="task.id"
-                    class="projects__task-item"
-                    :class="{ 'projects__task-item--completed': task.status === 'completed' }"
-                  >
-                    <view class="projects__task-checkbox" @tap.stop="() => toggleTask(task.id)">
-                      <uni-icons 
-                        :type="task.status === 'completed' ? 'checkmarkempty' : 'circle'" 
-                        size="20" 
-                        :color="task.status === 'completed' ? '#10b981' : '#64748b'" 
-                      />
-                    </view>
-                    <view class="projects__task-content">
-                      <view class="projects__task-header">
-                        <text class="projects__task-title">{{ task.title }}</text>
-                        <view class="projects__task-badge" :class="`projects__task-badge--${task.priority}`">
-                          {{ getTaskPriorityText(task.priority) }}优先级
-                        </view>
-                      </view>
-                      <text class="projects__task-desc">{{ task.description }}</text>
-                      <view class="projects__task-meta">
-                        <view class="projects__task-meta-item">
-                          <uni-icons type="person" size="14" color="#94a3b8" />
-                          <text class="projects__task-meta-text">{{ task.assignee }}</text>
-                        </view>
-                        <view class="projects__task-meta-item">
-                          <uni-icons type="calendar" size="14" color="#94a3b8" />
-                          <text class="projects__task-meta-text">{{ task.dueDate }}</text>
-                        </view>
-                      </view>
-                    </view>
-                    <view class="projects__task-actions">
-                      <view class="projects__task-action" @tap.stop="() => editTask(task.id)">
-                        <uni-icons type="compose" size="16" color="#64748b" />
-                      </view>
-                    </view>
-                  </view>
-                </view>
-                <view v-else class="projects__empty-section">
-                  <uni-icons type="list" size="32" color="#cbd5e1" />
-                  <text class="projects__empty-section-text">暂无任务</text>
                 </view>
               </view>
 
@@ -951,15 +827,6 @@ function getProjectColor(status) {
   return colorMap[status] || '#64748b'
 }
 
-function getProjectStatusText(status) {
-  const statusMap = {
-    planning: '规划中',
-    'in-progress': '进行中',
-    completed: '已完成',
-    delayed: '已延期'
-  }
-  return statusMap[status] || '未知'
-}
 
 function getProjectTypeText(type) {
   const typeMap = {
@@ -1181,6 +1048,7 @@ function getDocumentIcon(type) {
   margin-bottom: 16rpx;
   transition: all 0.3s ease;
   position: relative;
+  margin-top: 10rpx;
 }
 
 .projects__item:active {
@@ -1768,7 +1636,7 @@ function getDocumentIcon(type) {
   background: #ffffff;
   border-radius: 20rpx;
   width: 100%;
-  max-width: 600rpx;
+  max-width: 1000rpx;
   max-height: 80vh;
   overflow: hidden;
   box-shadow: 0 20rpx 60rpx rgba(15, 23, 42, 0.2);
@@ -1819,7 +1687,7 @@ function getDocumentIcon(type) {
 }
 
 .form-input {
-  width: 100%;
+  width: 95%;
   height: 80rpx;
   padding: 0 20rpx;
   border: 2rpx solid #e2e8f0;
@@ -1836,7 +1704,7 @@ function getDocumentIcon(type) {
 }
 
 .form-textarea {
-  width: 100%;
+  width: 95%;
   min-height: 160rpx;
   padding: 20rpx;
   border: 2rpx solid #e2e8f0;

@@ -489,6 +489,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  overflow: hidden;
   padding: 48rpx;
   background: linear-gradient(135deg, #e0f2fe, #ede9fe);
 }

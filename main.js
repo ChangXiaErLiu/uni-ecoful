@@ -1,8 +1,9 @@
 import App from './App'
 import './uni.promisify.adaptor'
 import { setupStore } from './api'
+import { setupRouterGuard } from '@/common/router-guard.js'
 
-// 中文注释：在 H5 端将安全区写入 CSS 变量，供遮罩/抽屉等使用
+// 在 H5 端将安全区写入 CSS 变量，供遮罩/抽屉等使用
 function injectSafeAreaCssVars() {
   try {
     const info = uni.getSystemInfoSync()
@@ -26,8 +27,9 @@ const app = new Vue({
   ...App
 })
 setupStore(app)
+setupRouterGuard() // Vue2 也要启用路由守卫
 injectSafeAreaCssVars()
-// 中文注释：兼容 Vue2 挂载写法
+// 兼容 Vue2 挂载写法
 app.$mount()
 // #endif
 
@@ -36,6 +38,7 @@ import { createSSRApp } from 'vue'
 export function createApp() {
   const app = createSSRApp(App)
   setupStore(app)
+  setupRouterGuard() // vue3启动路由守卫
   injectSafeAreaCssVars()
   return {
     app

@@ -22,7 +22,7 @@ export const useUserStore = defineStore('user', {
 		isLoggedIn: (state) => !!state.token,
 		
 		// 用户名
-		userName: (state) => state.userInfo?.username || '未登录',
+		userName: (state) => state.userInfo?.username || '请登录',
 		
 		// 企业名称
 		companyName: (state) => state.userInfo?.company_name || '',

@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const common_vendor = require("./common/vendor.js");
+const stores_user = require("./stores/user.js");
 require("./uni.promisify.adaptor.js");
 const api_index = require("./api/index.js");
+const common_routerGuard = require("./common/router-guard.js");
 if (!Math) {
   "./pages/home/index.js";
   "./pages/chat/index.js";
@@ -29,6 +31,8 @@ if (!Math) {
 const _sfc_main = {
   __name: "App",
   setup(__props) {
+    const userStore = stores_user.useUserStore();
+    userStore.initUserInfo();
     return () => {
     };
   }
@@ -49,6 +53,7 @@ function injectSafeAreaCssVars() {
 function createApp() {
   const app = common_vendor.createSSRApp(_sfc_main);
   api_index.setupStore(app);
+  common_routerGuard.setupRouterGuard();
   injectSafeAreaCssVars();
   return {
     app
