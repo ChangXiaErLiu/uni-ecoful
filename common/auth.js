@@ -22,8 +22,8 @@ export function isLoggedIn() {
     console.warn('【auth】解析 userInfo 失败', e)
   }
 
-  console.log('【auth】token:', token)
-  console.log('【auth】当前用户信息:', userInfo)
+  // console.log('【auth】token:', token)
+  // console.log('【auth】当前用户信息:', userInfo)
 
   return !!token
 }

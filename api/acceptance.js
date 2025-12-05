@@ -1,6 +1,8 @@
 /**
  * api/acceptance.js
  * 验收报告页面，各个方法总结
+ * author:zyg
+ * date:2025.12.1
  */
 
 import {

@@ -42,12 +42,12 @@ class Request {
         },
         timeout,
         success: (res) => {
-          var _a;
+          var _a, _b;
           if (requestId !== null) {
             this.hideLoading(requestId);
           }
           if (config.responseType === "arraybuffer") {
-            common_vendor.index.__f__("log", "at utils/request.js:63", "二进制直通", res.data.byteLength);
+            common_vendor.index.__f__("log", "at utils/request.js:68", "二进制直通", res.data.byteLength);
             return resolve(res);
           }
           if (!res) {
@@ -64,7 +64,8 @@ class Request {
             };
             if (showError) {
               common_vendor.index.showToast({
-                title: error.message,
+                title: String(error.message ?? ((_b = error.data) == null ? void 0 : _b.detail) ?? "请求失败"),
+                // 强制字符串
                 icon: "none",
                 duration: 2e3
               });
@@ -143,10 +144,10 @@ class Request {
         ...this.baseOptions.header
       },
       success: () => {
-        common_vendor.index.__f__("log", "at utils/request.js:175", "[WebSocket] 连接成功:", fullUrl);
+        common_vendor.index.__f__("log", "at utils/request.js:180", "[WebSocket] 连接成功:", fullUrl);
       },
       fail: (err) => {
-        common_vendor.index.__f__("error", "at utils/request.js:178", "[WebSocket] 连接失败:", err);
+        common_vendor.index.__f__("error", "at utils/request.js:183", "[WebSocket] 连接失败:", err);
         onError == null ? void 0 : onError(new Error("WebSocket 连接失败: " + err.errMsg));
       }
     });
@@ -174,11 +175,11 @@ class Request {
       }
     });
     socket.onError((err) => {
-      common_vendor.index.__f__("error", "at utils/request.js:214", "[WebSocket] 错误:", err);
+      common_vendor.index.__f__("error", "at utils/request.js:219", "[WebSocket] 错误:", err);
       onError == null ? void 0 : onError(new Error("WebSocket 错误: " + err.errMsg));
     });
     socket.onClose((res) => {
-      common_vendor.index.__f__("log", "at utils/request.js:220", "[WebSocket] 连接关闭:", res.code, res.reason);
+      common_vendor.index.__f__("log", "at utils/request.js:225", "[WebSocket] 连接关闭:", res.code, res.reason);
       if (res.code !== 1e3) {
         onError == null ? void 0 : onError(new Error("连接异常关闭: " + res.reason));
       }
@@ -189,7 +190,7 @@ class Request {
       });
     });
     const cancel = () => {
-      common_vendor.index.__f__("log", "at utils/request.js:235", "[WebSocket] 主动取消请求");
+      common_vendor.index.__f__("log", "at utils/request.js:240", "[WebSocket] 主动取消请求");
       socket.close();
     };
     return cancel;

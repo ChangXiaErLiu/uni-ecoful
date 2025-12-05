@@ -14,8 +14,6 @@ function isLoggedIn() {
   } catch (e) {
     common_vendor.index.__f__("warn", "at common/auth.js:22", "【auth】解析 userInfo 失败", e);
   }
-  common_vendor.index.__f__("log", "at common/auth.js:25", "【auth】token:", token);
-  common_vendor.index.__f__("log", "at common/auth.js:26", "【auth】当前用户信息:", userInfo);
   return !!token;
 }
 exports.WHITE_LIST = WHITE_LIST;

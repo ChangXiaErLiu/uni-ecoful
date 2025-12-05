@@ -342,6 +342,7 @@
 .pollutants-table.data-v-41308e16 {
   width: 100%;
   background: #fff;
+  text-align: center;
 }
 
 /* 表格头部 */

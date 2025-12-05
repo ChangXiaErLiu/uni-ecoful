@@ -43,7 +43,7 @@ async function fetchUploadedFiles() {
     }
     return [];
   } catch (error) {
-    common_vendor.index.__f__("error", "at api/acceptance.js:81", "自动刷新文件列表失败:", error);
+    common_vendor.index.__f__("error", "at api/acceptance.js:83", "自动刷新文件列表失败:", error);
     return [];
   }
 }
@@ -283,7 +283,7 @@ function downloadSignboardWord(signboard) {
       },
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:379", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:381", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -316,7 +316,7 @@ function downloadMonitorPlan(options = {}) {
       responseType: "arraybuffer",
       timeout,
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:447", "监测方案下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:449", "监测方案下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);

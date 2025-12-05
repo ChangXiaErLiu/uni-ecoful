@@ -70,7 +70,7 @@
 
 /* 面板通用样式 */
 .projects__list-panel.data-v-47879d53 {
-  width: 480rpx;
+  width: 510rpx;
   min-width: 400rpx;
   background: #ffffff;
   border-radius: 20rpx;
@@ -106,14 +106,6 @@
   display: flex;
   align-items: center;
   gap: 12rpx;
-}
-.projects__detail-status.data-v-47879d53 {
-  font-size: 24rpx;
-  padding: 6rpx 12rpx;
-  border-radius: 6rpx;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  font-weight: 500;
 }
 .projects__detail-actions.data-v-47879d53 {
   display: flex;
@@ -326,11 +318,7 @@
   display: flex;
   align-items: center;
   gap: 8rpx;
-  opacity: 0;
   transition: opacity 0.3s ease;
-}
-.projects__item:active .projects__item-actions.data-v-47879d53 {
-  opacity: 1;
 }
 .projects__item-action.data-v-47879d53 {
   padding: 8rpx;
@@ -602,7 +590,7 @@
   width: 40rpx;
   height: 40rpx;
   border-radius: 6rpx;
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(238, 238, 246, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -627,11 +615,7 @@
   display: flex;
   align-items: center;
   gap: 8rpx;
-  opacity: 0;
   transition: opacity 0.3s ease;
-}
-.projects__document-item:active .projects__document-actions.data-v-47879d53 {
-  opacity: 1;
 }
 .projects__document-action.data-v-47879d53 {
   padding: 8rpx;
@@ -824,6 +808,7 @@ to {
 .modal-button.data-v-47879d53 {
   flex: 1;
   height: 80rpx;
+  line-height: 80rpx;
   border-radius: 12rpx;
   font-size: 26rpx;
   font-weight: 500;
@@ -921,9 +906,6 @@ to {
 .projects__document-item.data-v-47879d53:hover {
     background: #f1f5f9;
     transform: translateY(-1rpx);
-}
-.projects__document-item:hover .projects__document-actions.data-v-47879d53 {
-    opacity: 1;
 }
 .projects__button--primary.data-v-47879d53:hover {
     box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4);

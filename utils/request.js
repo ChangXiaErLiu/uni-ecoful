@@ -1,3 +1,8 @@
+/**
+ * 封装uni.request
+ * author:zyg
+ * date:2025.12.1
+ */
 import {
 	BASE_URL
 } from './config.js'
@@ -80,7 +85,7 @@ class Request {
 						}
 						if (showError) {
 							uni.showToast({
-								title: error.message,
+								title: String(error.message ?? error.data?.detail ?? '请求失败'), // 强制字符串
 								icon: 'none',
 								duration: 2000
 							})

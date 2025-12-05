@@ -1109,6 +1109,7 @@
 	// 生成标识牌信息(从项目基本信息提取)
 	function generateSignboard() {
 		const unitName = findBaseValue('建设单位名称') || findBaseValue('单位名称') || '';
+		const wfName = findBaseValue('危废名称') || findBaseValue('危废') || '';
 		const emissionData = baseTable.value.find(x => x.id === 'pollutants_emission')?.value;
 
 		if (!emissionData || typeof emissionData !== 'object') {
@@ -1122,10 +1123,49 @@
 		// 清空旧数据
 		signboard.sections.forEach(sec => (sec.items = []));
 
+		// 辅助函数：拆分排污口编号（处理"DA001、DA002、DA003"这种情况）
+		function splitOutletCodes(codeStr) {
+			if (!codeStr) return [];
+			
+			// 无效的排污口编号列表
+			const invalidCodes = ['/', '信息待补充', ''];
+			
+			return codeStr
+				.split(/[、,，]/)           // 按顿号、逗号分隔
+				.map(c => c.trim())         // 去除空格
+				.filter(c => c && !invalidCodes.includes(c)); // 过滤无效编号
+		}
+
+		// 辅助函数：按排污口编号分组并合并污染物
+		function groupByOutletCode(list, blockType) {
+			const outletMap = new Map(); // key: 排污口编号, value: { pollutants: [], ...otherInfo }
+
+			list.forEach(item => {
+				const codes = splitOutletCodes(item['排污口编号']);
+				const pollutantName = item['污染物名称'] || '';
+
+				codes.forEach(code => {
+					if (!outletMap.has(code)) {
+						outletMap.set(code, {
+							pollutants: [],
+							otherInfo: item // 保存其他信息（如执行标准、排放去向等）
+						});
+					}
+					// 合并污染物名称
+					if (pollutantName) {
+						outletMap.get(code).pollutants.push(pollutantName);
+					}
+				});
+			});
+
+			return outletMap;
+		}
+
 		// 废水
 		const waterList = emissionData['水污染物'] || [];
-		waterList.forEach((w, index) => {
-			const code = `DW${String(index + 1).padStart(3, '0')}`;
+		const waterOutlets = groupByOutletCode(waterList, '废水');
+		waterOutlets.forEach((data, code) => {
+			const pollutants = [...new Set(data.pollutants)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '废水').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1134,14 +1174,15 @@
 				content: code
 			}, {
 				title: '污染物种类',
-				content: w['污染物名称']
+				content: pollutants
 			});
 		});
 
 		// 废气
 		const gasList = emissionData['大气污染物'] || [];
-		gasList.forEach((g, index) => {
-			const code = `DA${String(index + 1).padStart(3, '0')}`;
+		const gasOutlets = groupByOutletCode(gasList, '废气');
+		gasOutlets.forEach((data, code) => {
+			const pollutants = [...new Set(data.pollutants)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '废气').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1150,14 +1191,14 @@
 				content: code
 			}, {
 				title: '污染物种类',
-				content: g['污染物名称']
+				content: pollutants
 			});
 		});
 
 		// 噪声
 		const noiseList = emissionData['噪声'] || [];
-		noiseList.forEach((n, index) => {
-			const code = `ZS-${String(index + 1).padStart(2, '0')}`;
+		const noiseOutlets = groupByOutletCode(noiseList, '噪声');
+		noiseOutlets.forEach((data, code) => {
 			signboard.sections.find(s => s.block === '噪声').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1212,20 +1253,42 @@
 		});
 	}
 
-	// 添加一组（3 项）排污标识牌
+	// 添加一组（3 项）排污标识牌（只允许噪声新增）
 	function addSignItem(sectionIdx) {
 		const sec = signboard.sections[sectionIdx];
 		const block = sec.block; // 废水 / 废气 / 噪声
 		const unitName = findBaseValue('建设单位名称') || findBaseValue('单位名称') || '';
 
-		/* 计算下一个排放口编号 */
-		// 先统计当前块里已经有几组（每 3 项算 1 组）
-		const groupCount = Math.floor(sec.items.length / 3) + 1;
+		// 只允许噪声新增
+		if (block !== '噪声') {
+			uni.showToast({
+				title: '只有噪声可以手动新增',
+				icon: 'none'
+			});
+			return;
+		}
 
+		/* 计算下一个排放口编号：找到现有编号的最大值 + 1 */
+		let maxNum = 0;
+		// 每3项为一组，提取所有排放口编号
+		for (let i = 0; i < sec.items.length; i += 3) {
+			const codeItem = sec.items[i + 1]; // 第2项是排放口编号
+			if (codeItem && codeItem.title === '排放口编号') {
+				const code = codeItem.content || '';
+				// 提取编号中的数字部分（如 ZS-01 -> 1, DW001 -> 1）
+				const match = code.match(/\d+/);
+				if (match) {
+					const num = parseInt(match[0], 10);
+					if (num > maxNum) maxNum = num;
+				}
+			}
+		}
+
+		// 生成新编号
 		let code = '';
-		if (block === '废水') code = `DW${String(groupCount).padStart(3,'0')}`;
-		else if (block === '废气') code = `DA${String(groupCount).padStart(3,'0')}`;
-		else if (block === '噪声') code = `ZS-${String(groupCount).padStart(2,'0')}`;
+		if (block === '废水') code = `DW${String(maxNum + 1).padStart(3,'0')}`;
+		else if (block === '废气') code = `DA${String(maxNum + 1).padStart(3,'0')}`;
+		else if (block === '噪声') code = `ZS-${String(maxNum + 1).padStart(2,'0')}`;
 
 		/* 组装一组 */
 		const group = [{
@@ -1238,12 +1301,17 @@
 			},
 			{
 				title: '污染物种类',
-				content: block === '噪声' ? '设备噪声' : ''
+				content: '设备噪声'
 			}
 		];
 
 		/* 追加到当前块 */
 		sec.items.push(...group);
+		
+		uni.showToast({
+			title: '已添加新排污口',
+			icon: 'success'
+		});
 	}
 
 	// 按块决定是否 3 条一组
@@ -1281,6 +1349,7 @@
 	function findBaseValue(label) {
 		const r = baseTable.value.find(x => x.label === label);
 		return r ? (r.value || '') : ''
+		console.log("baseinfo",baseTable.value)
 	}
 
 	// 标识牌下载(数据json交给后端)
@@ -2541,6 +2610,7 @@
 	.pollutants-table {
 		width: 100%;
 		background: #fff;
+		text-align: center;
 	}
 
 	/* 表格头部 */
