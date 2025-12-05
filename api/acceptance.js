@@ -211,16 +211,21 @@ export function transformExtractResult(result) {
 			id: 'project_changes',
 			label: '改扩建项目变动情况'
 		},
+		// 建设内容
+		'单位联系人': {
+			id: 'contact_person',
+			label: '单位联系人'
+		},
+		'联系方式': {
+			id: 'contact_phone',
+			label: '联系方式'
+		},
+		'注册地址': {
+			id: 'registered_address',
+			label: '建设单位注册地址'
+		},
 
 		// 污染物
-		'生产工艺': {
-			id: 'production_process',
-			label: '生产工艺'
-		},
-		'噪声执行标准': {
-			id: 'noise_standard',
-			label: '噪声标准'
-		},
 		'固体废物产生情况': {
 			id: 'solid_generation',
 			label: '固体废物产生情况'
@@ -282,8 +287,6 @@ export function transformExtractResult(result) {
 		}
 	})
 
-
-
 	// 按id顺序排序
 	const ORDER = [
 		'project_name', // 建设项目名称
@@ -298,8 +301,9 @@ export function transformExtractResult(result) {
 		'env_investment_ratio', // 比例
 		'construction_content', // 主要建设内容
 		'project_changes', // 改扩建项目变动情况
-		'production_process', // 生产工艺
-		'noise_standard', // 噪声执行标准
+		'registered_address', // 注册地址
+		'contact_person', // 联系人
+		'contact_phone', // 联系方式
 		'solid_generation', // 固体废物产生情况
 		'pollutants_emission', // 污染物产排情况
 	];
@@ -317,7 +321,7 @@ export function transformExtractResult(result) {
 function formatValue(value) {
 	// 如果是数组，转成字符串
 	if (Array.isArray(value)) {
-		return value.length > 0 ? JSON.stringify(value, null, 2) : '-'
+		return value.length > 0 ? JSON.stringify(value, null, 2) : '未提取到相关信息'
 	}
 	// 如果是对象，转成字符串
 	if (typeof value === 'object' && value !== null) {
@@ -329,10 +333,10 @@ function formatValue(value) {
 	}
 	// 如果是字符串，去掉首尾空格
 	if (typeof value === 'string') {
-		return value.trim() || '-'
+		return value.trim() || '未提取到相关信息'
 	}
 	// 其他情况
-	return value || ''
+	return value || '未提取到相关信息'
 }
 
 /**

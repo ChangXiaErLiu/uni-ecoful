@@ -118,19 +118,19 @@
 															<view class="pollutants-col pollutants-col--type">水污染物
 															</view>
 															<view class="pollutants-col pollutants-col--link">
-																{{ water.产生环节 || '-' }}
+																{{ water.产生环节 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--name">
-																{{ water.污染物名称 || '-' }}
+																{{ water.污染物名称 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
-																{{ water.污染治理措施 || '-' }}
+																{{ water.污染治理措施 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ water.排放去向 || '-' }}
+																{{ water.排放去向 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--standard">
-																{{ water.执行标准 || '-' }}
+																{{ water.执行标准 || '未提取到相关信息' }}
 															</view>
 														</view>
 
@@ -141,19 +141,19 @@
 															<view class="pollutants-col pollutants-col--type">大气污染物
 															</view>
 															<view class="pollutants-col pollutants-col--link">
-																{{ air.产生环节 || '-' }}
+																{{ air.产生环节 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--name">
-																{{ air.污染物名称 || '-' }}
+																{{ air.污染物名称 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
-																{{ air.污染治理措施 || '-' }}
+																{{ air.污染治理措施 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ air.排放去向 || '-' }}
+																{{ air.排放去向 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--standard">
-																{{ air.执行标准 || '-' }}
+																{{ air.执行标准 || '未提取到相关信息' }}
 															</view>
 														</view>
 
@@ -163,19 +163,19 @@
 															:key="'noise-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">噪声</view>
 															<view class="pollutants-col pollutants-col--link">
-																{{ noise.产生环节 || '-' }}
+																{{ noise.产生环节 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--name">
-																{{ noise.污染物名称 || '-' }}
+																{{ noise.污染物名称 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
-																{{ noise.污染治理措施 || '-' }}
+																{{ noise.污染治理措施 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ noise.排放去向 || '-' }}
+																{{ noise.排放去向 || '未提取到相关信息' }}
 															</view>
 															<view class="pollutants-col pollutants-col--standard">
-																{{ noise.执行标准 || '-' }}
+																{{ noise.执行标准 || '未提取到相关信息' }}
 															</view>
 														</view>
 													</view>
@@ -188,6 +188,181 @@
 												</view>
 											</view>
 
+											<!-- 固体废物表格（固废 + 危废）-->
+											<view v-if="item.id === 'pollutants_emission' && item.type === 'table'"
+												class="pollutants-container">
+												<view class="pollutants_baseinfo_row">
+													<text class="form-item__label">
+														固体废物产生情况
+														<text v-if="item.source === 'extracted'"
+															class="extract-tag">已提取</text>
+													</text>
+												</view>
+
+												<!-- 危废污染物表格 -->
+												<view class="pollutants-table">
+													<!-- 表格头部 -->
+													<view class="pollutants-header">
+														<view class="pollutants-col pollutants-col--type">废物类型</view>
+														<view class="pollutants-col pollutants-col--link">废物来源</view>
+														<view class="pollutants-col pollutants-col--name">废物名称</view>
+														<view class="pollutants-col pollutants-col--measure">危险特性
+														</view>
+														<view class="pollutants-col pollutants-col--direction">危险废物类别
+														</view>
+														<view class="pollutants-col pollutants-col--direction">污染治理措施
+														</view>
+													</view>
+
+													<!-- 表格内容 -->
+													<view class="pollutants-body">
+														<!-- 固体废物 -->
+														<view v-if="item.value.固体废物 && item.value.固体废物.length"
+															v-for="(solid, index) in item.value.固体废物"
+															:key="'solid-' + index" class="pollutants-row">
+															<view class="pollutants-col pollutants-col--type">固体废物
+															</view>
+															<view class="pollutants-col pollutants-col--link">
+																{{ solid.废物来源 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ solid.废物名称 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--measure">
+																{{ solid.危险特性 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--direction">
+																{{ solid.危险废物类别 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--direction">
+																{{ solid.污染治理措施 || '无' }}
+															</view>
+														</view>
+
+														<!-- 固体废物 -->
+														<view v-if="item.value.危险废物 && item.value.危险废物.length"
+															v-for="(solid, index) in item.value.危险废物"
+															:key="'solid-' + index" class="pollutants-row">
+															<view class="pollutants-col pollutants-col--type">危险废物
+															</view>
+															<view class="pollutants-col pollutants-col--link">
+																{{ item.value.危险废物.废物来源 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ item.value.危险废物.废物名称 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--measure">
+																{{ item.value.危险废物.危险特性 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--direction">
+																{{ item.value.危险废物.危险废物类别 || '无' }}
+															</view>
+															<view class="pollutants-col pollutants-col--direction">
+																{{ item.value.危险废物.污染治理措施 || '无' }}
+															</view>
+														</view>
+													</view>
+												</view>
+
+												<!-- 选择模式下的复选框 -->
+												<view v-if="selectMode" class="pollutants-select">
+													<checkbox :checked="selectedIds.includes(item.id)"
+														@tap="() => toggleSelected(item.id)" />
+												</view>
+											</view>
+
+											<!-- 固体废物表格（固废 + 危废）-->
+											<view
+												v-if="item.id === 'pollutants_emission' && item.type === 'table' && (item.value.固体废物 || item.value.危险废物)"
+												class="solid-waste-container">
+												<view class="pollutants_baseinfo_row">
+													<text class="form-item__label">
+														固体废物产生情况
+														<text v-if="item.source === 'extracted'"
+															class="extract-tag">已提取</text>
+													</text>
+												</view>
+
+												<!-- 固体废物表格 -->
+												<view class="solid-waste-table">
+													<!-- 表格头部 -->
+													<view class="solid-waste-header">
+														<view class="solid-waste-col solid-waste-col--type">废物类型
+														</view>
+														<view class="solid-waste-col solid-waste-col--source">废物来源
+														</view>
+														<view class="solid-waste-col solid-waste-col--name">废物名称
+														</view>
+														<view class="solid-waste-col solid-waste-col--measure">
+															污染治理措施
+														</view>
+														<view class="solid-waste-col solid-waste-col--area">占地面积
+														</view>
+														<view class="solid-waste-col solid-waste-col--hazard">危险特性
+														</view>
+														<view class="solid-waste-col solid-waste-col--category">
+															危险废物类别
+														</view>
+													</view>
+
+													<!-- 表格内容 -->
+													<view class="solid-waste-body">
+														<!-- 固体废物 -->
+														<view v-if="item.value.固体废物 && item.value.固体废物.length"
+															v-for="(solid, index) in item.value.固体废物"
+															:key="'solid-' + index" class="solid-waste-row">
+															<view class="solid-waste-col solid-waste-col--type">固体废物
+															</view>
+															<view class="solid-waste-col solid-waste-col--source">
+																{{ solid.废物来源 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--name">
+																{{ solid.废物名称 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--measure">
+																{{ solid.污染治理措施 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--area">
+																{{ solid.固废占地面积 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--hazard">
+																未提取到相关信息</view>
+															<view class="solid-waste-col solid-waste-col--category">
+																未提取到相关信息</view>
+														</view>
+
+														<!-- 危险废物 -->
+														<view v-if="item.value.危险废物" class="solid-waste-row">
+															<view class="solid-waste-col solid-waste-col--type">危险废物
+															</view>
+															<view class="solid-waste-col solid-waste-col--source">
+																{{ item.value.危险废物.废物来源 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--name">
+																{{ item.value.危险废物.废物名称 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--measure">
+																{{ item.value.危险废物.污染治理措施 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--area">
+																{{ item.value.危险废物.危废占地面积 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--hazard">
+																{{ item.value.危险废物.危险特性 || '未提取到相关信息' }}
+															</view>
+															<view class="solid-waste-col solid-waste-col--category">
+																{{ item.value.危险废物.危险废物类别 || '未提取到相关信息' }}
+															</view>
+														</view>
+													</view>
+												</view>
+
+												<!-- 选择模式下的复选框 -->
+												<view v-if="selectMode" class="solid-waste-select">
+													<checkbox :checked="selectedIds.includes(item.id)"
+														@tap="() => toggleSelected(item.id)" />
+												</view>
+											</view>
 
 											<view v-else class="baseinfo__row">
 												<text class="form-item__label">
@@ -1126,13 +1301,13 @@
 		// 辅助函数：拆分排污口编号（处理"DA001、DA002、DA003"这种情况）
 		function splitOutletCodes(codeStr) {
 			if (!codeStr) return [];
-			
+
 			// 无效的排污口编号列表
 			const invalidCodes = ['/', '信息待补充', ''];
-			
+
 			return codeStr
-				.split(/[、,，]/)           // 按顿号、逗号分隔
-				.map(c => c.trim())         // 去除空格
+				.split(/[、,，]/) // 按顿号、逗号分隔
+				.map(c => c.trim()) // 去除空格
 				.filter(c => c && !invalidCodes.includes(c)); // 过滤无效编号
 		}
 
@@ -1211,18 +1386,40 @@
 			});
 		});
 
+		// 辅助函数：提取危险废物类别代码（如 HW49、HW12）
+		function extractHazardCodes(str) {
+			if (!str) return '';
+			// 提取所有 HW 开头的代码
+			const matches = str.match(/HW\d+/g);
+			if (!matches) return '';
+			// 去重并用顿号连接
+			return [...new Set(matches)].join('、');
+		}
+
+		// 辅助函数：提取危险特性中文描述（如 毒性、易燃性）
+		function extractHazardProperties(str) {
+			if (!str) return '';
+			// 提取所有括号内的中文
+			const matches = str.match(/（([^）]+)）/g);
+			if (!matches) return '';
+			// 提取括号内容，去重并用顿号连接
+			const properties = matches.map(m => m.replace(/[（）]/g, ''));
+			return [...new Set(properties)].join('、');
+		}
+
 		// 危险废物
+		const hazardousWaste = emissionData['危险废物'] || {};
 		const WFItems = [{
 				title: '主要成分',
-				content: 'HW49其他废物'
+				content: extractHazardCodes(hazardousWaste['危险废物类别']) || 'HW49'
 			},
 			{
 				title: '化学名称',
-				content: '实验室废弃物、实验室废水污泥、医疗废物、废活性炭'
+				content: hazardousWaste['废物名称'] || '实验室废弃物、实验室废水污泥、医疗废物、废活性炭'
 			},
 			{
 				title: '危险情况',
-				content: '毒性/腐蚀性'
+				content: extractHazardProperties(hazardousWaste['危险特性']) || '毒性/腐蚀性'
 			},
 			{
 				title: '安全措施',
@@ -1307,7 +1504,7 @@
 
 		/* 追加到当前块 */
 		sec.items.push(...group);
-		
+
 		uni.showToast({
 			title: '已添加新排污口',
 			icon: 'success'
@@ -1349,7 +1546,7 @@
 	function findBaseValue(label) {
 		const r = baseTable.value.find(x => x.label === label);
 		return r ? (r.value || '') : ''
-		console.log("baseinfo",baseTable.value)
+		console.log("baseinfo", baseTable.value)
 	}
 
 	// 标识牌下载(数据json交给后端)
@@ -2687,6 +2884,103 @@
 		background: #fafafa;
 	}
 
+	/* ========== 固体废物表格样式 ========== */
+	.solid-waste-container {
+		width: 100%;
+		margin-bottom: 24rpx;
+		border: 1rpx solid #e7ecf2;
+		border-radius: $radius;
+		overflow: hidden;
+		grid-column: 1 / -1;
+	}
+
+	.solid-waste-table {
+		width: 100%;
+		background: #fff;
+		text-align: center;
+	}
+
+	/* 固废表格头部 */
+	.solid-waste-header {
+		display: flex;
+		background: #fef3c7;
+		border-bottom: 1px solid #fbbf24;
+		font-weight: 600;
+		font-size: 26rpx;
+		color: #92400e;
+	}
+
+	/* 固废表格行 */
+	.solid-waste-row {
+		display: flex;
+		border-bottom: 1px solid #f3f4f6;
+	}
+
+	.solid-waste-row:last-child {
+		border-bottom: none;
+	}
+
+	/* 固废表格列 */
+	.solid-waste-col {
+		padding: 20rpx 12rpx;
+		font-size: 24rpx;
+		color: #1f2937;
+		border-right: 1px solid #f3f4f6;
+		word-break: break-word;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.solid-waste-col:last-child {
+		border-right: none;
+	}
+
+	.solid-waste-col--type {
+		flex: 0.8;
+		min-width: 100rpx;
+		background: #fef3c7;
+		color: #92400e;
+		font-weight: 500;
+	}
+
+	.solid-waste-col--source {
+		flex: 1.2;
+		min-width: 150rpx;
+	}
+
+	.solid-waste-col--name {
+		flex: 1.5;
+		min-width: 180rpx;
+	}
+
+	.solid-waste-col--measure {
+		flex: 1.5;
+		min-width: 180rpx;
+	}
+
+	.solid-waste-col--area {
+		flex: 0.8;
+		min-width: 100rpx;
+	}
+
+	.solid-waste-col--hazard {
+		flex: 1;
+		min-width: 120rpx;
+	}
+
+	.solid-waste-col--category {
+		flex: 1;
+		min-width: 120rpx;
+	}
+
+	/* 固废表格选择框 */
+	.solid-waste-select {
+		padding: 20rpx;
+		border-top: 1px solid #fbbf24;
+		background: #fffbeb;
+	}
+
 
 	/* 小标签的样式 */
 	.extract-tag {
@@ -3117,6 +3411,10 @@
 		.pollutants-table {
 			overflow-x: auto;
 		}
+		.solid-waste-table {
+			overflow-x: auto;
+		}
+		
 
 		.pollutants-header,
 		.pollutants-row {

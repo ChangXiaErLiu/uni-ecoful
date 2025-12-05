@@ -142,15 +142,20 @@ function transformExtractResult(result) {
       id: "project_changes",
       label: "改扩建项目变动情况"
     },
+    // 建设内容
+    "单位联系人": {
+      id: "contact_person",
+      label: "单位联系人"
+    },
+    "联系方式": {
+      id: "contact_phone",
+      label: "联系方式"
+    },
+    "注册地址": {
+      id: "registered_address",
+      label: "建设单位注册地址"
+    },
     // 污染物
-    "生产工艺": {
-      id: "production_process",
-      label: "生产工艺"
-    },
-    "噪声执行标准": {
-      id: "noise_standard",
-      label: "噪声标准"
-    },
     "固体废物产生情况": {
       id: "solid_generation",
       label: "固体废物产生情况"
@@ -227,10 +232,12 @@ function transformExtractResult(result) {
     // 主要建设内容
     "project_changes",
     // 改扩建项目变动情况
-    "production_process",
-    // 生产工艺
-    "noise_standard",
-    // 噪声执行标准
+    "registered_address",
+    // 注册地址
+    "contact_person",
+    // 联系人
+    "contact_phone",
+    // 联系方式
     "solid_generation",
     // 固体废物产生情况
     "pollutants_emission"
@@ -250,7 +257,7 @@ function transformExtractResult(result) {
 }
 function formatValue(value) {
   if (Array.isArray(value)) {
-    return value.length > 0 ? JSON.stringify(value, null, 2) : "-";
+    return value.length > 0 ? JSON.stringify(value, null, 2) : "未提取到相关信息";
   }
   if (typeof value === "object" && value !== null) {
     return JSON.stringify(value, null, 2);
@@ -259,9 +266,9 @@ function formatValue(value) {
     return value;
   }
   if (typeof value === "string") {
-    return value.trim() || "-";
+    return value.trim() || "未提取到相关信息";
   }
-  return value || "";
+  return value || "未提取到相关信息";
 }
 function downloadSignboardWord(signboard) {
   const payload = {
@@ -283,7 +290,7 @@ function downloadSignboardWord(signboard) {
       },
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:381", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:385", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -316,7 +323,7 @@ function downloadMonitorPlan(options = {}) {
       responseType: "arraybuffer",
       timeout,
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:449", "监测方案下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:453", "监测方案下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
