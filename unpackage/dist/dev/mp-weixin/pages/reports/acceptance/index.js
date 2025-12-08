@@ -156,10 +156,10 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           const result = await api_acceptance.uploadFileToBackend(file);
           stats.successCount++;
           await loadFileListOnMount();
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:951", `文件已上传: ${result.filename}`);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:859", `文件已上传: ${result.filename}`);
         } catch (error) {
           stats.failCount++;
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:954", `❌ 文件 ${i + 1} 上传失败:`, error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:862", `❌ 文件 ${i + 1} 上传失败:`, error);
           common_vendor.index.hideLoading();
           if (supportedFiles.length === 1) {
             common_vendor.index.showToast({
@@ -198,7 +198,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           icon: "success"
         });
       } catch (err) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1010", "删除失败:", err);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:918", "删除失败:", err);
         await loadFileListOnMount();
         common_vendor.index.showToast({
           title: "删除失败，请重试",
@@ -306,8 +306,9 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           throw new Error((result == null ? void 0 : result.message) || "提取失败：后端未返回有效数据");
         }
         baseTable.value = api_acceptance.transformExtractResult(result.result);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1068", "base表格", baseTable);
         common_vendor.index.setStorageSync("project_base_info", JSON.stringify(baseTable.value));
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1164", "[Extract] 提取成功:", result);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1073", "[Extract] 提取成功:", result);
       } catch (error) {
         extractProgressDone = true;
         if (extractProgressTimer) {
@@ -319,7 +320,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           extractSprintTimer = null;
         }
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1181", "[Extract] 提取失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1090", "[Extract] 提取失败:", error);
         if (error.message.includes("超时")) {
           common_vendor.index.showModal({
             title: "提取超时",
@@ -746,7 +747,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           monitorSprintTimer = null;
         }
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1742", "生成监测方案失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1651", "生成监测方案失败:", error);
         common_vendor.index.showModal({
           title: "生成失败",
           content: error.message || "监测方案生成失败，请稍后重试",
@@ -769,13 +770,13 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
               fileType: "docx",
               success: () => resolve(),
               fail: (err) => {
-                common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1791", "打开文档失败:", err);
+                common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1700", "打开文档失败:", err);
                 reject(new Error("文件已保存，但打开失败"));
               }
             });
           },
           fail: (err) => {
-            common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1797", "保存文件失败:", err);
+            common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1706", "保存文件失败:", err);
             reject(new Error("保存文件失败"));
           }
         });
@@ -791,7 +792,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         common_vendor.index.showLoading({
           title: "加载中..."
         });
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1823", "开始请求数据...");
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1732", "开始请求数据...");
         const response = await new Promise((resolve, reject) => {
           common_vendor.index.request({
             url: "http://172.16.1.61:8000/api/v1/completion/datasheet",
@@ -801,31 +802,31 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
               memberId: 3
             },
             success: (res) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1835", "请求成功:", res);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1744", "请求成功:", res);
               resolve(res);
             },
             fail: (err) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1839", "请求失败:", err);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1748", "请求失败:", err);
               reject(err);
             }
           });
         });
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1845", "完整响应对象:", response);
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1846", "响应状态码:", response.statusCode);
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1847", "响应数据:", response.data);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1754", "完整响应对象:", response);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1755", "响应状态码:", response.statusCode);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1756", "响应数据:", response.data);
         if (response && response.statusCode === 200) {
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1851", "状态码为200，开始解析数据");
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1760", "状态码为200，开始解析数据");
           if (!response.data) {
             throw new Error("响应数据为空");
           }
           const data = response.data;
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1859", "解析后的数据:", data);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1768", "解析后的数据:", data);
           if (!data.items || !Array.isArray(data.items)) {
             throw new Error("数据格式不正确: items 不存在或不是数组");
           }
           tizidanItems.value = data.items;
           downloadUrls.value = data.download_urls || {};
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1869", "最终设置的数据:", {
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1778", "最终设置的数据:", {
             items: tizidanItems.value,
             urls: downloadUrls.value
           });
@@ -837,7 +838,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           throw new Error(`请求失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1882", "获取提资单数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1791", "获取提资单数据失败:", error);
         common_vendor.index.showToast({
           title: "加载失败，请重新刷新！",
           icon: "none",
@@ -864,11 +865,11 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
               memberId: 3
             },
             success: (res) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1912", "请求成功:", res);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1821", "请求成功:", res);
               resolve(res);
             },
             fail: (err) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1916", "请求失败:", err);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1825", "请求失败:", err);
               reject(err);
             }
           });
@@ -879,13 +880,13 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
             throw new Error("数据格式不正确: items 不存在或不是数组");
           }
           tizidanItems.value = data.items;
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1930", "test", data.download_urls);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1839", "test", data.download_urls);
           const downloadUrlsData = data.download_urls || {};
           downloadUrls.value = {
             acceptance_report: formatDownloadUrl(downloadUrlsData.tzd_doc),
             comparison_list: formatDownloadUrl(downloadUrlsData.comparison_list)
           };
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1938", "下载URL设置:", downloadUrls.value);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1847", "下载URL设置:", downloadUrls.value);
           common_vendor.index.showToast({
             title: "数据加载成功",
             icon: "success"
@@ -894,7 +895,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
           throw new Error(`请求失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1948", "获取提资单数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1857", "获取提资单数据失败:", error);
         common_vendor.index.showToast({
           title: "加载失败，请重新刷新！",
           icon: "none",
@@ -941,7 +942,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
         });
       } catch (error) {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2021", "下载失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1930", "下载失败:", error);
         common_vendor.index.showToast({
           title: "下载失败: " + (error.message || "未知错误"),
           icon: "none",
@@ -959,7 +960,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
               common_vendor.index.saveFile({
                 tempFilePath: filePath,
                 success: (saveRes) => {
-                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2063", "文件保存成功:", saveRes.savedFilePath);
+                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1972", "文件保存成功:", saveRes.savedFilePath);
                   resolve(saveRes);
                 },
                 fail: (saveErr) => {
@@ -986,7 +987,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
               common_vendor.index.showLoading({
                 title: "提交中..."
               });
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2114", "开始提交项目:", index, tizidanItems.value[index].text);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2023", "开始提交项目:", index, tizidanItems.value[index].text);
               const response = await new Promise((resolve, reject) => {
                 common_vendor.index.request({
                   url: "http://172.16.1.61:8000/api/v1/completion/submit-item",
@@ -1000,16 +1001,16 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
                   },
                   timeout: 1e4,
                   success: (res2) => {
-                    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2130", "提交响应:", res2);
+                    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2039", "提交响应:", res2);
                     resolve(res2);
                   },
                   fail: (err) => {
-                    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2134", "提交失败:", err);
+                    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2043", "提交失败:", err);
                     reject(err);
                   }
                 });
               });
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2140", "提交完整响应:", response);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2049", "提交完整响应:", response);
               if (response && response.statusCode === 200) {
                 if (response.data && response.data.success) {
                   tizidanItems.value[index].submitted = true;
@@ -1025,7 +1026,7 @@ ${names}${unsupportedFiles.length > 3 ? "..." : ""}`,
                 throw new Error(`提交失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
               }
             } catch (error) {
-              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2159", "提交失败:", error);
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2068", "提交失败:", error);
               common_vendor.index.showToast({
                 title: "提交失败，请重试",
                 icon: "none"
@@ -1185,9 +1186,9 @@ ${head}${tail}`;
       if (cached) {
         try {
           baseTable.value = JSON.parse(cached);
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2417", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2326", "[Cache] 恢复缓存的项目信息，共", baseTable.value.length, "条");
         } catch (e) {
-          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:2420", "[Cache] 缓存数据解析失败:", e);
+          common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:2329", "[Cache] 缓存数据解析失败:", e);
         }
       }
     });
@@ -1340,11 +1341,11 @@ ${head}${tail}`;
               };
             })
           } : {}, {
-            q: item.value.危险废物 && item.value.危险废物.length
-          }, item.value.危险废物 && item.value.危险废物.length ? {
-            r: common_vendor.f(item.value.危险废物, (solid, index, i1) => {
+            q: item.value.危险废物
+          }, item.value.危险废物 ? {
+            r: common_vendor.f([item.value.危险废物], (solid, index, i1) => {
               return {
-                a: "solid-" + index
+                a: "hazard-" + index
               };
             }),
             s: common_vendor.t(item.value.危险废物.废物来源 || "无"),
@@ -1357,53 +1358,23 @@ ${head}${tail}`;
           }, selectMode.value ? {
             z: selectedIds.value.includes(item.id),
             A: common_vendor.o(() => toggleSelected(item.id), item.id)
-          } : {}) : {}, {
-            B: item.id === "pollutants_emission" && item.type === "table" && (item.value.固体废物 || item.value.危险废物)
-          }, item.id === "pollutants_emission" && item.type === "table" && (item.value.固体废物 || item.value.危险废物) ? common_vendor.e({
+          } : {}) : common_vendor.e({
+            B: common_vendor.t(item.label),
             C: item.source === "extracted"
           }, item.source === "extracted" ? {} : {}, {
-            D: item.value.固体废物 && item.value.固体废物.length
-          }, item.value.固体废物 && item.value.固体废物.length ? {
-            E: common_vendor.f(item.value.固体废物, (solid, index, i1) => {
-              return {
-                a: common_vendor.t(solid.废物来源 || "未提取到相关信息"),
-                b: common_vendor.t(solid.废物名称 || "未提取到相关信息"),
-                c: common_vendor.t(solid.污染治理措施 || "未提取到相关信息"),
-                d: common_vendor.t(solid.固废占地面积 || "未提取到相关信息"),
-                e: "solid-" + index
-              };
-            })
-          } : {}, {
-            F: item.value.危险废物
-          }, item.value.危险废物 ? {
-            G: common_vendor.t(item.value.危险废物.废物来源 || "未提取到相关信息"),
-            H: common_vendor.t(item.value.危险废物.废物名称 || "未提取到相关信息"),
-            I: common_vendor.t(item.value.危险废物.污染治理措施 || "未提取到相关信息"),
-            J: common_vendor.t(item.value.危险废物.危废占地面积 || "未提取到相关信息"),
-            K: common_vendor.t(item.value.危险废物.危险特性 || "未提取到相关信息"),
-            L: common_vendor.t(item.value.危险废物.危险废物类别 || "未提取到相关信息")
-          } : {}, {
-            M: selectMode.value
-          }, selectMode.value ? {
-            N: selectedIds.value.includes(item.id),
-            O: common_vendor.o(() => toggleSelected(item.id), item.id)
-          } : {}) : common_vendor.e({
-            P: common_vendor.t(item.label),
-            Q: item.source === "extracted"
-          }, item.source === "extracted" ? {} : {}, {
-            R: "41308e16-9-" + i0 + ",41308e16-0",
-            S: common_vendor.o(($event) => item.value = $event, item.id),
-            T: common_vendor.p({
+            D: "41308e16-9-" + i0 + ",41308e16-0",
+            E: common_vendor.o(($event) => item.value = $event, item.id),
+            F: common_vendor.p({
               placeholder: "请输入具体的值",
               clearable: true,
               modelValue: item.value
             }),
-            U: selectMode.value
+            G: selectMode.value
           }, selectMode.value ? {
-            V: selectedIds.value.includes(item.id),
-            W: common_vendor.o(() => toggleSelected(item.id), item.id)
+            H: selectedIds.value.includes(item.id),
+            I: common_vendor.o(() => toggleSelected(item.id), item.id)
           } : {}), {
-            X: item.id
+            J: item.id
           });
         }),
         z: common_vendor.p({

@@ -188,7 +188,7 @@
 												</view>
 											</view>
 
-											<!-- 固体废物表格（固废 + 危废）-->
+											<!-- 废物表格（固废 + 危废）-->
 											<view v-if="item.id === 'pollutants_emission' && item.type === 'table'"
 												class="pollutants-container">
 												<view class="pollutants_baseinfo_row">
@@ -239,10 +239,10 @@
 															</view>
 														</view>
 
-														<!-- 固体废物 -->
-														<view v-if="item.value.危险废物 && item.value.危险废物.length"
-															v-for="(solid, index) in item.value.危险废物"
-															:key="'solid-' + index" class="pollutants-row">
+														<!-- 危险废物 -->
+														<view v-if="item.value.危险废物"
+															v-for="(solid, index) in [item.value.危险废物]"
+															:key="'hazard-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">危险废物
 															</view>
 															<view class="pollutants-col pollutants-col--link">
@@ -271,99 +271,7 @@
 												</view>
 											</view>
 
-											<!-- 固体废物表格（固废 + 危废）-->
-											<view
-												v-if="item.id === 'pollutants_emission' && item.type === 'table' && (item.value.固体废物 || item.value.危险废物)"
-												class="solid-waste-container">
-												<view class="pollutants_baseinfo_row">
-													<text class="form-item__label">
-														固体废物产生情况
-														<text v-if="item.source === 'extracted'"
-															class="extract-tag">已提取</text>
-													</text>
-												</view>
-
-												<!-- 固体废物表格 -->
-												<view class="solid-waste-table">
-													<!-- 表格头部 -->
-													<view class="solid-waste-header">
-														<view class="solid-waste-col solid-waste-col--type">废物类型
-														</view>
-														<view class="solid-waste-col solid-waste-col--source">废物来源
-														</view>
-														<view class="solid-waste-col solid-waste-col--name">废物名称
-														</view>
-														<view class="solid-waste-col solid-waste-col--measure">
-															污染治理措施
-														</view>
-														<view class="solid-waste-col solid-waste-col--area">占地面积
-														</view>
-														<view class="solid-waste-col solid-waste-col--hazard">危险特性
-														</view>
-														<view class="solid-waste-col solid-waste-col--category">
-															危险废物类别
-														</view>
-													</view>
-
-													<!-- 表格内容 -->
-													<view class="solid-waste-body">
-														<!-- 固体废物 -->
-														<view v-if="item.value.固体废物 && item.value.固体废物.length"
-															v-for="(solid, index) in item.value.固体废物"
-															:key="'solid-' + index" class="solid-waste-row">
-															<view class="solid-waste-col solid-waste-col--type">固体废物
-															</view>
-															<view class="solid-waste-col solid-waste-col--source">
-																{{ solid.废物来源 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--name">
-																{{ solid.废物名称 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--measure">
-																{{ solid.污染治理措施 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--area">
-																{{ solid.固废占地面积 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--hazard">
-																未提取到相关信息</view>
-															<view class="solid-waste-col solid-waste-col--category">
-																未提取到相关信息</view>
-														</view>
-
-														<!-- 危险废物 -->
-														<view v-if="item.value.危险废物" class="solid-waste-row">
-															<view class="solid-waste-col solid-waste-col--type">危险废物
-															</view>
-															<view class="solid-waste-col solid-waste-col--source">
-																{{ item.value.危险废物.废物来源 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--name">
-																{{ item.value.危险废物.废物名称 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--measure">
-																{{ item.value.危险废物.污染治理措施 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--area">
-																{{ item.value.危险废物.危废占地面积 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--hazard">
-																{{ item.value.危险废物.危险特性 || '未提取到相关信息' }}
-															</view>
-															<view class="solid-waste-col solid-waste-col--category">
-																{{ item.value.危险废物.危险废物类别 || '未提取到相关信息' }}
-															</view>
-														</view>
-													</view>
-												</view>
-
-												<!-- 选择模式下的复选框 -->
-												<view v-if="selectMode" class="solid-waste-select">
-													<checkbox :checked="selectedIds.includes(item.id)"
-														@tap="() => toggleSelected(item.id)" />
-												</view>
-											</view>
-
+											<!-- 除污染物外基本信息 -->
 											<view v-else class="baseinfo__row">
 												<text class="form-item__label">
 													{{ item.label }}
@@ -650,7 +558,7 @@
 						</view>
 					</view>
 
-					<!-- 步骤5: 竣工验收报告 -->
+					<!-- 步骤4: 竣工验收报告 -->
 					<view v-show="currentStep === 4" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
@@ -1157,6 +1065,7 @@
 
 			// 7. 转换数据并填充表格（核心操作）
 			baseTable.value = transformExtractResult(result.result)
+			console.log("base表格", baseTable)
 
 			// 8. 缓存到本地（关键！刷新页面不丢失）
 			uni.setStorageSync('project_base_info', JSON.stringify(baseTable.value))
@@ -2884,103 +2793,6 @@
 		background: #fafafa;
 	}
 
-	/* ========== 固体废物表格样式 ========== */
-	.solid-waste-container {
-		width: 100%;
-		margin-bottom: 24rpx;
-		border: 1rpx solid #e7ecf2;
-		border-radius: $radius;
-		overflow: hidden;
-		grid-column: 1 / -1;
-	}
-
-	.solid-waste-table {
-		width: 100%;
-		background: #fff;
-		text-align: center;
-	}
-
-	/* 固废表格头部 */
-	.solid-waste-header {
-		display: flex;
-		background: #fef3c7;
-		border-bottom: 1px solid #fbbf24;
-		font-weight: 600;
-		font-size: 26rpx;
-		color: #92400e;
-	}
-
-	/* 固废表格行 */
-	.solid-waste-row {
-		display: flex;
-		border-bottom: 1px solid #f3f4f6;
-	}
-
-	.solid-waste-row:last-child {
-		border-bottom: none;
-	}
-
-	/* 固废表格列 */
-	.solid-waste-col {
-		padding: 20rpx 12rpx;
-		font-size: 24rpx;
-		color: #1f2937;
-		border-right: 1px solid #f3f4f6;
-		word-break: break-word;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.solid-waste-col:last-child {
-		border-right: none;
-	}
-
-	.solid-waste-col--type {
-		flex: 0.8;
-		min-width: 100rpx;
-		background: #fef3c7;
-		color: #92400e;
-		font-weight: 500;
-	}
-
-	.solid-waste-col--source {
-		flex: 1.2;
-		min-width: 150rpx;
-	}
-
-	.solid-waste-col--name {
-		flex: 1.5;
-		min-width: 180rpx;
-	}
-
-	.solid-waste-col--measure {
-		flex: 1.5;
-		min-width: 180rpx;
-	}
-
-	.solid-waste-col--area {
-		flex: 0.8;
-		min-width: 100rpx;
-	}
-
-	.solid-waste-col--hazard {
-		flex: 1;
-		min-width: 120rpx;
-	}
-
-	.solid-waste-col--category {
-		flex: 1;
-		min-width: 120rpx;
-	}
-
-	/* 固废表格选择框 */
-	.solid-waste-select {
-		padding: 20rpx;
-		border-top: 1px solid #fbbf24;
-		background: #fffbeb;
-	}
-
 
 	/* 小标签的样式 */
 	.extract-tag {
@@ -3411,10 +3223,11 @@
 		.pollutants-table {
 			overflow-x: auto;
 		}
+
 		.solid-waste-table {
 			overflow-x: auto;
 		}
-		
+
 
 		.pollutants-header,
 		.pollutants-row {
