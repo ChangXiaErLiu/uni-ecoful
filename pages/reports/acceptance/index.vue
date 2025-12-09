@@ -99,8 +99,9 @@
 													<!-- 表格头部 -->
 													<view class="pollutants-header">
 														<view class="pollutants-col pollutants-col--type">污染物类型</view>
-														<view class="pollutants-col pollutants-col--link">产生环节</view>
+														<!-- <view class="pollutants-col pollutants-col--link">产生时间</view> -->
 														<view class="pollutants-col pollutants-col--name">污染物名称</view>
+														<view class="pollutants-col pollutants-col--name">污染因子</view>
 														<view class="pollutants-col pollutants-col--measure">污染治理措施
 														</view>
 														<view class="pollutants-col pollutants-col--direction">排放去向
@@ -117,11 +118,14 @@
 															:key="'water-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">水污染物
 															</view>
-															<view class="pollutants-col pollutants-col--link">
+															<!-- <view class="pollutants-col pollutants-col--link">
 																{{ water.产生环节 || '未提取到相关信息' }}
-															</view>
+															</view> -->
 															<view class="pollutants-col pollutants-col--name">
 																{{ water.污染物名称 || '未提取到相关信息' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ water.污染因子 || '未提取到污染因子' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
 																{{ water.污染治理措施 || '未提取到相关信息' }}
@@ -140,11 +144,14 @@
 															:key="'air-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">大气污染物
 															</view>
-															<view class="pollutants-col pollutants-col--link">
+															<!-- <view class="pollutants-col pollutants-col--link">
 																{{ air.产生环节 || '未提取到相关信息' }}
-															</view>
+															</view> -->
 															<view class="pollutants-col pollutants-col--name">
 																{{ air.污染物名称 || '未提取到相关信息' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ air.污染因子 || '未提取到污染因子' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
 																{{ air.污染治理措施 || '未提取到相关信息' }}
@@ -162,11 +169,14 @@
 															v-for="(noise, index) in item.value.噪声"
 															:key="'noise-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">噪声</view>
-															<view class="pollutants-col pollutants-col--link">
+															<!-- <view class="pollutants-col pollutants-col--link">
 																{{ noise.产生环节 || '未提取到相关信息' }}
-															</view>
+															</view> -->
 															<view class="pollutants-col pollutants-col--name">
 																{{ noise.污染物名称 || '未提取到相关信息' }}
+															</view>
+															<view class="pollutants-col pollutants-col--name">
+																{{ noise.污染因子 || '未提取到污染因子' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
 																{{ noise.污染治理措施 || '未提取到相关信息' }}
@@ -204,6 +214,7 @@
 													<!-- 表格头部 -->
 													<view class="pollutants-header">
 														<view class="pollutants-col pollutants-col--type">废物类型</view>
+														<!-- <view class="pollutants-col pollutants-col--link">产生时间</view> -->
 														<view class="pollutants-col pollutants-col--link">废物来源</view>
 														<view class="pollutants-col pollutants-col--name">废物名称</view>
 														<view class="pollutants-col pollutants-col--measure">危险特性
@@ -222,6 +233,9 @@
 															:key="'solid-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">固体废物
 															</view>
+															<!-- <view class="pollutants-col pollutants-col--link">
+																{{ solid.产生环节 || '无' }}
+															</view> -->
 															<view class="pollutants-col pollutants-col--link">
 																{{ solid.废物来源 || '无' }}
 															</view>
@@ -245,6 +259,9 @@
 															:key="'hazard-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">危险废物
 															</view>
+															<!-- <view class="pollutants-col pollutants-col--link">
+																{{ item.value.危险废物.产生环节 || '无' }}
+															</view> -->
 															<view class="pollutants-col pollutants-col--link">
 																{{ item.value.危险废物.废物来源 || '无' }}
 															</view>
@@ -1328,7 +1345,7 @@
 			},
 			{
 				title: '危险情况',
-				content: extractHazardProperties(hazardousWaste['危险特性']) || '毒性/腐蚀性'
+				content: extractHazardProperties(hazardousWaste['危险特性']) || '毒性、腐蚀性'
 			},
 			{
 				title: '安全措施',
