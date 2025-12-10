@@ -97,45 +97,104 @@ export async function deleteFile(document_id) {
 
 
 /**
- * 执行任务（提取项目信息）
+ * 执行任务（提取项目信息）- 异步版本
  * @param {Object} options - 选项
- * @param {boolean} options.hideLoading - 是否隐藏 loading
- * @param {number} options.timeout - 超时时间（毫秒）
+ * @param {Function} options.onProgress - 进度回调函数 (progress, status) => void
+ * @param {number} options.pollInterval - 轮询间隔（毫秒，默认3秒）
+ * @param {number} options.timeout - 超时时间（毫秒，默认30分钟）
  * @returns {Promise<Object>} 任务执行结果
  */
 export async function runTask(options = {}) {
 	const {
-		hideLoading = false,
-			timeout = 600000 // 默认10分钟
+		onProgress = null,
+		pollInterval = 3000, // 默认3秒轮询一次
+		timeout = 1800000 // 默认30分钟
 	} = options
 
 	try {
-		const result = await request.get(`/api/v1/completion/index-parallel-extract-info`, {
-			timeout,
-			hideLoading
+		// 第一步：提交异步任务
+		// console.log('📤 提交信息提取任务...')
+		const submitResult = await request.post('/api/v1/completion/extract-info/async/start', {
+			project_data: {}
 		})
 
-		// 数据校验
-		if (!result || result.status !== 'success') {
-			throw new Error(result?.message || '任务执行失败')
-		}
+		const taskId = submitResult.task_id
+		// console.log(`✅ 任务已提交，Task ID: ${taskId}`)
 
-		// 适配后端实际返回
-		const data = result.result
-		if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
-		  throw new Error('未提取到任何项目信息，请检查文件内容是否完整')
-		}
+		// 第二步：轮询任务状态
+		const startTime = Date.now()
 		
-		return {
-		  status: result.status,
-		  result: data
-		}
+		return new Promise((resolve, reject) => {
+			const pollStatus = async () => {
+				try {
+					// 检查是否超时
+					if (Date.now() - startTime > timeout) {
+						reject(new Error('任务超时，请稍后重试'))
+						return
+					}
 
-		// 返回前端期望的格式（保持向后兼容）
-		return {
-			status: result.status,
-			result: result.extract_info.result
-		}
+					// 查询任务状态
+					const statusResult = await request.get(`/api/v1/tasks/${taskId}/status`)
+					
+					const {
+						status,
+						progress = 0,
+						current_step = '',
+						task_result,
+						error_message
+					} = statusResult
+
+					console.log(`[${status}] ${progress}% - ${current_step}`)
+
+					// 调用进度回调
+					if (onProgress && typeof onProgress === 'function') {
+						onProgress(progress, current_step, status)
+					}
+
+					// 任务完成
+					if (status === 'success') {
+						// console.log('✅ 任务完成！')
+						
+						// 数据校验
+						const data = task_result?.result || task_result
+						if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+							reject(new Error('未提取到任何项目信息，请检查文件内容是否完整'))
+							return
+						}
+
+						resolve({
+							status: 'success',
+							result: data
+						})
+						return
+					}
+
+					// 任务失败
+					if (status === 'failed') {
+						console.error('❌ 任务失败:', error_message)
+						reject(new Error(error_message || '任务执行失败'))
+						return
+					}
+
+					// 任务取消
+					if (status === 'cancelled') {
+						reject(new Error('任务已被取消'))
+						return
+					}
+
+					// 继续轮询
+					setTimeout(pollStatus, pollInterval)
+
+				} catch (error) {
+					console.error('查询任务状态失败:', error)
+					reject(error)
+				}
+			}
+
+			// 开始轮询
+			pollStatus()
+		})
+
 	} catch (error) {
 		// 错误分类处理
 		if (error.code === 'NETWORK_ERROR' && error.message.includes('timeout')) {
@@ -145,6 +204,52 @@ export async function runTask(options = {}) {
 		} else {
 			throw error
 		}
+	}
+}
+
+/**
+ * 取消正在运行的任务
+ * @param {string} taskId - 任务ID
+ * @returns {Promise<Object>} 取消结果
+ */
+export async function cancelTask(taskId) {
+	if (!taskId) {
+		throw new Error('任务ID不能为空')
+	}
+
+	try {
+		const result = await request.post(`/api/v1/tasks/${taskId}/cancel`)
+		return result
+	} catch (error) {
+		throw new Error(error.message || '取消任务失败')
+	}
+}
+
+/**
+ * 获取我的任务列表
+ * @param {Object} options - 选项
+ * @param {string} options.status - 状态过滤（pending/running/success/failed）
+ * @param {string} options.taskType - 任务类型过滤
+ * @param {number} options.limit - 返回数量
+ * @returns {Promise<Object>} 任务列表
+ */
+export async function getMyTasks(options = {}) {
+	const {
+		status = null,
+		taskType = null,
+		limit = 20
+	} = options
+
+	try {
+		const params = new URLSearchParams()
+		if (status) params.append('status', status)
+		if (taskType) params.append('task_type', taskType)
+		params.append('limit', limit)
+
+		const result = await request.get(`/api/v1/tasks/my-tasks?${params.toString()}`)
+		return result
+	} catch (error) {
+		throw new Error(error.message || '获取任务列表失败')
 	}
 }
 

@@ -54,30 +54,66 @@ async function deleteFile(document_id) {
 }
 async function runTask(options = {}) {
   const {
-    hideLoading = false,
-    timeout = 6e5
-    // 默认10分钟
+    onProgress = null,
+    pollInterval = 3e3,
+    // 默认3秒轮询一次
+    timeout = 18e5
+    // 默认30分钟
   } = options;
   try {
-    const result = await utils_request.request.get(`/api/v1/completion/index-parallel-extract-info`, {
-      timeout,
-      hideLoading
+    const submitResult = await utils_request.request.post("/api/v1/completion/extract-info/async/start", {
+      project_data: {}
     });
-    if (!result || result.status !== "success") {
-      throw new Error((result == null ? void 0 : result.message) || "任务执行失败");
-    }
-    const data = result.result;
-    if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
-      throw new Error("未提取到任何项目信息，请检查文件内容是否完整");
-    }
-    return {
-      status: result.status,
-      result: data
-    };
-    return {
-      status: result.status,
-      result: result.extract_info.result
-    };
+    const taskId = submitResult.task_id;
+    const startTime = Date.now();
+    return new Promise((resolve, reject) => {
+      const pollStatus = async () => {
+        try {
+          if (Date.now() - startTime > timeout) {
+            reject(new Error("任务超时，请稍后重试"));
+            return;
+          }
+          const statusResult = await utils_request.request.get(`/api/v1/tasks/${taskId}/status`);
+          const {
+            status,
+            progress = 0,
+            current_step = "",
+            task_result,
+            error_message
+          } = statusResult;
+          common_vendor.index.__f__("log", "at api/acceptance.js:147", `[${status}] ${progress}% - ${current_step}`);
+          if (onProgress && typeof onProgress === "function") {
+            onProgress(progress, current_step, status);
+          }
+          if (status === "success") {
+            const data = (task_result == null ? void 0 : task_result.result) || task_result;
+            if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
+              reject(new Error("未提取到任何项目信息，请检查文件内容是否完整"));
+              return;
+            }
+            resolve({
+              status: "success",
+              result: data
+            });
+            return;
+          }
+          if (status === "failed") {
+            common_vendor.index.__f__("error", "at api/acceptance.js:174", "❌ 任务失败:", error_message);
+            reject(new Error(error_message || "任务执行失败"));
+            return;
+          }
+          if (status === "cancelled") {
+            reject(new Error("任务已被取消"));
+            return;
+          }
+          setTimeout(pollStatus, pollInterval);
+        } catch (error) {
+          common_vendor.index.__f__("error", "at api/acceptance.js:189", "查询任务状态失败:", error);
+          reject(error);
+        }
+      };
+      pollStatus();
+    });
   } catch (error) {
     if (error.code === "NETWORK_ERROR" && error.message.includes("timeout")) {
       throw new Error("提取超时：文档过大或网络不稳定，请稍后重试");
@@ -290,7 +326,7 @@ function downloadSignboardWord(signboard) {
       },
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:385", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:490", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -323,7 +359,7 @@ function downloadMonitorPlan(options = {}) {
       responseType: "arraybuffer",
       timeout,
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:453", "监测方案下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:558", "监测方案下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);

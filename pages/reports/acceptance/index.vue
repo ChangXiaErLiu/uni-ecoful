@@ -665,6 +665,16 @@
 			</view>
 		</view>
 	</uni-popup>
+
+	<!-- 任务进度弹窗 -->
+	<TaskProgressModal 
+		ref="taskProgressModal"
+		:title="taskProgressTitle"
+		:progress="taskProgress"
+		:statusText="taskStatusText"
+		:state="taskState"
+		:cancelable="false"
+	/>
 </template>
 
 <script setup>
@@ -684,6 +694,7 @@
 		onLoad
 	} from '@dcloudio/uni-app'
 	import ecoFilePicker from '@/components/eco-file-picker/uni-file-picker.vue'
+	import TaskProgressModal from '@/components/message-pop-up/TaskProgressModal.vue'
 	import {
 		navTitleStore
 	} from '@/stores/navTitle.js'
@@ -705,6 +716,13 @@
 	const {
 		isMobile
 	} = usePlatformInfo()
+
+	// 任务进度弹窗相关状态
+	const taskProgressModal = ref(null)
+	const taskProgressTitle = ref('信息提取中')
+	const taskProgress = ref(0)
+	const taskStatusText = ref('正在初始化...')
+	const taskState = ref('running')
 
 
 	// 每个步骤定义--------------------------
@@ -944,97 +962,105 @@
 		}
 	}
 
-	/* 提取信息的进度条 */
-	// 1. 先声明计时器句柄和状态变量
-	let extractProgressTimer = null
-	let extractCurrentPercent = 0
-	let extractSprintTimer = null
-	let extractProgressDone = false
+	/* 提取信息的进度条 - 智能平滑进度版本（使用自定义弹窗）*/
+	// 进度平滑处理
+	let smoothProgressTimer = null
+	let currentDisplayProgress = 0 // 当前显示的进度
+	let targetProgress = 0 // 目标进度（后端返回的真实进度）
+	let lastTargetProgress = 0 // 上一次的目标进度（用于检测是否真的更新了）
+	let lastUpdateTime = 0 // 上次后端真正更新进度的时间
 
-	// 2. 开始"假进度" - 2分30秒到99%
-	function startExtractFakeProgress(totalTime = 150000) { // 2分30秒
-		extractCurrentPercent = 0
-		extractProgressDone = false
-
-		// 计算步长：99% / (总时间/间隔时间)
-		const step = 99 / (totalTime / 200) // 每200ms更新一次
-
-		extractProgressTimer = setInterval(() => {
-			if (extractProgressDone) {
-				clearInterval(extractProgressTimer)
-				extractProgressTimer = null
-				return
-			}
-
-			extractCurrentPercent += step
-			if (extractCurrentPercent >= 99) {
-				extractCurrentPercent = 99
-				clearInterval(extractProgressTimer)
-				extractProgressTimer = null
-			}
-
-			uni.showLoading({
-				title: `正在提取项目信息，提取进度：${Math.floor(extractCurrentPercent)}%`,
-				mask: true
-			})
-		}, 200)
-	}
-
-	// 3. 冲刺到100%并完成
-	function sprintExtractToComplete() {
-		extractProgressDone = true
-
-		// 清除假进度计时器
-		if (extractProgressTimer) {
-			clearInterval(extractProgressTimer)
-			extractProgressTimer = null
+	// 平滑更新进度条（智能版 - 更新响应式变量）
+	function updateProgressSmooth(newProgress, statusText, state = 'running') {
+		// 检查进度是否真的变化了
+		const progressChanged = newProgress !== lastTargetProgress
+		
+		// 更新目标进度和状态
+		targetProgress = newProgress
+		taskStatusText.value = statusText
+		taskState.value = state
+		
+		// 只有进度真的变化了，才更新时间戳
+		if (progressChanged) {
+			lastUpdateTime = Date.now()
+			lastTargetProgress = newProgress
+			console.log(`[进度真实更新] ${newProgress}% - ${statusText}`)
 		}
 
-		// 2秒内从当前进度冲到100%
-		const startPercent = extractCurrentPercent
-		const targetPercent = 100
-		const duration = 2000 // 2秒
-		const stepTime = 10 // 每10ms更新一次
-		const totalSteps = duration / stepTime
-		const stepValue = (targetPercent - startPercent) / totalSteps
+		// 如果没有平滑计时器，启动一个
+		if (!smoothProgressTimer) {
+			smoothProgressTimer = setInterval(() => {
+				const now = Date.now()
+				const timeSinceLastUpdate = now - lastUpdateTime // 距离上次真实更新的时间（毫秒）
 
-		let currentStep = 0
-		extractSprintTimer = setInterval(() => {
-			currentStep++
-			extractCurrentPercent = startPercent + (stepValue * currentStep)
+				// 🎯 核心逻辑：智能增长
+				if (currentDisplayProgress < targetProgress) {
+					// 情况1：当前进度小于目标进度，快速追赶
+					const diff = targetProgress - currentDisplayProgress
+					const step = Math.max(0.5, diff / 10) // 最小0.5%，最大差值的1/10
 
-			if (extractCurrentPercent >= 100) {
-				extractCurrentPercent = 100
-				clearInterval(extractSprintTimer)
-				extractSprintTimer = null
+					currentDisplayProgress = Math.min(
+						currentDisplayProgress + step,
+						targetProgress
+					)
+				} else if (currentDisplayProgress >= targetProgress && targetProgress < 100) {
+					// 情况2：已经追上目标进度，但任务未完成
 
-				// 显示100%并停留1秒
-				uni.showLoading({
-					title: `提取成功，提取进度：100%`,
-					mask: true
-				})
+					// 如果后端超过5秒没更新（可能卡住了），缓慢增长给用户反馈
+					if (timeSinceLastUpdate > 5000) {
+						// 缓慢增长，但不超过目标进度+5%
+						const maxAllowedProgress = Math.min(targetProgress + 5, 99)
 
-				setTimeout(() => {
-					uni.hideLoading()
-					// 显示提取成功弹窗
-					uni.showToast({
-						title: '信息提取完成',
-						icon: 'success',
-						duration: 2000
-					})
-				}, 1000)
+						if (currentDisplayProgress < maxAllowedProgress) {
+							// 每次增长0.1%，非常缓慢
+							currentDisplayProgress += 0.1
+							console.log(`[缓慢增长] 后端卡在 ${targetProgress}%，前端显示 ${Math.floor(currentDisplayProgress)}%`)
+						}
+					}
+				}
 
-				return
-			}
+				// 更新弹窗显示的进度
+				taskProgress.value = Math.floor(currentDisplayProgress)
 
-			uni.showLoading({
-				title: `正在提取项目信息，提取进度：${Math.floor(extractCurrentPercent)}%`,
-				mask: true
-			})
-		}, stepTime)
+				// 如果已经达到目标且目标是100%，停止计时器
+				if (currentDisplayProgress >= 99.9 && targetProgress >= 100) {
+					clearInterval(smoothProgressTimer)
+					smoothProgressTimer = null
+					currentDisplayProgress = 100
+					taskProgress.value = 100
+					taskState.value = 'success'
+					taskStatusText.value = '信息提取完成'
+
+					// 1秒后关闭弹窗并显示成功提示
+					setTimeout(() => {
+						taskProgressModal.value?.close()
+						uni.showToast({
+							title: '信息提取完成',
+							icon: 'success',
+							duration: 2000
+						})
+					}, 1000)
+				}
+			}, 50) // 每50ms更新一次，保证平滑
+		}
 	}
 
-	// 提取信息到项目基本表
+	// 清理进度计时器
+	function clearProgressTimer() {
+		if (smoothProgressTimer) {
+			clearInterval(smoothProgressTimer)
+			smoothProgressTimer = null
+		}
+		currentDisplayProgress = 0
+		targetProgress = 0
+		lastTargetProgress = 0
+		lastUpdateTime = 0
+		taskProgress.value = 0
+		taskStatusText.value = '正在初始化...'
+		taskState.value = 'running'
+	}
+
+	// 提取信息到项目基本表（使用自定义进度弹窗）
 	async function simulateExtract() {
 		// 1. 前置检查：没上传文件直接弹窗
 		uni.showLoading({
@@ -1047,7 +1073,7 @@
 		if (eiaFiles.value.length === 0) {
 			uni.showModal({
 				title: '提示',
-				content: '请先上传环评报告文件',
+				content: '请上传环评报告文件、批复文件等',
 				showCancel: false,
 				confirmText: '知道了'
 			})
@@ -1056,24 +1082,30 @@
 
 		extracting.value = true // 开始提取，按钮显示loading
 
-		// 2. 启动假进度条（2分30秒到99%）
-		startExtractFakeProgress(150000)
+		// 2. 清理之前的进度状态
+		clearProgressTimer()
 
-		// 3. 显示初始loading
-		uni.showLoading({
-			title: '请稍作等待，正在提取项目信息，预计2~3分钟哦',
-			mask: true
-		})
+		// 3. 初始化弹窗状态并打开
+		taskProgressTitle.value = '信息提取中'
+		taskProgress.value = 0
+		taskStatusText.value = '正在提交任务...'
+		taskState.value = 'pending'
+		taskProgressModal.value?.open()
 
 		try {
-			// 4. 调用后端，超时设为15分钟（900000毫秒），避免大文件超时
+			// 4. 调用后端异步任务，传入进度回调
 			const result = await runTask({
-				hideLoading: true, // 我们用uni.showLoading，所以这里隐藏
-				timeout: 900000 // 15分钟，足够解析100页PDF
+				// 进度回调函数：每次后端更新进度时调用
+				onProgress: (progress, statusText, state) => {
+					// 使用平滑进度更新（会自动更新响应式变量）
+					updateProgressSmooth(progress, statusText, state)
+				},
+				pollInterval: 3000, // 每3秒轮询一次
+				timeout: 1800000 // 30分钟超时
 			})
 
-			// 5. 收到后端成功响应，开始冲刺到100%
-			sprintExtractToComplete()
+			// 5. 任务完成，确保进度到100%
+			updateProgressSmooth(100, '任务完成', 'success')
 
 			// 6. 数据校验：确保后端真的返回了数据
 			if (result?.status !== 'success' || !result.result) {
@@ -1082,41 +1114,39 @@
 
 			// 7. 转换数据并填充表格（核心操作）
 			baseTable.value = transformExtractResult(result.result)
-			console.log("base表格", baseTable)
 
 			// 8. 缓存到本地（关键！刷新页面不丢失）
 			uni.setStorageSync('project_base_info', JSON.stringify(baseTable.value))
 
-			console.log('[Extract] 提取成功:', result)
-			// console.log('[Debug] baseTable:', baseTable.value.水污染物)
+			// 9. 标记提取完成
+			extractionOk.value = true
 
 		} catch (error) {
-			// 错误时清除所有进度条
-			extractProgressDone = true
-			if (extractProgressTimer) {
-				clearInterval(extractProgressTimer)
-				extractProgressTimer = null
-			}
-			if (extractSprintTimer) {
-				clearInterval(extractSprintTimer)
-				extractSprintTimer = null
-			}
-			uni.hideLoading()
+			// 错误时清除进度计时器并关闭弹窗
+			clearProgressTimer()
+			taskProgressModal.value?.close()
 
-			// 9. 错误分类处理，给用户看得懂的提示
+			// 10. 错误分类处理，给用户看得懂的提示
 			console.error('[Extract] 提取失败:', error)
 
-			if (error.message.includes('超时')) {
+			if (error.message.includes('超时') || error.message.includes('timeout')) {
 				uni.showModal({
-					title: '提取超时',
-					content: '文档过大或网络较慢，建议：\n1. 拆分成多个文件上传\n2. 检查网络连接\n3. 联系管理员',
+					title: '提取超时了！',
+					content: '任务执行时间过长，可能原因：\n1. 文档过大（建议<50MB）\n2. 网络不稳定\n3. 服务器繁忙\n\n建议稍后重试或联系管理员',
 					showCancel: false,
 					confirmText: '知道了'
 				})
 			} else if (error.message.includes('未提取到')) {
 				uni.showModal({
 					title: '提取失败',
-					content: '文档中未找到项目信息，请检查：\n1. 文件是否为完整的环评报告\n2. 文件内容是否清晰可读',
+					content: '文档中未找到项目信息，请检查：\n1. 文件是否为完整的环评报告\n2. 文件内容是否清晰可读\n3. 文件格式是否正确',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			} else if (error.message.includes('已有任务在运行')) {
+				uni.showModal({
+					title: '任务进行中',
+					content: '您已有一个信息提取任务正在运行，请等待完成后再提交新任务',
 					showCancel: false,
 					confirmText: '知道了'
 				})

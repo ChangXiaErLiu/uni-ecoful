@@ -6,8 +6,8 @@
 
 // 环境配置映射
 const ENV_CONFIG = {
-  development: 'http://172.16.1.176:8000',   //开发环境地址http://http://172.16.1.61:8000
-  production: 'https://api.yourdomain.com' // 生产环境地址
+  development: 'http://172.16.1.61:8000',   //开发环境地址http://http://172.16.1.61:8000
+  production: 'https://api.yourdomain.com' // 生产环境地址  172.16.1.176
 }
 
 // 根据 NODE_ENV 获取基础地址（HBuilderX 构建时自动注入）
