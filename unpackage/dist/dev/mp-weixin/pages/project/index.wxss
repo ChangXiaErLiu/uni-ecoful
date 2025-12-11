@@ -601,11 +601,17 @@
   display: flex;
   flex-direction: column;
   gap: 4rpx;
+  min-width: 0;
+  /* 允许内容收缩 */
 }
 .projects__document-name.data-v-47879d53 {
   font-size: 26rpx;
   color: #0f172a;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* 文本溢出显示省略号 */
 }
 .projects__document-meta.data-v-47879d53 {
   font-size: 22rpx;
@@ -615,6 +621,8 @@
   display: flex;
   align-items: center;
   gap: 8rpx;
+  flex-shrink: 0;
+  /* 防止按钮被挤压 */
   transition: opacity 0.3s ease;
 }
 .projects__document-action.data-v-47879d53 {
@@ -775,9 +783,16 @@ to {
   margin-top: 16rpx;
 }
 .upload-subtext.data-v-47879d53 {
+  font-size: 22rpx;
+  color: #94a3b8;
+  margin-top: 8rpx;
+}
+.upload-hint.data-v-47879d53 {
+  display: block;
   font-size: 24rpx;
   color: #64748b;
-  margin-top: 8rpx;
+  margin-top: 16rpx;
+  text-align: center;
 }
 .selected-file.data-v-47879d53 {
   display: flex;
@@ -796,6 +811,152 @@ to {
 }
 .file-size.data-v-47879d53 {
   font-size: 22rpx;
+  color: #64748b;
+}
+
+/* 批量上传进度样式 */
+.batch-upload-progress.data-v-47879d53 {
+  padding: 40rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  align-items: center;
+}
+.progress-info.data-v-47879d53 {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.progress-title.data-v-47879d53 {
+  font-size: 28rpx;
+  color: #0f172a;
+  font-weight: 600;
+}
+.progress-count.data-v-47879d53 {
+  font-size: 26rpx;
+  color: #3b82f6;
+  font-weight: 600;
+}
+.progress-bar-container.data-v-47879d53 {
+  width: 100%;
+  height: 16rpx;
+  background: #e2e8f0;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+.progress-bar-fill.data-v-47879d53 {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+.progress-percent.data-v-47879d53 {
+  font-size: 32rpx;
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+/* 已选文件列表样式 */
+.selected-files-list.data-v-47879d53 {
+  margin-top: 24rpx;
+  border: 2rpx solid #e2e8f0;
+  border-radius: 12rpx;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.selected-files-header.data-v-47879d53 {
+  padding: 20rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.selected-files-title.data-v-47879d53 {
+  font-size: 26rpx;
+  color: #0f172a;
+  font-weight: 600;
+}
+.selected-files-size.data-v-47879d53 {
+  font-size: 22rpx;
+  color: #64748b;
+}
+.selected-files-scroll.data-v-47879d53 {
+  max-height: 400rpx;
+}
+.selected-file-item.data-v-47879d53 {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 20rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #f1f5f9;
+}
+.selected-file-item.data-v-47879d53:last-child {
+  border-bottom: none;
+}
+.file-item-name.data-v-47879d53 {
+  flex: 1;
+  font-size: 24rpx;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-item-size.data-v-47879d53 {
+  font-size: 22rpx;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* 上传进度浮窗样式 */
+.upload-progress-float.data-v-47879d53 {
+  position: fixed;
+  bottom: 40rpx;
+  right: 40rpx;
+  z-index: 999;
+  animation: slideInUp-47879d53 0.3s ease;
+}
+@keyframes slideInUp-47879d53 {
+from {
+    opacity: 0;
+    transform: translateY(40rpx);
+}
+to {
+    opacity: 1;
+    transform: translateY(0);
+}
+}
+.progress-float-container.data-v-47879d53 {
+  background: #ffffff;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 32rpx rgba(15, 23, 42, 0.15);
+  border: 1rpx solid #e2e8f0;
+  width: 500rpx;
+  overflow: hidden;
+}
+.progress-float-header.data-v-47879d53 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f1f5f9;
+  background: #f8fafc;
+}
+.progress-float-title.data-v-47879d53 {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #0f172a;
+}
+.progress-float-content.data-v-47879d53 {
+  padding: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+.progress-message.data-v-47879d53 {
+  font-size: 24rpx;
   color: #64748b;
 }
 .modal-actions.data-v-47879d53 {

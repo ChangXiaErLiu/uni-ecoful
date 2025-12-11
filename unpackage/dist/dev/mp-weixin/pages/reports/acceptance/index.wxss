@@ -180,6 +180,9 @@
 .section-body.data-v-41308e16 {
   padding: 0 24rpx 24rpx;
 }
+.projectSel.data-v-41308e16 {
+  height: 100%;
+}
 
 /* 表单 */
 .form-group.data-v-41308e16 {
@@ -294,6 +297,82 @@
 }
 .icon-btn.data-v-41308e16:active {
   background: #f3f6fa;
+}
+
+/* 项目文件列表样式 */
+.file-list.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-top: 24rpx;
+}
+.file-item.data-v-41308e16 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx;
+  background: #f8fafb;
+  border-radius: 16rpx;
+  border: 2rpx solid #e5e9ed;
+  transition: all 0.2s;
+}
+.file-item.data-v-41308e16:hover {
+  background: #f3f6f9;
+  border-color: #d1dce5;
+}
+.file-info.data-v-41308e16 {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  flex: 1;
+  min-width: 0;
+}
+.file-details.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  flex: 1;
+  min-width: 0;
+}
+.file-name.data-v-41308e16 {
+  font-size: 28rpx;
+  color: #1f2937;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-meta.data-v-41308e16 {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+.file-status.data-v-41308e16 {
+  flex-shrink: 0;
+  margin-left: 20rpx;
+}
+.status-badge.data-v-41308e16 {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.status-uploaded.data-v-41308e16 {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+.status-processing.data-v-41308e16 {
+  background: #fef3c7;
+  color: #d97706;
+}
+.status-success.data-v-41308e16 {
+  background: #d1fae5;
+  color: #065f46;
+}
+.status-error.data-v-41308e16 {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 /* 基本信息表：响应式行 */
@@ -773,6 +852,15 @@
 
 /* 响应式设计 - 移动端 */
 @media (max-width: 768px) {
+.file-item.data-v-41308e16 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16rpx;
+}
+.file-status.data-v-41308e16 {
+    margin-left: 0;
+    align-self: flex-end;
+}
 .baseinfo__row.data-v-41308e16 {
     display: block;
     width: 54%;

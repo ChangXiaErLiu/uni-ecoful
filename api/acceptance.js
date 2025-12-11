@@ -99,6 +99,8 @@ export async function deleteFile(document_id) {
 /**
  * 执行任务（提取项目信息）- 异步版本
  * @param {Object} options - 选项
+ * @param {number} options.projectId - 项目ID（必填）
+ * @param {string} options.projectFolder - 项目文件夹名（必填）
  * @param {Function} options.onProgress - 进度回调函数 (progress, status) => void
  * @param {number} options.pollInterval - 轮询间隔（毫秒，默认3秒）
  * @param {number} options.timeout - 超时时间（毫秒，默认30分钟）
@@ -106,6 +108,8 @@ export async function deleteFile(document_id) {
  */
 export async function runTask(options = {}) {
 	const {
+		projectId = null,
+		projectFolder = null,
 		onProgress = null,
 		pollInterval = 3000, // 默认3秒轮询一次
 		timeout = 1800000 // 默认30分钟
@@ -115,6 +119,8 @@ export async function runTask(options = {}) {
 		// 第一步：提交异步任务
 		// console.log('📤 提交信息提取任务...')
 		const submitResult = await request.post('/api/v1/completion/extract-info/async/start', {
+			project_id: projectId,
+			project_folder: projectFolder,
 			project_data: {}
 		})
 

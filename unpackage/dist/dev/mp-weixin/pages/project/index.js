@@ -38,6 +38,15 @@ const _sfc_main = {
     });
     const selectedFile = common_vendor.ref(null);
     const uploadProgress = common_vendor.ref(0);
+    const selectedFiles = common_vendor.ref([]);
+    const batchUploading = common_vendor.ref(false);
+    const batchProgress = common_vendor.ref(0);
+    const batchTaskId = common_vendor.ref(null);
+    const batchCurrent = common_vendor.ref(0);
+    const batchTotal = common_vendor.ref(0);
+    const batchMessage = common_vendor.ref("");
+    const showUploadProgress = common_vendor.ref(false);
+    let pollTimer = null;
     const filteredProjects = common_vendor.computed(() => {
       return projects.value.filter((project) => !project.is_deleted);
     });
@@ -49,7 +58,7 @@ const _sfc_main = {
           await switchProject(response[0].id);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:329", "加载项目列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:386", "加载项目列表失败:", error);
         common_vendor.index.showToast({
           title: "加载项目列表失败",
           icon: "error"
@@ -62,7 +71,7 @@ const _sfc_main = {
         activeProject.value = response;
         await loadProjectDocuments(projectId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:346", "加载项目详情失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:403", "加载项目详情失败:", error);
         common_vendor.index.showToast({
           title: "加载项目详情失败",
           icon: "error"
@@ -77,7 +86,7 @@ const _sfc_main = {
           activeProject.value.documents = documents.value;
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:366", "加载项目文档失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:423", "加载项目文档失败:", error);
       }
     };
     const switchProject = async (projectId) => {
@@ -117,7 +126,7 @@ const _sfc_main = {
         await loadProjects();
         await switchProject(response.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:423", "创建项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:480", "创建项目失败:", error);
         common_vendor.index.showToast({
           title: "创建项目失败",
           icon: "error"
@@ -141,7 +150,7 @@ const _sfc_main = {
         });
         showEditProjectModal.value = true;
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:452", "编辑项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:509", "编辑项目失败:", error);
         common_vendor.index.showToast({
           title: "编辑项目失败",
           icon: "error"
@@ -171,7 +180,7 @@ const _sfc_main = {
         await loadProjects();
         await loadProjectDetail(editProjectForm.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:491", "更新项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:548", "更新项目失败:", error);
         common_vendor.index.showToast({
           title: "更新项目失败",
           icon: "error"
@@ -203,7 +212,7 @@ const _sfc_main = {
           }
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:532", "删除项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:589", "删除项目失败:", error);
         common_vendor.index.showToast({
           title: "删除项目失败",
           icon: "error"
@@ -237,58 +246,190 @@ const _sfc_main = {
       });
     };
     const confirmUpload = async () => {
+      if (selectedFiles.value.length > 0) {
+        const filesToUpload = [...selectedFiles.value];
+        const totalFiles = filesToUpload.length;
+        showUploadModal.value = false;
+        selectedFile.value = null;
+        selectedFiles.value = [];
+        uploadProgress.value = 0;
+        showUploadProgress.value = true;
+        batchUploading.value = true;
+        batchProgress.value = 0;
+        batchCurrent.value = 0;
+        batchTotal.value = totalFiles;
+        batchMessage.value = "准备上传...";
+        try {
+          const result = await api_project.batchUploadProjectFiles(activeProjectId.value, filesToUpload);
+          batchTaskId.value = result.task_id;
+          batchMessage.value = "正在处理文件...";
+          startPollingTaskStatus();
+        } catch (e) {
+          batchUploading.value = false;
+          showUploadProgress.value = false;
+          common_vendor.index.showModal({
+            title: "上传失败",
+            content: e.message || "批量上传失败，请重试",
+            showCancel: false
+          });
+        }
+        return;
+      }
       if (!selectedFile.value)
         return;
+      const fileToUpload = selectedFile.value;
+      closeUploadModal();
       common_vendor.index.showLoading({
         title: "上传中...",
         mask: true
       });
       try {
-        await api_project.uploadProjectFile(activeProjectId.value, selectedFile.value);
+        await api_project.uploadProjectFile(activeProjectId.value, fileToUpload);
+        common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "上传成功",
-          icon: "success"
+          icon: "success",
+          duration: 2e3
         });
-        closeUploadModal();
         await loadProjectDocuments(activeProjectId.value);
       } catch (e) {
-        common_vendor.index.showToast({
-          title: e.message || "上传失败",
-          icon: "error"
-        });
-      } finally {
         common_vendor.index.hideLoading();
+        common_vendor.index.showModal({
+          title: "上传失败",
+          content: e.message || "文件上传失败，请重试",
+          showCancel: false
+        });
+      }
+    };
+    const startPollingTaskStatus = () => {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+      }
+      pollTimer = setInterval(async () => {
+        try {
+          const status = await api_project.getTaskStatus(batchTaskId.value);
+          batchProgress.value = status.progress;
+          batchCurrent.value = status.current;
+          batchTotal.value = status.total;
+          batchMessage.value = status.message;
+          if (status.status === "success" || status.status === "failed") {
+            stopPollingTaskStatus();
+            batchUploading.value = false;
+            await loadProjectDocuments(activeProjectId.value);
+            if (status.status === "success") {
+              const successCount = status.success_count || 0;
+              const failedCount = status.failed_count || 0;
+              const total = status.total || 0;
+              common_vendor.index.__f__("log", "at pages/project/index.vue:794", "成功数量:", successCount, "失败数量:", failedCount, "总数:", total);
+              let content = "";
+              if (failedCount === 0) {
+                content = `全部上传成功！共 ${successCount} 个文件`;
+              } else {
+                content = `上传完成！
+成功：${successCount} 个
+失败：${failedCount} 个`;
+                if (status.failed_files && status.failed_files.length > 0) {
+                  content += `
+
+失败文件：
+${status.failed_files.slice(0, 3).join("\n")}`;
+                  if (status.failed_files.length > 3) {
+                    content += `
+...等${status.failed_files.length}个文件`;
+                  }
+                }
+              }
+              common_vendor.index.showModal({
+                title: "上传结果",
+                content,
+                showCancel: false,
+                confirmText: "知道了"
+              });
+            } else {
+              common_vendor.index.showModal({
+                title: "上传失败",
+                content: status.message || "文件上传失败，请重试",
+                showCancel: false
+              });
+            }
+            setTimeout(() => {
+              showUploadProgress.value = false;
+            }, 1e3);
+          }
+        } catch (e) {
+          common_vendor.index.__f__("error", "at pages/project/index.vue:829", "轮询任务状态失败:", e);
+          stopPollingTaskStatus();
+          batchUploading.value = false;
+          showUploadProgress.value = false;
+          common_vendor.index.showModal({
+            title: "错误",
+            content: "查询上传状态失败，请刷新页面查看结果",
+            showCancel: false
+          });
+        }
+      }, 3e3);
+    };
+    const stopPollingTaskStatus = () => {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
       }
     };
     const closeUploadModal = () => {
       showUploadModal.value = false;
       selectedFile.value = null;
+      selectedFiles.value = [];
       uploadProgress.value = 0;
+    };
+    const closeUploadProgress = () => {
+      if (batchUploading.value) {
+        common_vendor.index.showToast({
+          title: "文件上传中，请稍候...",
+          icon: "none"
+        });
+        return;
+      }
+      stopPollingTaskStatus();
+      showUploadProgress.value = false;
+      batchProgress.value = 0;
+      batchTaskId.value = null;
+      batchCurrent.value = 0;
+      batchTotal.value = 0;
+      batchMessage.value = "";
     };
     const downloadDocument = async (doc) => {
       common_vendor.index.showLoading({
-        title: "准备下载...",
+        title: "下载中...",
         mask: true
       });
       try {
-        const blob = await api_project.downloadProjectFile(activeProjectId.value, doc.document_id);
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = doc.name;
-        link.click();
-        URL.revokeObjectURL(url);
-        common_vendor.index.showToast({
-          title: "下载成功",
-          icon: "success"
+        const tempFilePath = await api_project.downloadProjectFile(activeProjectId.value, doc.document_id);
+        common_vendor.index.hideLoading();
+        common_vendor.index.openDocument({
+          filePath: tempFilePath,
+          showMenu: true,
+          fileType: doc.file_extension.replace(".", ""),
+          success: () => {
+            common_vendor.index.showToast({
+              title: "打开成功",
+              icon: "success"
+            });
+          },
+          fail: (err) => {
+            common_vendor.index.__f__("log", "at pages/project/index.vue:927", "打开文档失败:", err);
+            common_vendor.index.showModal({
+              title: "提示",
+              content: "文件已下载，但当前文件类型不支持预览。文件已保存到微信文件中。",
+              showCancel: false
+            });
+          }
         });
       } catch (e) {
+        common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "下载失败",
           icon: "error"
         });
-      } finally {
-        common_vendor.index.hideLoading();
       }
     };
     const deleteDocument = async (documentId) => {
@@ -322,8 +463,8 @@ const _sfc_main = {
         ".xls": "/static/fileType/excel.png",
         ".xlsx": "/static/fileType/excel.png",
         ".png": "/static/fileType/picture.png",
-        ".jpg": "/static/fileType/image.png",
-        ".jpeg": "/static/fileType/image.png",
+        ".jpg": "/static/fileType/picture.png",
+        ".jpeg": "/static/fileType/picture.png",
         ".md": "/static/fileType/md.png",
         ".txt": "/static/fileType/txt.png"
       };
@@ -431,7 +572,7 @@ const _sfc_main = {
             e: "47879d53-10-" + i0 + ",47879d53-0",
             f: common_vendor.o(() => downloadDocument(document2), document2.id),
             g: "47879d53-11-" + i0 + ",47879d53-0",
-            h: common_vendor.o(() => deleteDocument(document2.id), document2.id),
+            h: common_vendor.o(() => deleteDocument(document2.document_id), document2.id),
             i: document2.id
           };
         }),
@@ -524,11 +665,46 @@ const _sfc_main = {
         ae: common_vendor.t(selectedFile.value.name),
         af: common_vendor.t(fmtSize(selectedFile.value.size))
       } : {}, {
-        ag: common_vendor.o(closeUploadModal),
-        ah: common_vendor.o(confirmUpload),
-        ai: !selectedFile.value
+        ag: selectedFiles.value.length > 0
+      }, selectedFiles.value.length > 0 ? {
+        ah: common_vendor.t(selectedFiles.value.length),
+        ai: common_vendor.t(fmtSize(selectedFiles.value.reduce((sum, f) => sum + f.size, 0))),
+        aj: common_vendor.f(selectedFiles.value, (file, index, i0) => {
+          return {
+            a: "47879d53-20-" + i0 + ",47879d53-0",
+            b: common_vendor.t(file.name),
+            c: common_vendor.t(fmtSize(file.size)),
+            d: index
+          };
+        }),
+        ak: common_vendor.p({
+          type: "document",
+          size: "16",
+          color: "#3b82f6"
+        })
+      } : {}, {
+        al: common_vendor.o(closeUploadModal),
+        am: common_vendor.o(confirmUpload),
+        an: !selectedFile.value && selectedFiles.value.length === 0
       }) : {}, {
-        aj: common_vendor.p({
+        ao: showUploadProgress.value
+      }, showUploadProgress.value ? common_vendor.e({
+        ap: !batchUploading.value
+      }, !batchUploading.value ? {
+        aq: common_vendor.o(closeUploadProgress),
+        ar: common_vendor.p({
+          type: "close",
+          size: "20",
+          color: "#64748b"
+        })
+      } : {}, {
+        as: common_vendor.t(batchMessage.value),
+        at: common_vendor.t(batchCurrent.value),
+        av: common_vendor.t(batchTotal.value),
+        aw: batchProgress.value + "%",
+        ax: common_vendor.t(batchProgress.value)
+      }) : {}, {
+        ay: common_vendor.p({
           current: "pages/projects/index"
         })
       });

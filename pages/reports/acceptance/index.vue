@@ -29,28 +29,93 @@
 			<!-- 主要内容区域 -->
 			<view class="acceptance-content">
 				<scroll-view class="content-scroll" scroll-y>
-					<!-- 步骤1: 资料上传 -->
+					<!-- 步骤1: 选择项目 -->
 					<view v-show="currentStep === 0" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
-								<uni-icons type="cloud-upload" size="20" color="#166534" />
-								<text class="section-title">资料上传</text>
+								<uni-icons type="folder" size="20" color="#166534" />
+								<text class="section-title">选择项目</text>
 							</view>
 							<view class="section-body">
+								<!-- 项目选择 -->
 								<view class="form-group">
-									<text class="form-label">请上传环评报告书/报告表/批复文件/其他资料等</text>
-									<text class="form-tip">支持 PDF、Word、图片等格式，单次上传最多 9 个文件</text>
-									<ecoFilePicker file-mediatype="all"
-										file-extname="pdf,docx,md,doc,ppt,pptx,png,jpg,jpeg" v-model="eiaFiles"
-										fileMediatype="all" :auto-upload="false" limit="50" @select="handleFileSelect"
-										@delete="handleFileDelete">
-									</ecoFilePicker>
+									<text class="form-label">请选择要进行竣工验收的项目</text>
+									<text class="form-tip">项目文件已在项目管理模块上传并自动处理</text>
+									
+									<!-- 使用 uni-data-select 组件 -->
+									<uni-data-select 
+										class="projectSel"
+										v-model="selectedProjectId" 
+										:localdata="projectSelectOptions"
+										placeholder="请选择项目"
+										@change="onProjectChange"
+									/>
+								</view>
+
+								<!-- 项目文件列表（只读） -->
+								<view v-if="selectedProjectId && projectFiles.length > 0" class="subsection">
+									<view class="subsection-head">
+										<uni-icons type="paperclip" size="18" color="#166534" />
+										<text class="subsection-title">项目文件列表（{{ projectFiles.length }} 个文件）</text>
+									</view>
+									
+									<view class="file-list">
+										<view 
+											v-for="file in projectFiles" 
+											:key="file.document_id" 
+											class="file-item"
+										>
+											<view class="file-info">
+												<uni-icons 
+													:type="getFileIcon(file.file_extension)" 
+													size="20" 
+													color="#166534" 
+												/>
+												<view class="file-details">
+													<text class="file-name">{{ file.filename }}</text>
+													<text class="file-meta">
+														{{ formatFileSize(file.size_bytes) }} · 
+														{{ formatFileStatus(file.status) }}
+													</text>
+												</view>
+											</view>
+											<view class="file-status">
+												<text 
+													class="status-badge" 
+													:class="getStatusClass(file.status)"
+												>
+													{{ getStatusText(file.status) }}
+												</text>
+											</view>
+										</view>
+									</view>
+								</view>
+
+								<!-- 空状态提示 -->
+								<view v-else-if="selectedProjectId && projectFiles.length === 0" class="empty-state">
+									<uni-icons type="folder-add" size="48" color="#cbd5e1" />
+									<text class="empty-text">该项目暂无文件</text>
+									<text class="empty-tip">请先在项目管理模块上传文件</text>
 								</view>
 
 								<view class="action-row">
-									<button class="btn btn--primary" @tap="simulateExtract">
+									<button 
+										class="btn btn--primary" 
+										@tap="simulateExtract"
+										:disabled="!selectedProjectId || projectFiles.length === 0"
+									>
 										<uni-icons type="search" size="16" color="#ffffff" />
 										<text>提取项目基本信息</text>
+									</button>
+									
+									<!-- 清除缓存按钮（只在有缓存数据时显示） -->
+									<button 
+										v-if="baseTable.length > 0"
+										class="btn btn--ghost" 
+										@tap="clearProjectCache"
+									>
+										<uni-icons type="trash" size="16" color="#dc2626" />
+										<text>清除缓存</text>
 									</button>
 								</view>
 
@@ -675,6 +740,60 @@
 		:state="taskState"
 		:cancelable="false"
 	/>
+
+	<!-- 项目选择弹窗 -->
+	<uni-popup ref="projectPickerPopup" type="center" :mask-click="true">
+		<view class="project-picker-modal">
+			<view class="picker-header">
+				<text class="picker-title">选择项目</text>
+				<view class="picker-close" @tap="closeProjectPicker">
+					<uni-icons type="close" size="20" color="#6b7280" />
+				</view>
+			</view>
+
+			<!-- 搜索框 -->
+			<view class="picker-search">
+				<uni-easyinput 
+					v-model="projectSearchKeyword" 
+					placeholder="搜索项目名称"
+					prefixIcon="search"
+					:clearable="true"
+				/>
+			</view>
+
+			<!-- 项目列表 -->
+			<scroll-view class="picker-list" scroll-y>
+				<view 
+					v-for="project in filteredProjects" 
+					:key="project.id"
+					class="picker-item"
+					:class="{ 'picker-item--active': selectedProjectId === project.id }"
+					@tap="selectProject(project)"
+				>
+					<view class="picker-item-content">
+						<text class="picker-item-name">{{ project.name }}</text>
+						<text v-if="project.description" class="picker-item-desc">
+							{{ project.description }}
+						</text>
+					</view>
+					<uni-icons 
+						v-if="selectedProjectId === project.id" 
+						type="checkmarkempty" 
+						size="20" 
+						color="#166534" 
+					/>
+				</view>
+
+				<!-- 空状态 -->
+				<view v-if="filteredProjects.length === 0" class="picker-empty">
+					<uni-icons type="search" size="48" color="#cbd5e1" />
+					<text class="picker-empty-text">
+						{{ projectSearchKeyword ? '未找到匹配的项目' : '暂无项目' }}
+					</text>
+				</view>
+			</scroll-view>
+		</view>
+	</uni-popup>
 </template>
 
 <script setup>
@@ -693,18 +812,14 @@
 		onShow,
 		onLoad
 	} from '@dcloudio/uni-app'
-	import ecoFilePicker from '@/components/eco-file-picker/uni-file-picker.vue'
 	import TaskProgressModal from '@/components/message-pop-up/TaskProgressModal.vue'
 	import {
 		navTitleStore
 	} from '@/stores/navTitle.js'
 	import {
-		uploadFileToBackend,
 		runTask,
 		transformExtractResult,
 		downloadSignboardWord,
-		fetchUploadedFiles,
-		deleteFile,
 		downloadMonitorPlan
 	} from '@/api/acceptance.js'
 
@@ -776,191 +891,242 @@
 	}
 
 	// 以下提取项目基本信息模块的方法--------------------------
-	// 限制文件格式
-	const ALLOWED_EXTS = [
-		'pdf', 'doc', 'docx', 'txt', 'md',
-		'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'
-	]
 
-	// 最大上传个数
-	const MAX_FILES = 100
+	// 项目选择相关
+	const selectedProjectId = ref(null) // 选中的项目ID
+	const selectedProject = ref(null) // 选中的项目对象
+	const projectList = ref([]) // 完整项目列表
+	const projectFiles = ref([]) // 项目文件列表
 
-	// 上传文件与提取信息
-	const eiaFiles = ref([])
+	// uni-data-select 组件的数据格式
+	const projectSelectOptions = computed(() => {
+		return projectList.value.map(project => ({
+			value: project.id,
+			text: project.name
+		}))
+	})
 
-
-	// 刷新已上传的文件列表
-	async function loadFileListOnMount() {
-		const files = await fetchUploadedFiles()
-		eiaFiles.value = files
+	// 加载项目列表
+	async function loadProjects() {
+		try {
+			const { getProjects } = await import('@/api/project.js')
+			const response = await getProjects()
+			
+			projectList.value = response || []
+			
+			console.log('项目列表加载成功:', projectList.value.length, '个项目')
+		} catch (error) {
+			console.error('加载项目列表失败:', error)
+			uni.showToast({
+				title: '加载项目列表失败',
+				icon: 'none'
+			})
+		}
 	}
+
+	// uni-data-select 的 change 事件处理
+	async function onProjectChange(e) {
+		// uni-data-select 的 change 事件返回选中的值
+		const projectId = typeof e === 'number' ? e : (e?.detail?.value || e)
+		console.log('选择项目 ID:', projectId)
+		
+		if (!projectId) return
+		
+		// 从项目列表中找到对应的项目对象
+		const project = projectList.value.find(p => p.id === projectId)
+		if (project) {
+			selectedProject.value = project
+			console.log('选择项目:', project.name)
+			
+			// 加载项目文件列表
+			await loadProjectFiles(projectId)
+			
+			// 加载该项目的缓存数据
+			loadProjectCache(projectId)
+		}
+	}
+
+	// 加载项目文件列表
+	async function loadProjectFiles(projectId) {
+		try {
+			uni.showLoading({ title: '加载文件列表...', mask: true })
+			
+			const { getProjectDocuments } = await import('@/api/project.js')
+			const response = await getProjectDocuments(projectId)
+			
+			// 确保 projectFiles 始终是数组
+			// 后端可能返回 { documents: [...], total: 10 } 或直接返回数组
+			if (Array.isArray(response)) {
+				projectFiles.value = response
+			} else if (response && Array.isArray(response.documents)) {
+				projectFiles.value = response.documents
+			} else {
+				projectFiles.value = []
+			}
+			
+			console.log('项目文件列表:', projectFiles.value)
+			
+			uni.hideLoading()
+			
+			if (projectFiles.value.length === 0) {
+				uni.showToast({
+					title: '该项目暂无文件',
+					icon: 'none'
+				})
+			}
+		} catch (error) {
+			console.error('加载项目文件失败:', error)
+			uni.hideLoading()
+			uni.showToast({
+				title: '加载文件列表失败',
+				icon: 'none'
+			})
+			projectFiles.value = [] // 确保出错时也是数组
+		}
+	}
+
+	// 文件图标映射
+	function getFileIcon(extension) {
+		const ext = (extension || '').toLowerCase().replace('.', '')
+		const iconMap = {
+			'pdf': 'paperplane',
+			'doc': 'compose',
+			'docx': 'compose',
+			'xls': 'bars',
+			'xlsx': 'bars',
+			'ppt': 'image',
+			'pptx': 'image',
+			'md': 'compose',
+			'txt': 'compose',
+			'jpg': 'image',
+			'jpeg': 'image',
+			'png': 'image',
+			'gif': 'image'
+		}
+		return iconMap[ext] || 'paperclip'
+	}
+
+	// 格式化文件大小
+	function formatFileSize(bytes) {
+		if (!bytes) return '0 B'
+		const k = 1024
+		const sizes = ['B', 'KB', 'MB', 'GB']
+		const i = Math.floor(Math.log(bytes) / Math.log(k))
+		return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+	}
+
+	// 格式化文件状态
+	function formatFileStatus(status) {
+		const statusMap = {
+			'uploaded': '已上传',
+			'converting': '转换中',
+			'converted': '已转换',
+			'vectorizing': '向量化中',
+			'indexed': '已索引',
+			'failed': '处理失败'
+		}
+		return statusMap[status] || status
+	}
+
+	// 获取状态文本
+	function getStatusText(status) {
+		const statusMap = {
+			'uploaded': '已上传',
+			'converting': '转换中',
+			'converted': '已转换',
+			'vectorizing': '处理中',
+			'indexed': '✓ 已就绪',
+			'failed': '失败'
+		}
+		return statusMap[status] || status
+	}
+
+	// 获取状态样式类
+	function getStatusClass(status) {
+		const classMap = {
+			'uploaded': 'status-uploaded',
+			'converting': 'status-processing',
+			'converted': 'status-processing',
+			'vectorizing': 'status-processing',
+			'indexed': 'status-success',
+			'failed': 'status-error'
+		}
+		return classMap[status] || ''
+	}
+
+	// 加载项目缓存数据
+	function loadProjectCache(projectId) {
+		if (!projectId) return
+		
+		const cacheKey = `project_base_info_${projectId}`
+		const cachedData = uni.getStorageSync(cacheKey)
+		
+		if (cachedData) {
+			try {
+				baseTable.value = JSON.parse(cachedData)
+				extractionOk.value = true
+				console.log(`✅ 已加载项目 ${projectId} 的缓存数据`)
+				
+				uni.showToast({
+					title: '已加载缓存数据',
+					icon: 'success',
+					duration: 1500
+				})
+			} catch (error) {
+				console.error('解析缓存数据失败:', error)
+				baseTable.value = []
+				extractionOk.value = false
+			}
+		} else {
+			// 没有缓存，清空数据
+			baseTable.value = []
+			extractionOk.value = false
+			console.log(`ℹ️ 项目 ${projectId} 暂无缓存数据`)
+		}
+	}
+	
+	// 清除当前项目的缓存
+	function clearProjectCache() {
+		if (!selectedProjectId.value) {
+			uni.showToast({
+				title: '请先选择项目',
+				icon: 'none'
+			})
+			return
+		}
+		
+		uni.showModal({
+			title: '清除缓存',
+			content: '确定要清除当前项目的缓存数据吗？清除后需要重新提取信息。',
+			success: (res) => {
+				if (res.confirm) {
+					const cacheKey = `project_base_info_${selectedProjectId.value}`
+					uni.removeStorageSync(cacheKey)
+					
+					// 清空当前显示的数据
+					baseTable.value = []
+					extractionOk.value = false
+					
+					console.log(`🗑️ 已清除项目 ${selectedProjectId.value} 的缓存`)
+					
+					uni.showToast({
+						title: '缓存已清除',
+						icon: 'success'
+					})
+				}
+			}
+		})
+	}
+
+	// 页面加载时获取项目列表
+	onLoad(() => {
+		loadProjects()
+	})
 
 	const extracting = ref(false) // 提取状态
 	const extractError = ref('') // 提取错误状态
 
-	// 文件类型检查
-	function checkFileType(fileName) {
-		const ext = (fileName || '').split('.').pop().toLowerCase()
-		return {
-			isSupported: ALLOWED_EXTS.includes(ext), // 是否支持解析
-			ext,
-			displayName: fileName
-		}
-	}
 
-	// 统一提示逻辑
-	function showUploadResult({
-		successCount,
-		failCount,
-		total
-	}) {
-		if (failCount === 0 && successCount === total) {
-			uni.showToast({
-				title: `上传成功 (${successCount}个文件)`,
-				icon: 'success',
-				duration: 2000
-			})
-		} else if (failCount === total) {
-			uni.showToast({
-				title: `全部上传失败 (${failCount}个)`,
-				icon: 'none'
-			})
-		} else {
-			uni.showToast({
-				title: `完成: 成功${successCount}, 失败${failCount}`,
-				icon: 'none'
-			})
-		}
-	}
-
-	// 上传文件
-	async function handleFileSelect(e) {
-		const selectedFiles = e.tempFiles || (e.tempFile ? [e.tempFile] : [])
-		if (!selectedFiles?.length) return
-
-		const remaining = MAX_FILES - eiaFiles.value.length
-		if (remaining <= 0) {
-			uni.showToast({
-				title: `最多只能上传${MAX_FILES}个文件`,
-				icon: 'none'
-			})
-			return
-		}
-
-		const unsupportedFiles = []
-		const supportedFiles = selectedFiles
-			.filter(file => {
-				const ext = (file.name || file.filename || '').split('.').pop().toLowerCase()
-				const isAllowed = ALLOWED_EXTS.includes(ext)
-				if (!isAllowed) unsupportedFiles.push(file.name || file.filename)
-				return isAllowed
-			})
-			.slice(0, remaining)
-
-		if (unsupportedFiles.length > 0) {
-			const names = unsupportedFiles.slice(0, 3).join(', ')
-			const more = unsupportedFiles.length > 3 ? ` 等${unsupportedFiles.length}个` : '文件'
-			uni.showModal({
-				title: '不支持的文件格式',
-				content: `以下${more}不支持上传：\n${names}${unsupportedFiles.length > 3 ? '...' : ''}`,
-				showCancel: false,
-				confirmText: '知道了'
-			})
-		}
-
-		if (supportedFiles.length > 0) {
-			eiaFiles.value = [...eiaFiles.value, ...supportedFiles]
-		}
-		if (supportedFiles.length === 0) return
-
-		// 显示上传中提示
-		uni.showLoading({
-			title: '正在上传文件...',
-			mask: true
-		})
-
-		const stats = {
-			successCount: 0,
-			failCount: 0,
-			total: supportedFiles.length
-		}
-
-		for (let i = 0; i < supportedFiles.length; i++) {
-			const file = supportedFiles[i]
-			try {
-				const result = await uploadFileToBackend(file)
-				stats.successCount++
-				await loadFileListOnMount()
-				console.log(`文件已上传: ${result.filename}`)
-			} catch (error) {
-				stats.failCount++
-				console.error(`❌ 文件 ${i + 1} 上传失败:`, error)
-
-				uni.hideLoading()
-
-				if (supportedFiles.length === 1) {
-					uni.showToast({
-						title: error.message || '上传失败',
-						icon: 'none'
-					})
-					return
-				}
-			}
-		}
-
-		uni.hideLoading()
-
-		// 显示上传结果
-		showUploadResult(stats)
-	}
-
-	// 删除上传的文件
-	async function handleFileDelete(e) {
-		const file = e.tempFile // ecoFilePicker 返回被删文件对象
-		if (!file || !file.document_id) return
-
-		/* 1. 删除前确认（组件已经自动删除了文件）*/
-		const confirm = await new Promise(resolve => {
-			uni.showModal({
-				title: '确认删除？',
-				content: `确定删除文件 "${file.name}" 吗？`,
-				confirmText: '删除',
-				confirmColor: '#E64340',
-				success: res => resolve(res.confirm)
-			})
-		})
-
-		if (!confirm) {
-			// 用户取消删除，从后端重新加载文件列表恢复界面
-			await loadFileListOnMount()
-			return
-		}
-
-		// 用户确认删除，继续执行删除操作（文件已经从界面消失了）
-
-		try {
-			/* 2. 调后端真正删除 */
-			await deleteFile(file.document_id)
-
-			/* 3. 删除成功后刷新列表（保证与后端一致）*/
-			await loadFileListOnMount()
-
-			uni.showToast({
-				title: '文件已删除',
-				icon: 'success'
-			})
-		} catch (err) {
-			console.error('删除失败:', err)
-
-			/* 4. 删除失败，重新加载列表恢复正确状态 */
-			await loadFileListOnMount()
-
-			uni.showToast({
-				title: '删除失败，请重试',
-				icon: 'none'
-			})
-		}
-	}
 
 	/* 提取信息的进度条 - 智能平滑进度版本（使用自定义弹窗）*/
 	// 进度平滑处理
@@ -1062,18 +1228,34 @@
 
 	// 提取信息到项目基本表（使用自定义进度弹窗）
 	async function simulateExtract() {
-		// 1. 前置检查：没上传文件直接弹窗
-		uni.showLoading({
-			title: '检查文件...',
-			mask: true
-		})
-		await loadFileListOnMount()
-		uni.hideLoading()
-
-		if (eiaFiles.value.length === 0) {
+		// 1. 前置检查：是否选择了项目
+		if (!selectedProjectId.value) {
 			uni.showModal({
 				title: '提示',
-				content: '请上传环评报告文件、批复文件等',
+				content: '请先选择一个项目',
+				showCancel: false,
+				confirmText: '知道了'
+			})
+			return
+		}
+
+		// 2. 检查项目是否有文件
+		if (projectFiles.value.length === 0) {
+			uni.showModal({
+				title: '提示',
+				content: '该项目暂无文件，请先在项目管理模块上传文件',
+				showCancel: false,
+				confirmText: '知道了'
+			})
+			return
+		}
+
+		// 3. 检查文件是否已索引（至少有一个文件状态为 indexed）
+		const hasIndexedFiles = projectFiles.value.some(file => file.status === 'indexed')
+		if (!hasIndexedFiles) {
+			uni.showModal({
+				title: '提示',
+				content: '项目文件正在处理中，请稍后再试',
 				showCancel: false,
 				confirmText: '知道了'
 			})
@@ -1093,8 +1275,15 @@
 		taskProgressModal.value?.open()
 
 		try {
-			// 4. 调用后端异步任务，传入进度回调
+			// 4. 调用后端异步任务，传入项目信息和进度回调
+			console.log('准备提交任务，项目信息:')
+			console.log('- projectId:', selectedProjectId.value)
+			console.log('- selectedProject:', JSON.stringify(selectedProject.value, null, 2))
+			console.log('- folder_name:', selectedProject.value?.folder_name)
+			
 			const result = await runTask({
+				projectId: selectedProjectId.value,
+				projectFolder: selectedProject.value.folder_name,
 				// 进度回调函数：每次后端更新进度时调用
 				onProgress: (progress, statusText, state) => {
 					// 使用平滑进度更新（会自动更新响应式变量）
@@ -1115,8 +1304,10 @@
 			// 7. 转换数据并填充表格（核心操作）
 			baseTable.value = transformExtractResult(result.result)
 
-			// 8. 缓存到本地（关键！刷新页面不丢失）
-			uni.setStorageSync('project_base_info', JSON.stringify(baseTable.value))
+			// 8. 缓存到本地（关键！使用项目ID作为key，每个项目独立缓存）
+			const cacheKey = `project_base_info_${selectedProjectId.value}`
+			uni.setStorageSync(cacheKey, JSON.stringify(baseTable.value))
+			console.log(`✅ 项目 ${selectedProjectId.value} 的数据已缓存`)
 
 			// 9. 标记提取完成
 			extractionOk.value = true
@@ -2364,19 +2555,18 @@
 
 
 	// 在页面加载时，恢复基本信息表缓存
-	onLoad(() => {
-		loadFileListOnMount()
-		const cached = uni.getStorageSync('project_base_info')
-		if (cached) {
-			try {
-				baseTable.value = JSON.parse(cached)
-				console.log('[Cache] 恢复缓存的项目信息，共', baseTable.value.length, '条')
-				// console.log('baseTable项目信息，', baseTable.value)
-			} catch (e) {
-				console.warn('[Cache] 缓存数据解析失败:', e)
-			}
-		}
-	})
+	// onLoad(() => {
+	// 	const cached = uni.getStorageSync('project_base_info')
+	// 	if (cached) {
+	// 		try {
+	// 			baseTable.value = JSON.parse(cached)
+	// 			console.log('[Cache] 恢复缓存的项目信息，共', baseTable.value.length, '条')
+	// 			// console.log('baseTable项目信息，', baseTable.value)
+	// 		} catch (e) {
+	// 			console.warn('[Cache] 缓存数据解析失败:', e)
+	// 		}
+	// 	}
+	// })
 </script>
 
 <style lang="scss" scoped>
@@ -2576,6 +2766,11 @@
 	.section-body {
 		padding: 0 24rpx 24rpx;
 	}
+	.projectSel{
+		height: 100%;
+		// position: absolute;
+	}
+	
 
 	/* 表单 */
 	.form-group {
@@ -2709,6 +2904,95 @@
 	.icon-btn:active {
 		background: #f3f6fa;
 	}
+	
+	/* 项目文件列表样式 */
+	.file-list {
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+		margin-top: 24rpx;
+	}
+	
+	.file-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 24rpx;
+		background: #f8fafb;
+		border-radius: 16rpx;
+		border: 2rpx solid #e5e9ed;
+		transition: all 0.2s;
+	}
+	
+	.file-item:hover {
+		background: #f3f6f9;
+		border-color: #d1dce5;
+	}
+	
+	.file-info {
+		display: flex;
+		align-items: center;
+		gap: 20rpx;
+		flex: 1;
+		min-width: 0;
+	}
+	
+	.file-details {
+		display: flex;
+		flex-direction: column;
+		gap: 8rpx;
+		flex: 1;
+		min-width: 0;
+	}
+	
+	.file-name {
+		font-size: 28rpx;
+		color: #1f2937;
+		font-weight: 500;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	
+	.file-meta {
+		font-size: 24rpx;
+		color: #6b7280;
+	}
+	
+	.file-status {
+		flex-shrink: 0;
+		margin-left: 20rpx;
+	}
+	
+	.status-badge {
+		display: inline-block;
+		padding: 8rpx 20rpx;
+		border-radius: 24rpx;
+		font-size: 24rpx;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	
+	.status-uploaded {
+		background: #e0f2fe;
+		color: #0369a1;
+	}
+	
+	.status-processing {
+		background: #fef3c7;
+		color: #d97706;
+	}
+	
+	.status-success {
+		background: #d1fae5;
+		color: #065f46;
+	}
+	
+	.status-error {
+		background: #fee2e2;
+		color: #dc2626;
+	}
+	
 
 	/* 基本信息表：响应式行 */
 
@@ -3255,6 +3539,17 @@
 
 	/* 响应式设计 - 移动端 */
 	@media (max-width: 768px) {
+		
+		.file-item {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 16rpx;
+		}
+		
+		.file-status {
+			margin-left: 0;
+			align-self: flex-end;
+		}
 
 		// 项目基本信息表
 		.baseinfo__row {
@@ -3944,3 +4239,4 @@
 		}
 	}
 </style>
+

@@ -114,7 +114,7 @@
 											</view>
 											<!-- 删除按钮 -->
 											<view class="projects__document-action"
-												@tap.stop="() => deleteDocument(document.id)">
+												@tap.stop="() => deleteDocument(document.document_id)">
 												<uni-icons type="trash" size="16" color="#ef4444" />
 											</view>
 										</view>
@@ -212,32 +212,76 @@
 				</view>
 
 				<view class="modal-content">
-					<!-- 选文件 -->
-					<view class="upload-area" @tap="chooseFile">
+					<!-- 批量上传按钮（仅H5） -->
+					<!-- #ifdef H5 -->
+					<view class="upload-area" @tap="chooseMultipleFiles">
+						<uni-icons type="folder-add" size="48" color="#8b5cf6" />
+						<text class="upload-text">批量上传文件</text>
+						<text class="upload-subtext">支持一次选择多个文件（最多50个）</text>
+					</view>
+					<!-- #endif -->
+
+					<!-- 单文件上传 -->
+					<view class="upload-area" @tap="chooseFile" style="margin-top: 20rpx;">
 						<uni-icons type="cloud-upload" size="48" color="#3b82f6" />
-						<text class="upload-text">点击选择文件</text>
+						<text class="upload-text">单个文件上传</text>
 					</view>
 
 					<!-- 选图片 -->
 					<view class="upload-area" @tap="chooseImage" style="margin-top: 20rpx;">
 						<uni-icons type="image" size="48" color="#10b981" />
-						<text class="upload-text">点击选择图片</text>
+						<text class="upload-text">上传图片</text>
 					</view>
 
-					<text class="upload-subtext">支持图片、文档等格式，最大 500 MB</text>
+					<text class="upload-hint">支持图片、文档等格式，单个文件最大 100 MB</text>
 
-					<!-- 已选文件 -->
+					<!-- 已选单个文件 -->
 					<view v-if="selectedFile" class="selected-file">
 						<uni-icons type="document" size="20" color="#3b82f6" />
 						<text class="file-name">{{ selectedFile.name }}</text>
 						<text class="file-size">{{ fmtSize(selectedFile.size) }}</text>
+					</view>
+
+					<!-- 已选多个文件 -->
+					<view v-if="selectedFiles.length > 0" class="selected-files-list">
+						<view class="selected-files-header">
+							<text class="selected-files-title">已选择 {{ selectedFiles.length }} 个文件</text>
+							<text class="selected-files-size">总大小: {{ fmtSize(selectedFiles.reduce((sum, f) => sum + f.size, 0)) }}</text>
+						</view>
+						<scroll-view class="selected-files-scroll" scroll-y>
+							<view v-for="(file, index) in selectedFiles" :key="index" class="selected-file-item">
+								<uni-icons type="document" size="16" color="#3b82f6" />
+								<text class="file-item-name">{{ file.name }}</text>
+								<text class="file-item-size">{{ fmtSize(file.size) }}</text>
+							</view>
+						</scroll-view>
 					</view>
 				</view>
 
 				<view class="modal-actions">
 					<button class="modal-button modal-button--cancel" @tap="closeUploadModal">取消</button>
 					<button class="modal-button modal-button--confirm" @tap="confirmUpload"
-						:disabled="!selectedFile">上传</button>
+						:disabled="!selectedFile && selectedFiles.length === 0">上传</button>
+				</view>
+			</view>
+		</view>
+		
+		<!-- 上传进度浮窗 -->
+		<view v-if="showUploadProgress" class="upload-progress-float">
+			<view class="progress-float-container">
+				<view class="progress-float-header">
+					<text class="progress-float-title">文件上传中</text>
+					<uni-icons v-if="!batchUploading" type="close" size="20" color="#64748b" @tap="closeUploadProgress" />
+				</view>
+				<view class="progress-float-content">
+					<view class="progress-info">
+						<text class="progress-message">{{ batchMessage }}</text>
+						<text class="progress-count">{{ batchCurrent }} / {{ batchTotal }}</text>
+					</view>
+					<view class="progress-bar-container">
+						<view class="progress-bar-fill" :style="{ width: batchProgress + '%' }"></view>
+					</view>
+					<text class="progress-percent">{{ batchProgress }}%</text>
 				</view>
 			</view>
 		</view>
@@ -270,7 +314,9 @@
 		pickProjectImage,
 		uploadProjectFile,
 		downloadProjectFile,
-		removeProjectFile
+		removeProjectFile,
+		batchUploadProjectFiles,
+		getTaskStatus
 	} from '@/api/project.js'
 
 	// 设置头部导航栏title
@@ -308,6 +354,17 @@
 	// 文件上传相关
 	const selectedFile = ref(null)
 	const uploadProgress = ref(0)
+	
+	// 批量上传相关
+	const selectedFiles = ref([])
+	const batchUploading = ref(false)
+	const batchProgress = ref(0)
+	const batchTaskId = ref(null)
+	const batchCurrent = ref(0)
+	const batchTotal = ref(0)
+	const batchMessage = ref('')
+	const showUploadProgress = ref(false) // 显示上传进度浮窗
+	let pollTimer = null
 
 	// 计算属性：过滤项目列表
 	const filteredProjects = computed(() => {
@@ -558,13 +615,67 @@
 		return parts.length > 1 ? '.' + parts.pop().toLowerCase() : ''
 	}
 
-	// 选择文件
+	// 选择文件（单个）
 	const chooseFile = () => {
 		pickProjectFile()
 			.then(file => {
 				if (file) selectedFile.value = file
 			})
 			.catch(() => {})
+	}
+	
+	// 选择多个文件（批量上传）
+	const chooseMultipleFiles = () => {
+		const isH5 = () => process.env.UNI_PLATFORM === 'h5'
+		
+		// H5 使用原生 input 支持多选
+		if (isH5()) {
+			const input = document.createElement('input')
+			input.type = 'file'
+			input.multiple = true
+			input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.md,.txt,.jpg,.jpeg,.png'
+			
+			input.onchange = (e) => {
+				const files = Array.from(e.target.files)
+				if (files.length === 0) return
+				
+				// 验证文件数量
+				if (files.length > 50) {
+					uni.showToast({
+						title: '最多选择50个文件',
+						icon: 'none'
+					})
+					return
+				}
+				
+				// 验证文件大小
+				const maxSize = 100 * 1024 * 1024
+				const invalidFiles = files.filter(f => f.size > maxSize)
+				if (invalidFiles.length > 0) {
+					uni.showToast({
+						title: `有${invalidFiles.length}个文件超过100MB`,
+						icon: 'none'
+					})
+					return
+				}
+				
+				// 转换为统一格式
+				selectedFiles.value = files.map(file => ({
+					name: file.name,
+					size: file.size,
+					type: file.name.split('.').pop().toLowerCase(),
+					file: file
+				}))
+			}
+			
+			input.click()
+		} else {
+			// 微信小程序暂不支持批量上传
+			uni.showToast({
+				title: '小程序暂不支持批量上传',
+				icon: 'none'
+			})
+		}
 	}
 
 	// 选图片
@@ -574,28 +685,165 @@
 		}).catch(() => {})
 	}
 
-	// 确认上传文件
+	// 确认上传文件（单个或批量）
 	const confirmUpload = async () => {
+		// 批量上传
+		if (selectedFiles.value.length > 0) {
+			// 保存文件列表（因为关闭弹窗会清空）
+			const filesToUpload = [...selectedFiles.value]
+			const totalFiles = filesToUpload.length
+			
+			// 立即关闭弹窗
+			showUploadModal.value = false
+			selectedFile.value = null
+			selectedFiles.value = []
+			uploadProgress.value = 0
+			
+			// 显示上传进度浮窗
+			showUploadProgress.value = true
+			batchUploading.value = true
+			batchProgress.value = 0
+			batchCurrent.value = 0
+			batchTotal.value = totalFiles
+			batchMessage.value = '准备上传...'
+			
+			try {
+				// 调用批量上传接口
+				const result = await batchUploadProjectFiles(activeProjectId.value, filesToUpload)
+				
+				batchTaskId.value = result.task_id
+				batchMessage.value = '正在处理文件...'
+				
+				// 开始轮询任务状态
+				startPollingTaskStatus()
+				
+			} catch (e) {
+				batchUploading.value = false
+				showUploadProgress.value = false
+				uni.showModal({
+					title: '上传失败',
+					content: e.message || '批量上传失败，请重试',
+					showCancel: false
+				})
+			}
+			return
+		}
+		
+		// 单个上传
 		if (!selectedFile.value) return
+		
+		const fileToUpload = selectedFile.value
+		
+		// 立即关闭弹窗
+		closeUploadModal()
+		
 		uni.showLoading({
 			title: '上传中...',
 			mask: true
 		})
 		try {
-			await uploadProjectFile(activeProjectId.value, selectedFile.value)
+			await uploadProjectFile(activeProjectId.value, fileToUpload)
+			uni.hideLoading()
 			uni.showToast({
 				title: '上传成功',
-				icon: 'success'
+				icon: 'success',
+				duration: 2000
 			})
-			closeUploadModal()
 			await loadProjectDocuments(activeProjectId.value) // 刷新列表
 		} catch (e) {
-			uni.showToast({
-				title: e.message || '上传失败',
-				icon: 'error'
-			})
-		} finally {
 			uni.hideLoading()
+			uni.showModal({
+				title: '上传失败',
+				content: e.message || '文件上传失败，请重试',
+				showCancel: false
+			})
+		}
+	}
+	
+
+	
+	// 开始轮询任务状态
+	const startPollingTaskStatus = () => {
+		if (pollTimer) {
+			clearInterval(pollTimer)
+		}
+		
+		pollTimer = setInterval(async () => {
+			try {
+				const status = await getTaskStatus(batchTaskId.value)
+				
+				batchProgress.value = status.progress
+				batchCurrent.value = status.current
+				batchTotal.value = status.total
+				batchMessage.value = status.message
+				
+				// 任务完成或失败，停止轮询
+				if (status.status === 'success' || status.status === 'failed') {
+					stopPollingTaskStatus()
+					batchUploading.value = false
+					
+					// 刷新文件列表
+					await loadProjectDocuments(activeProjectId.value)
+					
+					// 显示详细结果
+					if (status.status === 'success') {
+						const successCount = status.success_count || 0
+						const failedCount = status.failed_count || 0
+						const total = status.total || 0
+						
+						console.log('成功数量:', successCount, '失败数量:', failedCount, '总数:', total) // 调试日志
+						
+						let content = ''
+						if (failedCount === 0) {
+							content = `全部上传成功！共 ${successCount} 个文件`
+						} else {
+							content = `上传完成！\n成功：${successCount} 个\n失败：${failedCount} 个`
+							if (status.failed_files && status.failed_files.length > 0) {
+								content += `\n\n失败文件：\n${status.failed_files.slice(0, 3).join('\n')}`
+								if (status.failed_files.length > 3) {
+									content += `\n...等${status.failed_files.length}个文件`
+								}
+							}
+						}
+						
+						uni.showModal({
+							title: '上传结果',
+							content: content,
+							showCancel: false,
+							confirmText: '知道了'
+						})
+					} else {
+						uni.showModal({
+							title: '上传失败',
+							content: status.message || '文件上传失败，请重试',
+							showCancel: false
+						})
+					}
+					
+					// 延迟关闭进度浮窗
+					setTimeout(() => {
+						showUploadProgress.value = false
+					}, 1000)
+				}
+			} catch (e) {
+				console.error('轮询任务状态失败:', e)
+				stopPollingTaskStatus()
+				batchUploading.value = false
+				showUploadProgress.value = false
+				uni.showModal({
+					title: '错误',
+					content: '查询上传状态失败，请刷新页面查看结果',
+					showCancel: false
+				})
+			}
+		}, 3000) // 每3秒轮询一次
+	}
+	
+	// 停止轮询
+	const stopPollingTaskStatus = () => {
+		if (pollTimer) {
+			clearInterval(pollTimer)
+			pollTimer = null
 		}
 	}
 
@@ -603,36 +851,96 @@
 	const closeUploadModal = () => {
 		showUploadModal.value = false
 		selectedFile.value = null
+		selectedFiles.value = []
 		uploadProgress.value = 0
+	}
+	
+	// 关闭上传进度浮窗
+	const closeUploadProgress = () => {
+		if (batchUploading.value) {
+			uni.showToast({
+				title: '文件上传中，请稍候...',
+				icon: 'none'
+			})
+			return
+		}
+		
+		stopPollingTaskStatus()
+		showUploadProgress.value = false
+		batchProgress.value = 0
+		batchTaskId.value = null
+		batchCurrent.value = 0
+		batchTotal.value = 0
+		batchMessage.value = ''
 	}
 
 	// 下载项目文档
 	const downloadDocument = async (doc) => {
+		// #ifdef H5
 		uni.showLoading({
 			title: '准备下载...',
 			mask: true
 		})
 		try {
 			const blob = await downloadProjectFile(activeProjectId.value, doc.document_id)
-			// 保存并打开（H5 示例，小程序用 uni.saveFile + uni.openDocument）
 			const url = URL.createObjectURL(blob)
 			const link = document.createElement('a')
 			link.href = url
-			link.download = doc.name
+			link.download = doc.filename
 			link.click()
 			URL.revokeObjectURL(url)
+			uni.hideLoading()
 			uni.showToast({
 				title: '下载成功',
 				icon: 'success'
 			})
 		} catch (e) {
+			uni.hideLoading()
 			uni.showToast({
 				title: '下载失败',
 				icon: 'error'
 			})
-		} finally {
-			uni.hideLoading()
 		}
+		// #endif
+
+		// #ifdef MP-WEIXIN
+		uni.showLoading({
+			title: '下载中...',
+			mask: true
+		})
+		try {
+			const tempFilePath = await downloadProjectFile(activeProjectId.value, doc.document_id)
+			uni.hideLoading()
+			
+			// 尝试打开文档
+			uni.openDocument({
+				filePath: tempFilePath,
+				showMenu: true,
+				fileType: doc.file_extension.replace('.', ''),
+				success: () => {
+					uni.showToast({
+						title: '打开成功',
+						icon: 'success'
+					})
+				},
+				fail: (err) => {
+					console.log('打开文档失败:', err)
+					// 如果打开失败，提示用户文件已下载
+					uni.showModal({
+						title: '提示',
+						content: '文件已下载，但当前文件类型不支持预览。文件已保存到微信文件中。',
+						showCancel: false
+					})
+				}
+			})
+		} catch (e) {
+			uni.hideLoading()
+			uni.showToast({
+				title: '下载失败',
+				icon: 'error'
+			})
+		}
+		// #endif
 	}
 
 	// 删除项目文档
@@ -668,8 +976,8 @@
 			'.xls': '/static/fileType/excel.png',
 			'.xlsx': '/static/fileType/excel.png',
 			'.png': '/static/fileType/picture.png',
-			'.jpg': '/static/fileType/image.png',
-			'.jpeg': '/static/fileType/image.png',
+			'.jpg': '/static/fileType/picture.png',
+			'.jpeg': '/static/fileType/picture.png',
 			'.md': '/static/fileType/md.png',
 			'.txt': '/static/fileType/txt.png',
 		}
@@ -1372,12 +1680,18 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4rpx;
+		min-width: 0;
+		/* 允许内容收缩 */
 	}
 
 	.projects__document-name {
 		font-size: 26rpx;
 		color: #0f172a;
 		font-weight: 500;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		/* 文本溢出显示省略号 */
 	}
 
 	.projects__document-meta {
@@ -1389,6 +1703,8 @@
 		display: flex;
 		align-items: center;
 		gap: 8rpx;
+		flex-shrink: 0;
+		/* 防止按钮被挤压 */
 		// opacity: 0;
 		transition: opacity 0.3s ease;
 	}
@@ -1576,9 +1892,17 @@
 	}
 
 	.upload-subtext {
+		font-size: 22rpx;
+		color: #94a3b8;
+		margin-top: 8rpx;
+	}
+
+	.upload-hint {
+		display: block;
 		font-size: 24rpx;
 		color: #64748b;
-		margin-top: 8rpx;
+		margin-top: 16rpx;
+		text-align: center;
 	}
 
 	.selected-file {
@@ -1600,6 +1924,172 @@
 
 	.file-size {
 		font-size: 22rpx;
+		color: #64748b;
+	}
+
+	/* 批量上传进度样式 */
+	.batch-upload-progress {
+		padding: 40rpx 32rpx;
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+		align-items: center;
+	}
+
+	.progress-info {
+		width: 100%;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.progress-title {
+		font-size: 28rpx;
+		color: #0f172a;
+		font-weight: 600;
+	}
+
+	.progress-count {
+		font-size: 26rpx;
+		color: #3b82f6;
+		font-weight: 600;
+	}
+
+	.progress-bar-container {
+		width: 100%;
+		height: 16rpx;
+		background: #e2e8f0;
+		border-radius: 8rpx;
+		overflow: hidden;
+	}
+
+	.progress-bar-fill {
+		height: 100%;
+		background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+		border-radius: 8rpx;
+		transition: width 0.3s ease;
+	}
+
+	.progress-percent {
+		font-size: 32rpx;
+		color: #3b82f6;
+		font-weight: 700;
+	}
+
+	/* 已选文件列表样式 */
+	.selected-files-list {
+		margin-top: 24rpx;
+		border: 2rpx solid #e2e8f0;
+		border-radius: 12rpx;
+		overflow: hidden;
+		background: #f8fafc;
+	}
+
+	.selected-files-header {
+		padding: 20rpx;
+		background: #ffffff;
+		border-bottom: 1rpx solid #e2e8f0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.selected-files-title {
+		font-size: 26rpx;
+		color: #0f172a;
+		font-weight: 600;
+	}
+
+	.selected-files-size {
+		font-size: 22rpx;
+		color: #64748b;
+	}
+
+	.selected-files-scroll {
+		max-height: 400rpx;
+	}
+
+	.selected-file-item {
+		display: flex;
+		align-items: center;
+		gap: 12rpx;
+		padding: 16rpx 20rpx;
+		background: #ffffff;
+		border-bottom: 1rpx solid #f1f5f9;
+	}
+
+	.selected-file-item:last-child {
+		border-bottom: none;
+	}
+
+	.file-item-name {
+		flex: 1;
+		font-size: 24rpx;
+		color: #0f172a;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.file-item-size {
+		font-size: 22rpx;
+		color: #94a3b8;
+		flex-shrink: 0;
+	}
+
+	/* 上传进度浮窗样式 */
+	.upload-progress-float {
+		position: fixed;
+		bottom: 40rpx;
+		right: 40rpx;
+		z-index: 999;
+		animation: slideInUp 0.3s ease;
+	}
+
+	@keyframes slideInUp {
+		from {
+			opacity: 0;
+			transform: translateY(40rpx);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.progress-float-container {
+		background: #ffffff;
+		border-radius: 16rpx;
+		box-shadow: 0 8rpx 32rpx rgba(15, 23, 42, 0.15);
+		border: 1rpx solid #e2e8f0;
+		width: 500rpx;
+		overflow: hidden;
+	}
+
+	.progress-float-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		border-bottom: 1rpx solid #f1f5f9;
+		background: #f8fafc;
+	}
+
+	.progress-float-title {
+		font-size: 26rpx;
+		font-weight: 600;
+		color: #0f172a;
+	}
+
+	.progress-float-content {
+		padding: 24rpx;
+		display: flex;
+		flex-direction: column;
+		gap: 16rpx;
+	}
+
+	.progress-message {
+		font-size: 24rpx;
 		color: #64748b;
 	}
 

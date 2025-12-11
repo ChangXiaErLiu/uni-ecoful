@@ -97,7 +97,6 @@
 .profile__card.data-v-201c0da5 {
   background-color: #ffffff;
   border-radius: 20rpx;
-  overflow: hidden;
 }
 .profile__card-header.data-v-201c0da5 {
   display: flex;

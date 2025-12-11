@@ -2,58 +2,10 @@
 const common_vendor = require("../common/vendor.js");
 const utils_config = require("../utils/config.js");
 const utils_request = require("../utils/request.js");
-async function uploadFileToBackend(file) {
-  const filePath = file.url || file.path || file.tempFilePath;
-  if (!filePath) {
-    throw new Error("文件路径无效");
-  }
-  try {
-    const data = await utils_request.request.upload("/api/v1/completion/documents/upload", filePath, {
-      name: "file",
-      formData: {
-        category: "eia_report"
-        // 标记为环评报告
-      }
-    });
-    return {
-      success: true,
-      document_id: data.document_id,
-      filename: data.filename,
-      size_bytes: data.size_bytes,
-      upload_time: data.upload_time
-    };
-  } catch (error) {
-    throw new Error(error.message || "上传失败");
-  }
-}
-async function fetchUploadedFiles() {
-  try {
-    const res = await utils_request.request.get("/api/v1/completion/documents?skip=0&limit=100");
-    if (Array.isArray(res)) {
-      return res.map((file) => {
-        var _a;
-        return {
-          name: file.filename,
-          ext: ((_a = file.metadata) == null ? void 0 : _a.file_extension) || "",
-          document_id: file.document_id,
-          size: file.size_bytes,
-          upload_time: file.upload_time
-        };
-      });
-    }
-    return [];
-  } catch (error) {
-    common_vendor.index.__f__("error", "at api/acceptance.js:83", "自动刷新文件列表失败:", error);
-    return [];
-  }
-}
-async function deleteFile(document_id) {
-  if (!document_id)
-    throw new Error("document_id 不能为空");
-  await utils_request.request.delete(`/api/v1/completion/documents/${document_id}`);
-}
 async function runTask(options = {}) {
   const {
+    projectId = null,
+    projectFolder = null,
     onProgress = null,
     pollInterval = 3e3,
     // 默认3秒轮询一次
@@ -62,6 +14,8 @@ async function runTask(options = {}) {
   } = options;
   try {
     const submitResult = await utils_request.request.post("/api/v1/completion/extract-info/async/start", {
+      project_id: projectId,
+      project_folder: projectFolder,
       project_data: {}
     });
     const taskId = submitResult.task_id;
@@ -81,7 +35,7 @@ async function runTask(options = {}) {
             task_result,
             error_message
           } = statusResult;
-          common_vendor.index.__f__("log", "at api/acceptance.js:147", `[${status}] ${progress}% - ${current_step}`);
+          common_vendor.index.__f__("log", "at api/acceptance.js:153", `[${status}] ${progress}% - ${current_step}`);
           if (onProgress && typeof onProgress === "function") {
             onProgress(progress, current_step, status);
           }
@@ -98,7 +52,7 @@ async function runTask(options = {}) {
             return;
           }
           if (status === "failed") {
-            common_vendor.index.__f__("error", "at api/acceptance.js:174", "❌ 任务失败:", error_message);
+            common_vendor.index.__f__("error", "at api/acceptance.js:180", "❌ 任务失败:", error_message);
             reject(new Error(error_message || "任务执行失败"));
             return;
           }
@@ -108,7 +62,7 @@ async function runTask(options = {}) {
           }
           setTimeout(pollStatus, pollInterval);
         } catch (error) {
-          common_vendor.index.__f__("error", "at api/acceptance.js:189", "查询任务状态失败:", error);
+          common_vendor.index.__f__("error", "at api/acceptance.js:195", "查询任务状态失败:", error);
           reject(error);
         }
       };
@@ -326,7 +280,7 @@ function downloadSignboardWord(signboard) {
       },
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:490", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:496", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -359,7 +313,7 @@ function downloadMonitorPlan(options = {}) {
       responseType: "arraybuffer",
       timeout,
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:558", "监测方案下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:564", "监测方案下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -383,11 +337,8 @@ function downloadMonitorPlan(options = {}) {
     }, timeout);
   });
 }
-exports.deleteFile = deleteFile;
 exports.downloadMonitorPlan = downloadMonitorPlan;
 exports.downloadSignboardWord = downloadSignboardWord;
-exports.fetchUploadedFiles = fetchUploadedFiles;
 exports.runTask = runTask;
 exports.transformExtractResult = transformExtractResult;
-exports.uploadFileToBackend = uploadFileToBackend;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/api/acceptance.js.map

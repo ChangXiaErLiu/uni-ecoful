@@ -353,7 +353,7 @@
 	.profile__card {
 		background-color: #ffffff;
 		border-radius: 20rpx;
-		overflow: hidden;
+		// overflow: hidden;
 	}
 
 	.profile__card-header {
