@@ -176,7 +176,6 @@ const _sfc_main = {
             const processing = projectFiles.value.filter(
               (f) => !["indexed", "failed"].includes(f.status)
             );
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1054", `🔄 [轮询 ${pollingCount.value}] 还有 ${processing.length} 个文件正在处理...`);
           }
         } catch (error) {
           common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1057", "❌ 轮询文件状态失败:", error);
@@ -227,7 +226,6 @@ const _sfc_main = {
         } else {
           projectFiles.value = [];
         }
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1122", "项目文件列表:", projectFiles.value);
         if (!silent) {
           common_vendor.index.hideLoading();
           if (projectFiles.value.length === 0) {

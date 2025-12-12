@@ -1051,7 +1051,7 @@
 					const processing = projectFiles.value.filter(f =>
 						!['indexed', 'failed'].includes(f.status)
 					)
-					console.log(`🔄 [轮询 ${pollingCount.value}] 还有 ${processing.length} 个文件正在处理...`)
+					// console.log(`🔄 [轮询 ${pollingCount.value}] 还有 ${processing.length} 个文件正在处理...`)
 				}
 			} catch (error) {
 				console.error('❌ 轮询文件状态失败:', error)
@@ -1119,7 +1119,7 @@
 				projectFiles.value = []
 			}
 
-			console.log('项目文件列表:', projectFiles.value)
+			// console.log('项目文件列表:', projectFiles.value)
 
 			if (!silent) {
 				uni.hideLoading()
