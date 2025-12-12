@@ -212,47 +212,55 @@
 				</view>
 
 				<view class="modal-content">
-					<!-- 批量上传按钮（仅H5） -->
+					<!-- 统一上传区域 -->
 					<!-- #ifdef H5 -->
-					<view class="upload-area" @tap="chooseMultipleFiles">
-						<uni-icons type="folder-add" size="48" color="#8b5cf6" />
-						<text class="upload-text">批量上传文件</text>
-						<text class="upload-subtext">支持一次选择多个文件（最多50个）</text>
+					<div 
+						class="upload-area" 
+						@click="chooseFiles"
+						@drop.prevent="handleDrop"
+						@dragover.prevent="handleDragOver"
+						@dragleave="handleDragLeave"
+						:class="{ 'upload-area--dragging': isDragging }"
+					>
+						<uni-icons type="cloud-upload" size="48" :color="isDragging ? '#10b981' : '#3b82f6'" />
+						<text class="upload-text">{{ isDragging ? '松开鼠标上传文件' : '点击选择文件' }}</text>
+						<text class="upload-subtext">或拖拽文件到这里（支持多个文件）</text>
+					</div>
+					<!-- #endif -->
+					
+					<!-- #ifndef H5 -->
+					<view 
+						class="upload-area" 
+						@tap="chooseFiles"
+					>
+						<uni-icons type="cloud-upload" size="48" color="#3b82f6" />
+						<text class="upload-text">点击选择文件</text>
+						<text class="upload-subtext">最多选择9个文件</text>
 					</view>
 					<!-- #endif -->
 
-					<!-- 单文件上传 -->
-					<view class="upload-area" @tap="chooseFile" style="margin-top: 20rpx;">
-						<uni-icons type="cloud-upload" size="48" color="#3b82f6" />
-						<text class="upload-text">单个文件上传</text>
-					</view>
+					<text class="upload-hint">支持 PDF、Word、Excel、图片等格式，单个文件最大 100 MB</text>
 
-					<!-- 选图片 -->
-					<view class="upload-area" @tap="chooseImage" style="margin-top: 20rpx;">
-						<uni-icons type="image" size="48" color="#10b981" />
-						<text class="upload-text">上传图片</text>
-					</view>
-
-					<text class="upload-hint">支持图片、文档等格式，单个文件最大 100 MB</text>
-
-					<!-- 已选单个文件 -->
-					<view v-if="selectedFile" class="selected-file">
-						<uni-icons type="document" size="20" color="#3b82f6" />
-						<text class="file-name">{{ selectedFile.name }}</text>
-						<text class="file-size">{{ fmtSize(selectedFile.size) }}</text>
-					</view>
-
-					<!-- 已选多个文件 -->
+					<!-- 已选文件列表 -->
 					<view v-if="selectedFiles.length > 0" class="selected-files-list">
 						<view class="selected-files-header">
-							<text class="selected-files-title">已选择 {{ selectedFiles.length }} 个文件</text>
-							<text class="selected-files-size">总大小: {{ fmtSize(selectedFiles.reduce((sum, f) => sum + f.size, 0)) }}</text>
+							<view class="selected-files-info">
+								<text class="selected-files-title">已选择 {{ selectedFiles.length }} 个文件</text>
+								<text class="selected-files-size">总大小: {{ fmtSize(selectedFiles.reduce((sum, f) => sum + f.size, 0)) }}</text>
+							</view>
+							<button class="clear-all-btn" @tap="clearAllFiles">
+								<uni-icons type="trash" size="14" color="#ef4444" />
+								<text>清空</text>
+							</button>
 						</view>
 						<scroll-view class="selected-files-scroll" scroll-y>
 							<view v-for="(file, index) in selectedFiles" :key="index" class="selected-file-item">
 								<uni-icons type="document" size="16" color="#3b82f6" />
 								<text class="file-item-name">{{ file.name }}</text>
 								<text class="file-item-size">{{ fmtSize(file.size) }}</text>
+								<view class="file-item-remove" @tap.stop="removeFile(index)">
+									<uni-icons type="close" size="14" color="#94a3b8" />
+								</view>
 							</view>
 						</scroll-view>
 					</view>
@@ -261,7 +269,9 @@
 				<view class="modal-actions">
 					<button class="modal-button modal-button--cancel" @tap="closeUploadModal">取消</button>
 					<button class="modal-button modal-button--confirm" @tap="confirmUpload"
-						:disabled="!selectedFile && selectedFiles.length === 0">上传</button>
+						:disabled="selectedFiles.length === 0">
+						上传{{ selectedFiles.length > 0 ? `（${selectedFiles.length}个文件）` : '' }}
+					</button>
 				</view>
 			</view>
 		</view>
@@ -354,6 +364,7 @@
 	// 文件上传相关
 	const selectedFile = ref(null)
 	const uploadProgress = ref(0)
+	const isDragging = ref(false) // 拖拽状态
 	
 	// 批量上传相关
 	const selectedFiles = ref([])
@@ -604,7 +615,9 @@
 			return
 		}
 		selectedFile.value = null
+		selectedFiles.value = []
 		uploadProgress.value = 0
+		isDragging.value = false
 		showUploadModal.value = true
 	}
 
@@ -615,146 +628,259 @@
 		return parts.length > 1 ? '.' + parts.pop().toLowerCase() : ''
 	}
 
-	// 选择文件（单个）
-	const chooseFile = () => {
-		pickProjectFile()
-			.then(file => {
-				if (file) selectedFile.value = file
-			})
-			.catch(() => {})
+	// ========== 统一文件选择 ==========
+	
+	// 统一的文件选择入口
+	const chooseFiles = () => {
+		// #ifdef H5
+		chooseFilesH5()
+		// #endif
+		
+		// #ifdef MP-WEIXIN
+		chooseFilesWechat()
+		// #endif
 	}
 	
-	// 选择多个文件（批量上传）
-	const chooseMultipleFiles = () => {
-		const isH5 = () => process.env.UNI_PLATFORM === 'h5'
+	// H5 版本：支持多选
+	const chooseFilesH5 = () => {
+		// #ifdef H5
+		const input = document.createElement('input')
+		input.type = 'file'
+		input.multiple = true
+		input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.md,.txt,.jpg,.jpeg,.png,.gif'
 		
-		// H5 使用原生 input 支持多选
-		if (isH5()) {
-			const input = document.createElement('input')
-			input.type = 'file'
-			input.multiple = true
-			input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.md,.txt,.jpg,.jpeg,.png'
-			
-			input.onchange = (e) => {
-				const files = Array.from(e.target.files)
-				if (files.length === 0) return
-				
-				// 验证文件数量
-				if (files.length > 50) {
-					uni.showToast({
-						title: '最多选择50个文件',
-						icon: 'none'
-					})
-					return
-				}
-				
-				// 验证文件大小
-				const maxSize = 100 * 1024 * 1024
-				const invalidFiles = files.filter(f => f.size > maxSize)
-				if (invalidFiles.length > 0) {
-					uni.showToast({
-						title: `有${invalidFiles.length}个文件超过100MB`,
-						icon: 'none'
-					})
-					return
-				}
-				
-				// 转换为统一格式
-				selectedFiles.value = files.map(file => ({
+		input.onchange = (e) => {
+			const files = Array.from(e.target.files)
+			handleSelectedFiles(files)
+		}
+		
+		input.click()
+		// #endif
+	}
+	
+	// 微信小程序版本：最多9个
+	const chooseFilesWechat = () => {
+		// #ifdef MP-WEIXIN
+		uni.chooseMessageFile({
+			count: 9,
+			type: 'all',
+			extension: ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.md', '.txt', '.jpg', '.jpeg', '.png'],
+			success: (res) => {
+				const files = res.tempFiles.map(file => ({
 					name: file.name,
 					size: file.size,
+					path: file.path,
 					type: file.name.split('.').pop().toLowerCase(),
 					file: file
 				}))
+				handleSelectedFiles(files)
+			},
+			fail: (err) => {
+				console.error('选择文件失败:', err)
 			}
-			
-			input.click()
-		} else {
-			// 微信小程序暂不支持批量上传
+		})
+		// #endif
+	}
+	
+	// 统一处理选择的文件
+	const handleSelectedFiles = (files) => {
+		if (!files || files.length === 0) return
+		
+		// 检查累加后的总数量
+		const currentCount = selectedFiles.value.length
+		const newCount = files.length
+		const totalCount = currentCount + newCount
+		
+		if (totalCount > 50) {
 			uni.showToast({
-				title: '小程序暂不支持批量上传',
-				icon: 'none'
+				title: `最多选择50个文件，当前已选${currentCount}个`,
+				icon: 'none',
+				duration: 2000
+			})
+			return
+		}
+		
+		// 验证文件大小
+		const maxSize = 100 * 1024 * 1024
+		const invalidFiles = files.filter(f => f.size > maxSize)
+		if (invalidFiles.length > 0) {
+			uni.showToast({
+				title: `有${invalidFiles.length}个文件超过100MB`,
+				icon: 'none',
+				duration: 2000
+			})
+			return
+		}
+		
+		// 转换为统一格式
+		let newFiles = []
+		
+		// #ifdef H5
+		newFiles = files.map(file => ({
+			name: file.name,
+			size: file.size,
+			type: file.name.split('.').pop().toLowerCase(),
+			file: file
+		}))
+		// #endif
+		
+		// #ifdef MP-WEIXIN
+		// 小程序的文件已经在 chooseFilesWechat 中转换好了
+		newFiles = files
+		// #endif
+		
+		// 合并新旧文件
+		const allFiles = [...selectedFiles.value, ...newFiles]
+		
+		// 去重（根据文件名 + 大小）
+		const uniqueFiles = allFiles.filter((file, index, self) => 
+			index === self.findIndex(f => 
+				f.name === file.name && f.size === file.size
+			)
+		)
+		
+		// 如果有重复文件，提示用户
+		const duplicateCount = allFiles.length - uniqueFiles.length
+		if (duplicateCount > 0) {
+			uni.showToast({
+				title: `已过滤${duplicateCount}个重复文件`,
+				icon: 'none',
+				duration: 1500
 			})
 		}
+		
+		selectedFiles.value = uniqueFiles
+		
+		console.log('已选择文件:', selectedFiles.value.length, '个')
+	}
+	
+	// 删除单个文件
+	const removeFile = (index) => {
+		selectedFiles.value.splice(index, 1)
+		uni.showToast({
+			title: '已移除',
+			icon: 'success',
+			duration: 1000
+		})
+	}
+	
+	// 清空所有文件
+	const clearAllFiles = () => {
+		if (selectedFiles.value.length === 0) return
+		
+		uni.showModal({
+			title: '确认清空',
+			content: `确定要清空所有已选文件吗？（共${selectedFiles.value.length}个）`,
+			success: (res) => {
+				if (res.confirm) {
+					selectedFiles.value = []
+					uni.showToast({
+						title: '已清空',
+						icon: 'success',
+						duration: 1000
+					})
+				}
+			}
+		})
+	}
+	
+	// ========== 拖拽上传（仅H5） ==========
+	
+	// 拖拽进入
+	const handleDragOver = (e) => {
+		// #ifdef H5
+		isDragging.value = true
+		// #endif
+	}
+	
+	// 拖拽离开
+	const handleDragLeave = (e) => {
+		// #ifdef H5
+		isDragging.value = false
+		// #endif
+	}
+	
+	// 拖拽放下
+	const handleDrop = (e) => {
+		// #ifdef H5
+		isDragging.value = false
+		
+		const files = Array.from(e.dataTransfer.files)
+		handleSelectedFiles(files)
+		// #endif
 	}
 
-	// 选图片
-	const chooseImage = () => {
-		pickProjectImage().then(file => {
-			if (file) selectedFile.value = file
-		}).catch(() => {})
-	}
-
-	// 确认上传文件（单个或批量）
+	// 确认上传文件
 	const confirmUpload = async () => {
-		// 批量上传
-		if (selectedFiles.value.length > 0) {
-			// 保存文件列表（因为关闭弹窗会清空）
-			const filesToUpload = [...selectedFiles.value]
-			const totalFiles = filesToUpload.length
-			
-			// 立即关闭弹窗
-			showUploadModal.value = false
-			selectedFile.value = null
-			selectedFiles.value = []
-			uploadProgress.value = 0
-			
-			// 显示上传进度浮窗
-			showUploadProgress.value = true
-			batchUploading.value = true
-			batchProgress.value = 0
-			batchCurrent.value = 0
-			batchTotal.value = totalFiles
-			batchMessage.value = '准备上传...'
-			
+		// 检查是否有选择文件
+		if (selectedFiles.value.length === 0) {
+			uni.showToast({
+				title: '请先选择文件',
+				icon: 'none'
+			})
+			return
+		}
+		
+		// 保存文件列表（因为关闭弹窗会清空）
+		const filesToUpload = [...selectedFiles.value]
+		const totalFiles = filesToUpload.length
+		
+		// 立即关闭弹窗
+		showUploadModal.value = false
+		selectedFile.value = null
+		selectedFiles.value = []
+		uploadProgress.value = 0
+		
+		// 单个文件：直接上传
+		if (totalFiles === 1) {
+			uni.showLoading({
+				title: '上传中...',
+				mask: true
+			})
 			try {
-				// 调用批量上传接口
-				const result = await batchUploadProjectFiles(activeProjectId.value, filesToUpload)
-				
-				batchTaskId.value = result.task_id
-				batchMessage.value = '正在处理文件...'
-				
-				// 开始轮询任务状态
-				startPollingTaskStatus()
-				
+				await uploadProjectFile(activeProjectId.value, filesToUpload[0])
+				uni.hideLoading()
+				uni.showToast({
+					title: '上传成功',
+					icon: 'success',
+					duration: 2000
+				})
+				await loadProjectDocuments(activeProjectId.value)
 			} catch (e) {
-				batchUploading.value = false
-				showUploadProgress.value = false
+				uni.hideLoading()
 				uni.showModal({
 					title: '上传失败',
-					content: e.message || '批量上传失败，请重试',
+					content: e.message || '文件上传失败，请重试',
 					showCancel: false
 				})
 			}
 			return
 		}
 		
-		// 单个上传
-		if (!selectedFile.value) return
+		// 多个文件：批量上传
+		showUploadProgress.value = true
+		batchUploading.value = true
+		batchProgress.value = 0
+		batchCurrent.value = 0
+		batchTotal.value = totalFiles
+		batchMessage.value = '准备上传...'
 		
-		const fileToUpload = selectedFile.value
-		
-		// 立即关闭弹窗
-		closeUploadModal()
-		
-		uni.showLoading({
-			title: '上传中...',
-			mask: true
-		})
 		try {
-			await uploadProjectFile(activeProjectId.value, fileToUpload)
-			uni.hideLoading()
-			uni.showToast({
-				title: '上传成功',
-				icon: 'success',
-				duration: 2000
-			})
-			await loadProjectDocuments(activeProjectId.value) // 刷新列表
+			// 调用批量上传接口
+			const result = await batchUploadProjectFiles(activeProjectId.value, filesToUpload)
+			
+			batchTaskId.value = result.task_id
+			batchMessage.value = '正在处理文件...'
+			
+			// 开始轮询任务状态
+			startPollingTaskStatus()
+			
 		} catch (e) {
-			uni.hideLoading()
+			batchUploading.value = false
+			showUploadProgress.value = false
 			uni.showModal({
 				title: '上传失败',
-				content: e.message || '文件上传失败，请重试',
+				content: e.message || '批量上传失败，请重试',
 				showCancel: false
 			})
 		}
@@ -1877,11 +2003,20 @@
 		background: #f8fafc;
 		transition: all 0.3s ease;
 		text-align: center;
+		cursor: pointer;
 	}
 
 	.upload-area:active {
 		border-color: #3b82f6;
 		background: rgba(59, 130, 246, 0.05);
+	}
+	
+	/* 拖拽状态 */
+	.upload-area--dragging {
+		border-color: #10b981;
+		background: rgba(16, 185, 129, 0.08);
+		border-width: 3rpx;
+		transform: scale(1.02);
 	}
 
 	.upload-text {
@@ -1992,6 +2127,14 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		gap: 16rpx;
+	}
+
+	.selected-files-info {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 4rpx;
 	}
 
 	.selected-files-title {
@@ -2005,6 +2148,27 @@
 		color: #64748b;
 	}
 
+	.clear-all-btn {
+		display: flex;
+		align-items: center;
+		gap: 6rpx;
+		padding: 12rpx 20rpx;
+		height: auto;
+		line-height: 1;
+		background: #fef2f2;
+		color: #ef4444;
+		border: 1rpx solid #fecaca;
+		border-radius: 8rpx;
+		font-size: 22rpx;
+		font-weight: 500;
+		transition: all 0.2s ease;
+	}
+
+	.clear-all-btn:active {
+		background: #fee2e2;
+		transform: scale(0.98);
+	}
+
 	.selected-files-scroll {
 		max-height: 400rpx;
 	}
@@ -2016,10 +2180,15 @@
 		padding: 16rpx 20rpx;
 		background: #ffffff;
 		border-bottom: 1rpx solid #f1f5f9;
+		transition: background 0.2s ease;
 	}
 
 	.selected-file-item:last-child {
 		border-bottom: none;
+	}
+
+	.selected-file-item:active {
+		background: #f8fafc;
 	}
 
 	.file-item-name {
@@ -2035,6 +2204,24 @@
 		font-size: 22rpx;
 		color: #94a3b8;
 		flex-shrink: 0;
+	}
+
+	.file-item-remove {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 50%;
+		background: #f1f5f9;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		transition: all 0.2s ease;
+		cursor: pointer;
+	}
+
+	.file-item-remove:active {
+		background: #fee2e2;
+		transform: scale(0.95);
 	}
 
 	/* 上传进度浮窗样式 */

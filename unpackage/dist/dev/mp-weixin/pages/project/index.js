@@ -38,6 +38,7 @@ const _sfc_main = {
     });
     const selectedFile = common_vendor.ref(null);
     const uploadProgress = common_vendor.ref(0);
+    const isDragging = common_vendor.ref(false);
     const selectedFiles = common_vendor.ref([]);
     const batchUploading = common_vendor.ref(false);
     const batchProgress = common_vendor.ref(0);
@@ -58,7 +59,7 @@ const _sfc_main = {
           await switchProject(response[0].id);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:386", "加载项目列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:397", "加载项目列表失败:", error);
         common_vendor.index.showToast({
           title: "加载项目列表失败",
           icon: "error"
@@ -71,7 +72,7 @@ const _sfc_main = {
         activeProject.value = response;
         await loadProjectDocuments(projectId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:403", "加载项目详情失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:414", "加载项目详情失败:", error);
         common_vendor.index.showToast({
           title: "加载项目详情失败",
           icon: "error"
@@ -86,7 +87,7 @@ const _sfc_main = {
           activeProject.value.documents = documents.value;
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:423", "加载项目文档失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:434", "加载项目文档失败:", error);
       }
     };
     const switchProject = async (projectId) => {
@@ -126,7 +127,7 @@ const _sfc_main = {
         await loadProjects();
         await switchProject(response.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:480", "创建项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:491", "创建项目失败:", error);
         common_vendor.index.showToast({
           title: "创建项目失败",
           icon: "error"
@@ -150,7 +151,7 @@ const _sfc_main = {
         });
         showEditProjectModal.value = true;
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:509", "编辑项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:520", "编辑项目失败:", error);
         common_vendor.index.showToast({
           title: "编辑项目失败",
           icon: "error"
@@ -180,7 +181,7 @@ const _sfc_main = {
         await loadProjects();
         await loadProjectDetail(editProjectForm.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:548", "更新项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:559", "更新项目失败:", error);
         common_vendor.index.showToast({
           title: "更新项目失败",
           icon: "error"
@@ -212,7 +213,7 @@ const _sfc_main = {
           }
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:589", "删除项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:600", "删除项目失败:", error);
         common_vendor.index.showToast({
           title: "删除项目失败",
           icon: "error"
@@ -228,75 +229,158 @@ const _sfc_main = {
         return;
       }
       selectedFile.value = null;
+      selectedFiles.value = [];
       uploadProgress.value = 0;
+      isDragging.value = false;
       showUploadModal.value = true;
     };
-    const chooseFile = () => {
-      api_project.pickProjectFile().then((file) => {
-        if (file)
-          selectedFile.value = file;
-      }).catch(() => {
+    const chooseFiles = () => {
+      chooseFilesWechat();
+    };
+    const chooseFilesWechat = () => {
+      common_vendor.index.chooseMessageFile({
+        count: 9,
+        type: "all",
+        extension: [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".md", ".txt", ".jpg", ".jpeg", ".png"],
+        success: (res) => {
+          const files = res.tempFiles.map((file) => ({
+            name: file.name,
+            size: file.size,
+            path: file.path,
+            type: file.name.split(".").pop().toLowerCase(),
+            file
+          }));
+          handleSelectedFiles(files);
+        },
+        fail: (err) => {
+          common_vendor.index.__f__("error", "at pages/project/index.vue:679", "选择文件失败:", err);
+        }
       });
     };
-    const chooseImage = () => {
-      api_project.pickProjectImage().then((file) => {
-        if (file)
-          selectedFile.value = file;
-      }).catch(() => {
+    const handleSelectedFiles = (files) => {
+      if (!files || files.length === 0)
+        return;
+      const currentCount = selectedFiles.value.length;
+      const newCount = files.length;
+      const totalCount = currentCount + newCount;
+      if (totalCount > 50) {
+        common_vendor.index.showToast({
+          title: `最多选择50个文件，当前已选${currentCount}个`,
+          icon: "none",
+          duration: 2e3
+        });
+        return;
+      }
+      const maxSize = 100 * 1024 * 1024;
+      const invalidFiles = files.filter((f) => f.size > maxSize);
+      if (invalidFiles.length > 0) {
+        common_vendor.index.showToast({
+          title: `有${invalidFiles.length}个文件超过100MB`,
+          icon: "none",
+          duration: 2e3
+        });
+        return;
+      }
+      let newFiles = [];
+      newFiles = files;
+      const allFiles = [...selectedFiles.value, ...newFiles];
+      const uniqueFiles = allFiles.filter(
+        (file, index, self) => index === self.findIndex(
+          (f) => f.name === file.name && f.size === file.size
+        )
+      );
+      const duplicateCount = allFiles.length - uniqueFiles.length;
+      if (duplicateCount > 0) {
+        common_vendor.index.showToast({
+          title: `已过滤${duplicateCount}个重复文件`,
+          icon: "none",
+          duration: 1500
+        });
+      }
+      selectedFiles.value = uniqueFiles;
+      common_vendor.index.__f__("log", "at pages/project/index.vue:754", "已选择文件:", selectedFiles.value.length, "个");
+    };
+    const removeFile = (index) => {
+      selectedFiles.value.splice(index, 1);
+      common_vendor.index.showToast({
+        title: "已移除",
+        icon: "success",
+        duration: 1e3
+      });
+    };
+    const clearAllFiles = () => {
+      if (selectedFiles.value.length === 0)
+        return;
+      common_vendor.index.showModal({
+        title: "确认清空",
+        content: `确定要清空所有已选文件吗？（共${selectedFiles.value.length}个）`,
+        success: (res) => {
+          if (res.confirm) {
+            selectedFiles.value = [];
+            common_vendor.index.showToast({
+              title: "已清空",
+              icon: "success",
+              duration: 1e3
+            });
+          }
+        }
       });
     };
     const confirmUpload = async () => {
-      if (selectedFiles.value.length > 0) {
-        const filesToUpload = [...selectedFiles.value];
-        const totalFiles = filesToUpload.length;
-        showUploadModal.value = false;
-        selectedFile.value = null;
-        selectedFiles.value = [];
-        uploadProgress.value = 0;
-        showUploadProgress.value = true;
-        batchUploading.value = true;
-        batchProgress.value = 0;
-        batchCurrent.value = 0;
-        batchTotal.value = totalFiles;
-        batchMessage.value = "准备上传...";
+      if (selectedFiles.value.length === 0) {
+        common_vendor.index.showToast({
+          title: "请先选择文件",
+          icon: "none"
+        });
+        return;
+      }
+      const filesToUpload = [...selectedFiles.value];
+      const totalFiles = filesToUpload.length;
+      showUploadModal.value = false;
+      selectedFile.value = null;
+      selectedFiles.value = [];
+      uploadProgress.value = 0;
+      if (totalFiles === 1) {
+        common_vendor.index.showLoading({
+          title: "上传中...",
+          mask: true
+        });
         try {
-          const result = await api_project.batchUploadProjectFiles(activeProjectId.value, filesToUpload);
-          batchTaskId.value = result.task_id;
-          batchMessage.value = "正在处理文件...";
-          startPollingTaskStatus();
+          await api_project.uploadProjectFile(activeProjectId.value, filesToUpload[0]);
+          common_vendor.index.hideLoading();
+          common_vendor.index.showToast({
+            title: "上传成功",
+            icon: "success",
+            duration: 2e3
+          });
+          await loadProjectDocuments(activeProjectId.value);
         } catch (e) {
-          batchUploading.value = false;
-          showUploadProgress.value = false;
+          common_vendor.index.hideLoading();
           common_vendor.index.showModal({
             title: "上传失败",
-            content: e.message || "批量上传失败，请重试",
+            content: e.message || "文件上传失败，请重试",
             showCancel: false
           });
         }
         return;
       }
-      if (!selectedFile.value)
-        return;
-      const fileToUpload = selectedFile.value;
-      closeUploadModal();
-      common_vendor.index.showLoading({
-        title: "上传中...",
-        mask: true
-      });
+      showUploadProgress.value = true;
+      batchUploading.value = true;
+      batchProgress.value = 0;
+      batchCurrent.value = 0;
+      batchTotal.value = totalFiles;
+      batchMessage.value = "准备上传...";
       try {
-        await api_project.uploadProjectFile(activeProjectId.value, fileToUpload);
-        common_vendor.index.hideLoading();
-        common_vendor.index.showToast({
-          title: "上传成功",
-          icon: "success",
-          duration: 2e3
-        });
-        await loadProjectDocuments(activeProjectId.value);
+        const result = await api_project.batchUploadProjectFiles(activeProjectId.value, filesToUpload);
+        batchTaskId.value = result.task_id;
+        batchMessage.value = "正在处理文件...";
+        startPollingTaskStatus();
       } catch (e) {
-        common_vendor.index.hideLoading();
+        batchUploading.value = false;
+        showUploadProgress.value = false;
         common_vendor.index.showModal({
           title: "上传失败",
-          content: e.message || "文件上传失败，请重试",
+          content: e.message || "批量上传失败，请重试",
           showCancel: false
         });
       }
@@ -320,7 +404,7 @@ const _sfc_main = {
               const successCount = status.success_count || 0;
               const failedCount = status.failed_count || 0;
               const total = status.total || 0;
-              common_vendor.index.__f__("log", "at pages/project/index.vue:794", "成功数量:", successCount, "失败数量:", failedCount, "总数:", total);
+              common_vendor.index.__f__("log", "at pages/project/index.vue:920", "成功数量:", successCount, "失败数量:", failedCount, "总数:", total);
               let content = "";
               if (failedCount === 0) {
                 content = `全部上传成功！共 ${successCount} 个文件`;
@@ -357,7 +441,7 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
             }, 1e3);
           }
         } catch (e) {
-          common_vendor.index.__f__("error", "at pages/project/index.vue:829", "轮询任务状态失败:", e);
+          common_vendor.index.__f__("error", "at pages/project/index.vue:955", "轮询任务状态失败:", e);
           stopPollingTaskStatus();
           batchUploading.value = false;
           showUploadProgress.value = false;
@@ -416,7 +500,7 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
             });
           },
           fail: (err) => {
-            common_vendor.index.__f__("log", "at pages/project/index.vue:927", "打开文档失败:", err);
+            common_vendor.index.__f__("log", "at pages/project/index.vue:1053", "打开文档失败:", err);
             common_vendor.index.showModal({
               title: "提示",
               content: "文件已下载，但当前文件类型不支持预览。文件已保存到微信文件中。",
@@ -563,17 +647,17 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
         p: common_vendor.t(((_a = activeProject.value.documents) == null ? void 0 : _a.length) || 0),
         q: activeProject.value.documents && activeProject.value.documents.length > 0
       }, activeProject.value.documents && activeProject.value.documents.length > 0 ? {
-        r: common_vendor.f(activeProject.value.documents, (document2, k0, i0) => {
+        r: common_vendor.f(activeProject.value.documents, (document, k0, i0) => {
           return {
-            a: getDocumentIcon(document2.file_extension),
-            b: common_vendor.t(document2.filename),
-            c: common_vendor.t(fmtSize(document2.size_bytes)),
-            d: common_vendor.t(document2.updated_at.slice(0, 10)),
+            a: getDocumentIcon(document.file_extension),
+            b: common_vendor.t(document.filename),
+            c: common_vendor.t(fmtSize(document.size_bytes)),
+            d: common_vendor.t(document.updated_at.slice(0, 10)),
             e: "47879d53-10-" + i0 + ",47879d53-0",
-            f: common_vendor.o(() => downloadDocument(document2), document2.id),
+            f: common_vendor.o(() => downloadDocument(document), document.id),
             g: "47879d53-11-" + i0 + ",47879d53-0",
-            h: common_vendor.o(() => deleteDocument(document2.document_id), document2.id),
-            i: document2.id
+            h: common_vendor.o(() => deleteDocument(document.document_id), document.id),
+            i: document.id
           };
         }),
         s: common_vendor.p({
@@ -648,63 +732,61 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
           size: "48",
           color: "#3b82f6"
         }),
-        Z: common_vendor.o(chooseFile),
-        aa: common_vendor.p({
-          type: "image",
-          size: "48",
-          color: "#10b981"
-        }),
-        ab: common_vendor.o(chooseImage),
-        ac: selectedFile.value
-      }, selectedFile.value ? {
-        ad: common_vendor.p({
-          type: "document",
-          size: "20",
-          color: "#3b82f6"
-        }),
-        ae: common_vendor.t(selectedFile.value.name),
-        af: common_vendor.t(fmtSize(selectedFile.value.size))
-      } : {}, {
-        ag: selectedFiles.value.length > 0
+        Z: common_vendor.o(chooseFiles),
+        aa: selectedFiles.value.length > 0
       }, selectedFiles.value.length > 0 ? {
-        ah: common_vendor.t(selectedFiles.value.length),
-        ai: common_vendor.t(fmtSize(selectedFiles.value.reduce((sum, f) => sum + f.size, 0))),
-        aj: common_vendor.f(selectedFiles.value, (file, index, i0) => {
+        ab: common_vendor.t(selectedFiles.value.length),
+        ac: common_vendor.t(fmtSize(selectedFiles.value.reduce((sum, f) => sum + f.size, 0))),
+        ad: common_vendor.p({
+          type: "trash",
+          size: "14",
+          color: "#ef4444"
+        }),
+        ae: common_vendor.o(clearAllFiles),
+        af: common_vendor.f(selectedFiles.value, (file, index, i0) => {
           return {
-            a: "47879d53-20-" + i0 + ",47879d53-0",
+            a: "47879d53-19-" + i0 + ",47879d53-0",
             b: common_vendor.t(file.name),
             c: common_vendor.t(fmtSize(file.size)),
-            d: index
+            d: "47879d53-20-" + i0 + ",47879d53-0",
+            e: common_vendor.o(($event) => removeFile(index), index),
+            f: index
           };
         }),
-        ak: common_vendor.p({
+        ag: common_vendor.p({
           type: "document",
           size: "16",
           color: "#3b82f6"
+        }),
+        ah: common_vendor.p({
+          type: "close",
+          size: "14",
+          color: "#94a3b8"
         })
       } : {}, {
-        al: common_vendor.o(closeUploadModal),
-        am: common_vendor.o(confirmUpload),
-        an: !selectedFile.value && selectedFiles.value.length === 0
+        ai: common_vendor.o(closeUploadModal),
+        aj: common_vendor.t(selectedFiles.value.length > 0 ? `（${selectedFiles.value.length}个文件）` : ""),
+        ak: common_vendor.o(confirmUpload),
+        al: selectedFiles.value.length === 0
       }) : {}, {
-        ao: showUploadProgress.value
+        am: showUploadProgress.value
       }, showUploadProgress.value ? common_vendor.e({
-        ap: !batchUploading.value
+        an: !batchUploading.value
       }, !batchUploading.value ? {
-        aq: common_vendor.o(closeUploadProgress),
-        ar: common_vendor.p({
+        ao: common_vendor.o(closeUploadProgress),
+        ap: common_vendor.p({
           type: "close",
           size: "20",
           color: "#64748b"
         })
       } : {}, {
-        as: common_vendor.t(batchMessage.value),
-        at: common_vendor.t(batchCurrent.value),
-        av: common_vendor.t(batchTotal.value),
-        aw: batchProgress.value + "%",
-        ax: common_vendor.t(batchProgress.value)
+        aq: common_vendor.t(batchMessage.value),
+        ar: common_vendor.t(batchCurrent.value),
+        as: common_vendor.t(batchTotal.value),
+        at: batchProgress.value + "%",
+        av: common_vendor.t(batchProgress.value)
       }) : {}, {
-        ay: common_vendor.p({
+        aw: common_vendor.p({
           current: "pages/projects/index"
         })
       });
