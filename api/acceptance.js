@@ -453,11 +453,17 @@ function formatValue(value) {
 /**
  * 标识牌下载
  * 纯前端数据 → 后端生成 Word
- * @param {Object} signboard  
+ * @param {Object} signboard - 标识牌数据
+ * @param {number} projectId - 项目ID（必填）
  * @returns {Promise<ArrayBuffer>}
  */
-export function downloadSignboardWord(signboard) {
+export function downloadSignboardWord(signboard, projectId) {
+	if (!projectId) {
+		throw new Error('项目ID不能为空')
+	}
+	
 	const payload = {
+		project_id: projectId,  // 添加项目ID
 		sections: signboard.sections.map(sec => ({
 			block: sec.block,
 			items: sec.items.map(it => ({
@@ -469,14 +475,29 @@ export function downloadSignboardWord(signboard) {
 
 	// #ifdef H5
 	// H5 环境：uni.request 的 arraybuffer 不稳定，使用原生 fetch
+	const token = uni.getStorageSync('token')
+	const headers = {
+		'Content-Type': 'application/json'
+	}
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`
+	}
+	
 	return fetch(BASE_URL + '/api/v1/completion/signboard/download', {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
+		headers: headers,
 		body: JSON.stringify(payload)
 	}).then(res => {
-		if (!res.ok) throw new Error('生成失败')
+		if (!res.ok) {
+			// 处理不同的错误状态
+			if (res.status === 403) {
+				throw new Error('您不是该项目的成员，无权下载标识牌')
+			} else if (res.status === 404) {
+				throw new Error('项目提取结果文件不存在，请先提取项目信息')
+			} else {
+				throw new Error('生成失败')
+			}
+		}
 		return res.arrayBuffer()
 	})
 	// #endif
@@ -484,13 +505,19 @@ export function downloadSignboardWord(signboard) {
 	// #ifndef H5
 	// 小程序/App 环境：直接使用 uni.request（因为 responseType 需要特殊处理）
 	return new Promise((resolve, reject) => {
+		const token = uni.getStorageSync('token')
+		const header = {
+			'Content-Type': 'application/json'
+		}
+		if (token) {
+			header['Authorization'] = `Bearer ${token}`
+		}
+		
 		uni.request({
 			url: BASE_URL + '/api/v1/completion/signboard/download',
 			method: 'POST',
 			data: payload,
-			header: {
-				'Content-Type': 'application/json'
-			},
+			header: header,
 			responseType: 'arraybuffer',
 			success: (res) => {
 				console.log('标识牌下载响应:', res)
@@ -518,77 +545,187 @@ export function downloadSignboardWord(signboard) {
 }
 
 /**
- * 生成并下载监测方案（Word/Markdown）
- * 调用后端 RAG + LLM 生成监测方案文档
+ * 生成监测方案（异步任务）
  * @param {Object} options - 选项
- * @param {boolean} options.hideLoading - 是否隐藏 loading（默认 false）
- * @param {number} options.timeout - 超时时间（毫秒，默认10分钟）
+ * @param {number} options.projectId - 项目ID（必填）
+ * @param {Function} options.onProgress - 进度回调函数 (progress, status) => void
+ * @param {number} options.pollInterval - 轮询间隔（毫秒，默认3秒）
+ * @param {number} options.timeout - 超时时间（毫秒，默认30分钟）
+ * @returns {Promise<Object>} 任务执行结果
+ */
+export async function generateMonitorPlan(options = {}) {
+	const {
+		projectId = null,
+		onProgress = null,
+		pollInterval = 3000,
+		timeout = 1800000  // 默认30分钟
+	} = options
+
+	if (!projectId) {
+		throw new Error('项目ID不能为空')
+	}
+
+	try {
+		// 第一步：提交异步任务
+		const submitResult = await request.post('/api/v1/completion/monitor-plan/async/start', {
+			project_id: projectId
+		})
+
+		const taskId = submitResult.task_id
+		console.log(`✅ 监测方案任务已提交，Task ID: ${taskId}`)
+
+		// 第二步：轮询任务状态
+		const startTime = Date.now()
+		
+		return new Promise((resolve, reject) => {
+			const pollStatus = async () => {
+				try {
+					// 检查是否超时
+					if (Date.now() - startTime > timeout) {
+						reject(new Error('任务超时，请稍后重试'))
+						return
+					}
+
+					// 查询任务状态
+					const statusResult = await request.get(`/api/v1/tasks/${taskId}/status`)
+					
+					const {
+						status,
+						progress = 0,
+						current_step = '',
+						task_result,
+						error_message
+					} = statusResult
+
+					console.log(`[${status}] ${progress}% - ${current_step}`)
+
+					// 调用进度回调
+					if (onProgress && typeof onProgress === 'function') {
+						onProgress(progress, current_step, status)
+					}
+
+					// 任务完成
+					if (status === 'success') {
+						console.log('✅ 监测方案生成完成！')
+						resolve({
+							status: 'success',
+							result: task_result,
+							project_id: projectId
+						})
+						return
+					}
+
+					// 任务失败
+					if (status === 'failed') {
+						console.error('❌ 任务失败:', error_message)
+						reject(new Error(error_message || '监测方案生成失败'))
+						return
+					}
+
+					// 任务取消
+					if (status === 'cancelled') {
+						reject(new Error('任务已被取消'))
+						return
+					}
+
+					// 继续轮询
+					setTimeout(pollStatus, pollInterval)
+
+				} catch (error) {
+					console.error('查询任务状态失败:', error)
+					reject(error)
+				}
+			}
+
+			// 开始轮询
+			pollStatus()
+		})
+
+	} catch (error) {
+		if (error.message && error.message.includes('已有一个监测方案生成任务正在运行')) {
+			throw new Error('您已有一个监测方案生成任务正在运行，请等待完成')
+		}
+		throw error
+	}
+}
+
+/**
+ * 下载监测方案
+ * @param {number} projectId - 项目ID
+ * @param {string} format - 文件格式（docx 或 md，默认 docx）
  * @returns {Promise<ArrayBuffer>} 文件的二进制数据
  */
-export function downloadMonitorPlan(options = {}) {
-  const {
-    hideLoading = false,
-    timeout = 600000  // 默认10分钟，因为涉及 RAG 检索 + LLM 生成
-  } = options
+export function downloadMonitorPlan(projectId, format = 'docx') {
+	if (!projectId) {
+		throw new Error('项目ID不能为空')
+	}
 
-  // #ifdef H5
-  // H5 环境：uni.request 的 arraybuffer 不稳定，使用原生 fetch
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeout)
-  
-  return fetch(BASE_URL + '/api/v1/completion/monitor-plan/generate', {
-    method: 'GET',
-    signal: controller.signal
-  }).then(res => {
-    clearTimeout(timeoutId)
-    if (!res.ok) throw new Error('生成失败')
-    return res.arrayBuffer()
-  }).catch(err => {
-    clearTimeout(timeoutId)
-    if (err.name === 'AbortError') {
-      throw new Error('请求超时，请稍后重试')
-    }
-    throw err
-  })
-  // #endif
+	const url = `/api/v1/completion/monitor-plan/${projectId}/download?format=${format}`
 
-  // #ifndef H5
-  // 小程序/App 环境：直接使用 uni.request
-  return new Promise((resolve, reject) => {
-    const requestTask = uni.request({
-      url: BASE_URL + '/api/v1/completion/monitor-plan/generate',
-      method: 'GET',
-      responseType: 'arraybuffer',
-      timeout: timeout,
-      success: (res) => {
-        console.log('监测方案下载响应:', res)
-        if (res.statusCode === 200 && res.data) {
-          // 检查是否是 ArrayBuffer
-          if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
-            resolve(res.data)
-          } else if (typeof res.data === 'string' && res.data.length > 0) {
-            // 如果返回的是字符串，说明小程序没有正确处理 arraybuffer
-            uni.showToast({ title: '文件格式错误', icon: 'none' })
-            reject(new Error('文件格式错误'))
-          } else {
-            reject(new Error('空文件'))
-          }
-        } else {
-          reject(new Error('生成失败'))
-        }
-      },
-      fail: (error) => {
-        reject(new Error(error.errMsg || '网络请求失败'))
-      }
-    })
+	// #ifdef H5
+	// H5 环境：使用原生 fetch
+	const token = uni.getStorageSync('token')
+	const headers = {}
+	if (token) {
+		headers['Authorization'] = `Bearer ${token}`
+	}
+	
+	return fetch(BASE_URL + url, {
+		method: 'GET',
+		headers: headers
+	}).then(res => {
+		if (!res.ok) {
+			if (res.status === 403) {
+				throw new Error('您不是该项目的成员，无权下载监测方案')
+			} else if (res.status === 404) {
+				throw new Error('监测方案文件不存在，请先生成监测方案')
+			} else {
+				throw new Error('下载失败')
+			}
+		}
+		return res.arrayBuffer()
+	})
+	// #endif
 
-    // 超时处理
-    setTimeout(() => {
-      requestTask.abort()
-      reject(new Error('请求超时，监测方案生成时间较长，请稍后重试'))
-    }, timeout)
-  })
-  // #endif
+	// #ifndef H5
+	// 小程序/App 环境：使用 uni.request
+	return new Promise((resolve, reject) => {
+		const token = uni.getStorageSync('token')
+		const header = {}
+		if (token) {
+			header['Authorization'] = `Bearer ${token}`
+		}
+		
+		uni.request({
+			url: BASE_URL + url,
+			method: 'GET',
+			header: header,
+			responseType: 'arraybuffer',
+			success: (res) => {
+				console.log('监测方案下载响应:', res)
+				if (res.statusCode === 200 && res.data) {
+					if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
+						resolve(res.data)
+					} else if (typeof res.data === 'string' && res.data.length > 0) {
+						uni.showToast({ title: '文件格式错误', icon: 'none' })
+						reject(new Error('文件格式错误'))
+					} else {
+						reject(new Error('空文件'))
+					}
+				} else if (res.statusCode === 403) {
+					reject(new Error('您不是该项目的成员，无权下载监测方案'))
+				} else if (res.statusCode === 404) {
+					reject(new Error('监测方案文件不存在，请先生成监测方案'))
+				} else {
+					reject(new Error('下载失败'))
+				}
+			},
+			fail: (error) => {
+				reject(new Error(error.errMsg || '网络请求失败'))
+			}
+		})
+	})
+	// #endif
 }
 
 

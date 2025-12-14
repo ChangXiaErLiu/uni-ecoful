@@ -18,72 +18,6 @@ function updateProject(projectId, data) {
 function deleteProject(projectId) {
   return utils_request.request.delete(`/api/v1/project/projects/${projectId}`);
 }
-function pickProjectFile() {
-  const isMp = () => true;
-  let res;
-  try {
-    if (isMp()) {
-      res = common_vendor.wx$1.chooseMessageFile({
-        count: 1,
-        type: "file"
-      });
-    }
-  } catch (e) {
-    return Promise.resolve(null);
-  }
-  return Promise.resolve(res).then((r) => wrapFile(r.tempFiles[0]));
-}
-function wrapFile(raw) {
-  if (!raw)
-    return null;
-  const max = 500 * 1024 * 1024;
-  if (raw.size > max) {
-    common_vendor.index.showToast({ title: "文件不能超过 500 MB", icon: "none" });
-    return null;
-  }
-  return {
-    path: raw.path || raw.tempFilePath,
-    name: raw.name || "unknown",
-    size: raw.size,
-    type: getFileExt(raw.name),
-    file: raw
-  };
-}
-function pickProjectImage() {
-  let res;
-  try {
-    res = common_vendor.index.chooseImage({
-      count: 1
-    });
-  } catch (e) {
-    return Promise.resolve(null);
-  }
-  return Promise.resolve(res).then((res2) => (res2.tempFiles || [])[0]).then((raw) => {
-    if (!raw)
-      return null;
-    const max = 100 * 1024 * 1024;
-    if (raw.size > max) {
-      common_vendor.index.showToast({
-        title: "图片不能超过 100 MB",
-        icon: "none"
-      });
-      return null;
-    }
-    return {
-      path: raw.path || raw.tempFilePath,
-      name: raw.name || "image.jpg",
-      size: raw.size,
-      type: getFileExt(raw.name),
-      file: raw
-    };
-  }).catch(() => null);
-}
-function getFileExt(filename) {
-  if (!filename)
-    return "";
-  const parts = filename.split(".");
-  return parts.length > 1 ? parts.pop().toLowerCase() : "";
-}
 async function uploadProjectFile(projectId, fileInfo) {
   if (!fileInfo)
     throw new Error("未选择文件");
@@ -148,8 +82,6 @@ exports.getProjectDetail = getProjectDetail;
 exports.getProjectDocuments = getProjectDocuments;
 exports.getProjects = getProjects;
 exports.getTaskStatus = getTaskStatus;
-exports.pickProjectFile = pickProjectFile;
-exports.pickProjectImage = pickProjectImage;
 exports.removeProjectFile = removeProjectFile;
 exports.updateProject = updateProject;
 exports.uploadProjectFile = uploadProjectFile;

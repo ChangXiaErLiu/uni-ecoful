@@ -41,15 +41,26 @@
 								<view class="form-group">
 									<text class="form-label">请选择要进行竣工验收的项目</text>
 									<text class="form-tip">项目文件已在项目管理模块上传并自动处理</text>
-									
-									<!-- 使用 uni-data-select 组件 -->
-									<uni-data-select 
-										class="projectSel"
-										v-model="selectedProjectId" 
-										:localdata="projectSelectOptions"
-										placeholder="请选择项目"
-										@change="onProjectChange"
-									/>
+
+									<!-- 自定义项目选择器触发按钮 -->
+									<view class="project-selector" @tap="openProjectPicker">
+										<view class="selector-content">
+											<view v-if="selectedProject" class="selected-project">
+												<uni-icons type="folder" size="20" color="#166534" />
+												<view class="project-info">
+													<text class="project-name">{{ selectedProject.name }}</text>
+													<text v-if="selectedProject.description" class="project-desc">
+														{{ selectedProject.description }}
+													</text>
+												</view>
+											</view>
+											<view v-else class="placeholder">
+												<uni-icons type="folder-add" size="20" color="#9ca3af" />
+												<text class="placeholder-text">请选择项目</text>
+											</view>
+										</view>
+										<uni-icons type="down" size="16" color="#6b7280" />
+									</view>
 								</view>
 
 								<!-- 项目文件列表（只读） -->
@@ -58,32 +69,22 @@
 										<uni-icons type="paperclip" size="18" color="#166534" />
 										<text class="subsection-title">项目文件列表（{{ projectFiles.length }} 个文件）</text>
 									</view>
-									
+
 									<view class="file-list">
-										<view 
-											v-for="file in projectFiles" 
-											:key="file.document_id" 
-											class="file-item"
-										>
+										<view v-for="file in projectFiles" :key="file.document_id" class="file-item">
 											<view class="file-info">
-												<uni-icons 
-													:type="getFileIcon(file.file_extension)" 
-													size="20" 
-													color="#166534" 
-												/>
+												<uni-icons :type="getFileIcon(file.file_extension)" size="20"
+													color="#166534" />
 												<view class="file-details">
 													<text class="file-name">{{ file.filename }}</text>
 													<text class="file-meta">
-														{{ formatFileSize(file.size_bytes) }} · 
+														{{ formatFileSize(file.size_bytes) }} ·
 														{{ formatFileStatus(file.status) }}
 													</text>
 												</view>
 											</view>
 											<view class="file-status">
-												<text 
-													class="status-badge" 
-													:class="getStatusClass(file.status)"
-												>
+												<text class="status-badge" :class="getStatusClass(file.status)">
 													{{ getStatusText(file.status) }}
 												</text>
 											</view>
@@ -99,21 +100,14 @@
 								</view>
 
 								<view class="action-row">
-									<button 
-										class="btn btn--primary" 
-										@tap="simulateExtract"
-										:disabled="!selectedProjectId || projectFiles.length === 0"
-									>
+									<button class="btn btn--primary" @tap="simulateExtract"
+										:disabled="!selectedProjectId || projectFiles.length === 0">
 										<uni-icons type="search" size="16" color="#ffffff" />
 										<text>提取项目基本信息</text>
 									</button>
-									
+
 									<!-- 清除缓存按钮（只在有缓存数据时显示） -->
-									<button 
-										v-if="baseTable.length > 0"
-										class="btn btn--ghost" 
-										@tap="clearProjectCache"
-									>
+									<button v-if="baseTable.length > 0" class="btn btn--ghost" @tap="clearProjectCache">
 										<uni-icons type="trash" size="16" color="#dc2626" />
 										<text>清除缓存</text>
 									</button>
@@ -732,14 +726,8 @@
 	</uni-popup>
 
 	<!-- 任务进度弹窗 -->
-	<TaskProgressModal 
-		ref="taskProgressModal"
-		:title="taskProgressTitle"
-		:progress="taskProgress"
-		:statusText="taskStatusText"
-		:state="taskState"
-		:cancelable="false"
-	/>
+	<TaskProgressModal ref="taskProgressModal" :title="taskProgressTitle" :progress="taskProgress"
+		:statusText="taskStatusText" :state="taskState" :cancelable="false" />
 
 	<!-- 项目选择弹窗 -->
 	<uni-popup ref="projectPickerPopup" type="center" :mask-click="true">
@@ -753,35 +741,43 @@
 
 			<!-- 搜索框 -->
 			<view class="picker-search">
-				<uni-easyinput 
-					v-model="projectSearchKeyword" 
-					placeholder="搜索项目名称"
-					prefixIcon="search"
-					:clearable="true"
-				/>
+				<uni-easyinput v-model="projectSearchKeyword" placeholder="搜索项目名称..." prefixIcon="search"
+					:clearable="true" @input="onSearchInput" />
+			</view>
+
+			<!-- 项目统计 -->
+			<view class="picker-stats">
+				<text class="stats-text">
+					共 {{ filteredProjects.length }} 个项目
+					<text v-if="projectSearchKeyword" class="stats-highlight">
+						（搜索结果）
+					</text>
+				</text>
 			</view>
 
 			<!-- 项目列表 -->
 			<scroll-view class="picker-list" scroll-y>
-				<view 
-					v-for="project in filteredProjects" 
-					:key="project.id"
-					class="picker-item"
-					:class="{ 'picker-item--active': selectedProjectId === project.id }"
-					@tap="selectProject(project)"
-				>
+				<view v-for="project in filteredProjects" :key="project.id" class="picker-item"
+					:class="{ 'picker-item--active': selectedProjectId === project.id }" @tap="selectProject(project)">
+					<view class="picker-item-icon">
+						<uni-icons type="folder" size="22" :color="selectedProjectId === project.id ? '#166534' : '#6b7280'" />
+					</view>
 					<view class="picker-item-content">
 						<text class="picker-item-name">{{ project.name }}</text>
 						<text v-if="project.description" class="picker-item-desc">
 							{{ project.description }}
 						</text>
+						<view v-if="project.folder_name" class="picker-item-meta">
+							<uni-icons type="calendar" size="14" color="#9ca3af" />
+							<text class="meta-text">{{ project.folder_name }}</text>
+						</view>
 					</view>
-					<uni-icons 
-						v-if="selectedProjectId === project.id" 
-						type="checkmarkempty" 
-						size="20" 
-						color="#166534" 
-					/>
+					<view class="picker-item-action">
+						<view v-if="selectedProjectId === project.id" class="selected-badge">
+							<uni-icons type="checkmarkempty" size="18" color="#ffffff" />
+						</view>
+						<uni-icons v-else type="right" size="16" color="#d1d5db" />
+					</view>
 				</view>
 
 				<!-- 空状态 -->
@@ -789,6 +785,9 @@
 					<uni-icons type="search" size="48" color="#cbd5e1" />
 					<text class="picker-empty-text">
 						{{ projectSearchKeyword ? '未找到匹配的项目' : '暂无项目' }}
+					</text>
+					<text v-if="projectSearchKeyword" class="picker-empty-tip">
+						试试其他关键词或清空搜索
 					</text>
 				</view>
 			</scroll-view>
@@ -802,7 +801,8 @@
 		reactive,
 		computed,
 		nextTick,
-		watch // 添加这行导入
+		watch,
+		onUnmounted
 	} from 'vue'
 	import {
 		usePlatformInfo
@@ -820,6 +820,7 @@
 		runTask,
 		transformExtractResult,
 		downloadSignboardWord,
+		generateMonitorPlan,
 		downloadMonitorPlan
 	} from '@/api/acceptance.js'
 
@@ -897,23 +898,189 @@
 	const selectedProject = ref(null) // 选中的项目对象
 	const projectList = ref([]) // 完整项目列表
 	const projectFiles = ref([]) // 项目文件列表
+	const projectSearchKeyword = ref('') // 搜索关键词
+	const projectPickerPopup = ref(null) // 弹窗引用
 
-	// uni-data-select 组件的数据格式
-	const projectSelectOptions = computed(() => {
-		return projectList.value.map(project => ({
-			value: project.id,
-			text: project.name
-		}))
+	// 文件状态轮询相关
+	const pollingTimer = ref(null) // 轮询定时器
+	const isPolling = ref(false) // 是否正在轮询
+	const pollingCount = ref(0) // 轮询次数
+	const MAX_POLLING_COUNT = 100 // 最多轮询100次（约5分钟）
+	const POLLING_INTERVAL = 3000 // 轮询间隔（3秒）
+
+	// 过滤后的项目列表（根据搜索关键词）
+	const filteredProjects = computed(() => {
+		if (!projectSearchKeyword.value) {
+			return projectList.value
+		}
+		const keyword = projectSearchKeyword.value.toLowerCase().trim()
+		return projectList.value.filter(project => {
+			const name = (project.name || '').toLowerCase()
+			const desc = (project.description || '').toLowerCase()
+			const folder = (project.folder_name || '').toLowerCase()
+			return name.includes(keyword) || desc.includes(keyword) || folder.includes(keyword)
+		})
 	})
+
+	// 打开项目选择器弹窗
+	function openProjectPicker() {
+		if (projectList.value.length === 0) {
+			uni.showToast({
+				title: '暂无项目，请先创建项目',
+				icon: 'none'
+			})
+			return
+		}
+		projectSearchKeyword.value = '' // 清空搜索
+		projectPickerPopup.value?.open()
+	}
+
+	// 关闭项目选择器弹窗
+	function closeProjectPicker() {
+		projectPickerPopup.value?.close()
+	}
+
+	// 选择项目
+	async function selectProject(project) {
+		selectedProjectId.value = project.id
+		selectedProject.value = project
+		console.log('选择项目:', project.name)
+
+		// 保存到 localStorage，刷新后自动恢复
+		try {
+			localStorage.setItem('acceptance_selected_project_id', project.id.toString())
+			console.log('✅ 已保存项目选择到本地存储')
+		} catch (e) {
+			console.warn('⚠️ 保存项目选择失败:', e)
+		}
+
+		// 关闭弹窗
+		closeProjectPicker()
+
+		// 停止之前的轮询（如果有）
+		stopPolling()
+
+		// 加载项目文件列表
+		await loadProjectFiles(project.id)
+
+		// 加载完成后，检查是否需要启动轮询
+		startPollingFileStatus(project.id)
+
+		// 加载该项目的缓存数据
+		loadProjectCache(project.id)
+
+		// 显示成功提示
+		uni.showToast({
+			title: `已选择：${project.name}`,
+			icon: 'success',
+			duration: 1500
+		})
+	}
+
+	// 搜索输入处理
+	function onSearchInput(e) {
+		// 实时搜索，无需额外处理
+		console.log('搜索关键词:', projectSearchKeyword.value)
+	}
+
+	// ========== 文件状态轮询功能 ==========
+
+	// 检查是否有文件正在处理
+	function hasProcessingFiles() {
+		return projectFiles.value.some(file =>
+			!['indexed', 'failed'].includes(file.status)
+		)
+	}
+
+	// 开始轮询文件状态
+	function startPollingFileStatus(projectId) {
+		// 如果没有文件在处理，不需要轮询
+		if (!hasProcessingFiles()) {
+			console.log('✅ 所有文件已处理完成，无需轮询')
+			return
+		}
+
+		// 防止重复轮询
+		if (isPolling.value) {
+			console.log('⚠️ 已在轮询中，跳过')
+			return
+		}
+
+		isPolling.value = true
+		pollingCount.value = 0
+
+		const processingCount = projectFiles.value.filter(f =>
+			!['indexed', 'failed'].includes(f.status)
+		).length
+
+		console.log(`🔄 开始轮询项目 ${projectId} 的文件状态...`)
+		console.log(`   还有 ${processingCount} 个文件正在处理`)
+
+		pollingTimer.value = setInterval(async () => {
+			pollingCount.value++
+
+			// 超过最大次数，停止轮询
+			if (pollingCount.value > MAX_POLLING_COUNT) {
+				console.log('⏰ 达到最大轮询次数，停止轮询')
+				stopPolling()
+				uni.showToast({
+					title: '文件处理超时，请手动刷新',
+					icon: 'none',
+					duration: 2000
+				})
+				return
+			}
+
+			try {
+				// 静默重新加载文件列表（不显示 loading）
+				await loadProjectFiles(projectId, true)
+
+				// 检查是否所有文件都处理完成
+				if (!hasProcessingFiles()) {
+					console.log('✅ 所有文件处理完成，停止轮询')
+					stopPolling()
+
+					// 显示成功提示
+					uni.showToast({
+						title: '文件处理完成',
+						icon: 'success',
+						duration: 2000
+					})
+				} else {
+					// 统计处理中的文件
+					const processing = projectFiles.value.filter(f =>
+						!['indexed', 'failed'].includes(f.status)
+					)
+					// console.log(`🔄 [轮询 ${pollingCount.value}] 还有 ${processing.length} 个文件正在处理...`)
+				}
+			} catch (error) {
+				console.error('❌ 轮询文件状态失败:', error)
+				// 不停止轮询，继续尝试
+			}
+		}, POLLING_INTERVAL)
+	}
+
+	// 停止轮询
+	function stopPolling() {
+		if (pollingTimer.value) {
+			clearInterval(pollingTimer.value)
+			pollingTimer.value = null
+		}
+		isPolling.value = false
+		pollingCount.value = 0
+		console.log('⏹️ 轮询已停止')
+	}
 
 	// 加载项目列表
 	async function loadProjects() {
 		try {
-			const { getProjects } = await import('@/api/project.js')
+			const {
+				getProjects
+			} = await import('@/api/project.js')
 			const response = await getProjects()
-			
+
 			projectList.value = response || []
-			
+
 			console.log('项目列表加载成功:', projectList.value.length, '个项目')
 		} catch (error) {
 			console.error('加载项目列表失败:', error)
@@ -924,36 +1091,24 @@
 		}
 	}
 
-	// uni-data-select 的 change 事件处理
-	async function onProjectChange(e) {
-		// uni-data-select 的 change 事件返回选中的值
-		const projectId = typeof e === 'number' ? e : (e?.detail?.value || e)
-		console.log('选择项目 ID:', projectId)
-		
-		if (!projectId) return
-		
-		// 从项目列表中找到对应的项目对象
-		const project = projectList.value.find(p => p.id === projectId)
-		if (project) {
-			selectedProject.value = project
-			console.log('选择项目:', project.name)
-			
-			// 加载项目文件列表
-			await loadProjectFiles(projectId)
-			
-			// 加载该项目的缓存数据
-			loadProjectCache(projectId)
-		}
-	}
+
 
 	// 加载项目文件列表
-	async function loadProjectFiles(projectId) {
+	async function loadProjectFiles(projectId, silent = false) {
 		try {
-			uni.showLoading({ title: '加载文件列表...', mask: true })
-			
-			const { getProjectDocuments } = await import('@/api/project.js')
+			// 非静默模式显示 loading
+			if (!silent) {
+				uni.showLoading({
+					title: '加载文件列表...',
+					mask: true
+				})
+			}
+
+			const {
+				getProjectDocuments
+			} = await import('@/api/project.js')
 			const response = await getProjectDocuments(projectId)
-			
+
 			// 确保 projectFiles 始终是数组
 			// 后端可能返回 { documents: [...], total: 10 } 或直接返回数组
 			if (Array.isArray(response)) {
@@ -963,24 +1118,28 @@
 			} else {
 				projectFiles.value = []
 			}
-			
-			console.log('项目文件列表:', projectFiles.value)
-			
-			uni.hideLoading()
-			
-			if (projectFiles.value.length === 0) {
-				uni.showToast({
-					title: '该项目暂无文件',
-					icon: 'none'
-				})
+
+			// console.log('项目文件列表:', projectFiles.value)
+
+			if (!silent) {
+				uni.hideLoading()
+
+				if (projectFiles.value.length === 0) {
+					uni.showToast({
+						title: '该项目暂无文件',
+						icon: 'none'
+					})
+				}
 			}
 		} catch (error) {
 			console.error('加载项目文件失败:', error)
-			uni.hideLoading()
-			uni.showToast({
-				title: '加载文件列表失败',
-				icon: 'none'
-			})
+			if (!silent) {
+				uni.hideLoading()
+				uni.showToast({
+					title: '加载文件列表失败',
+					icon: 'none'
+				})
+			}
 			projectFiles.value = [] // 确保出错时也是数组
 		}
 	}
@@ -1057,16 +1216,16 @@
 	// 加载项目缓存数据
 	function loadProjectCache(projectId) {
 		if (!projectId) return
-		
+
 		const cacheKey = `project_base_info_${projectId}`
 		const cachedData = uni.getStorageSync(cacheKey)
-		
+
 		if (cachedData) {
 			try {
 				baseTable.value = JSON.parse(cachedData)
 				extractionOk.value = true
 				console.log(`✅ 已加载项目 ${projectId} 的缓存数据`)
-				
+
 				uni.showToast({
 					title: '已加载缓存数据',
 					icon: 'success',
@@ -1084,7 +1243,7 @@
 			console.log(`ℹ️ 项目 ${projectId} 暂无缓存数据`)
 		}
 	}
-	
+
 	// 清除当前项目的缓存
 	function clearProjectCache() {
 		if (!selectedProjectId.value) {
@@ -1094,7 +1253,7 @@
 			})
 			return
 		}
-		
+
 		uni.showModal({
 			title: '清除缓存',
 			content: '确定要清除当前项目的缓存数据吗？清除后需要重新提取信息。',
@@ -1102,13 +1261,13 @@
 				if (res.confirm) {
 					const cacheKey = `project_base_info_${selectedProjectId.value}`
 					uni.removeStorageSync(cacheKey)
-					
+
 					// 清空当前显示的数据
 					baseTable.value = []
 					extractionOk.value = false
-					
+
 					console.log(`🗑️ 已清除项目 ${selectedProjectId.value} 的缓存`)
-					
+
 					uni.showToast({
 						title: '缓存已清除',
 						icon: 'success'
@@ -1119,8 +1278,54 @@
 	}
 
 	// 页面加载时获取项目列表
-	onLoad(() => {
-		loadProjects()
+	onLoad(async () => {
+		await loadProjects()
+		
+		// 尝试恢复上次选择的项目
+		try {
+			const savedProjectId = localStorage.getItem('acceptance_selected_project_id')
+			
+			if (savedProjectId) {
+				const projectId = parseInt(savedProjectId)
+				const project = projectList.value.find(p => p.id === projectId)
+				
+				if (project) {
+					console.log('🔄 恢复上次选择的项目:', project.name)
+					// 自动选择该项目（不显示提示，静默恢复）
+					selectedProjectId.value = project.id
+					selectedProject.value = project
+					
+					// 加载项目文件列表
+					await loadProjectFiles(project.id)
+					
+					// 启动轮询
+					startPollingFileStatus(project.id)
+					
+					// 加载缓存
+					loadProjectCache(project.id)
+				} else {
+					// 项目不存在，清除保存的ID
+					console.log('⚠️ 上次选择的项目已不存在，清除保存的ID')
+					localStorage.removeItem('acceptance_selected_project_id')
+				}
+			}
+		} catch (e) {
+			console.warn('⚠️ 恢复项目选择失败:', e)
+		}
+	})
+
+	// 页面卸载时停止轮询
+	onUnmounted(() => {
+		stopPolling()
+		console.log('📄 页面卸载，清理轮询定时器')
+	})
+
+	// 监听项目切换，停止旧项目的轮询
+	watch(selectedProjectId, (newId, oldId) => {
+		if (oldId && newId !== oldId) {
+			stopPolling()
+			console.log('🔄 切换项目，停止旧项目的轮询')
+		}
 	})
 
 	const extracting = ref(false) // 提取状态
@@ -1140,12 +1345,12 @@
 	function updateProgressSmooth(newProgress, statusText, state = 'running') {
 		// 检查进度是否真的变化了
 		const progressChanged = newProgress !== lastTargetProgress
-		
+
 		// 更新目标进度和状态
 		targetProgress = newProgress
 		taskStatusText.value = statusText
 		taskState.value = state
-		
+
 		// 只有进度真的变化了，才更新时间戳
 		if (progressChanged) {
 			lastUpdateTime = Date.now()
@@ -1180,7 +1385,8 @@
 						if (currentDisplayProgress < maxAllowedProgress) {
 							// 每次增长0.1%，非常缓慢
 							currentDisplayProgress += 0.1
-							console.log(`[缓慢增长] 后端卡在 ${targetProgress}%，前端显示 ${Math.floor(currentDisplayProgress)}%`)
+							console.log(
+								`[缓慢增长] 后端卡在 ${targetProgress}%，前端显示 ${Math.floor(currentDisplayProgress)}%`)
 						}
 					}
 				}
@@ -1280,7 +1486,7 @@
 			console.log('- projectId:', selectedProjectId.value)
 			console.log('- selectedProject:', JSON.stringify(selectedProject.value, null, 2))
 			console.log('- folder_name:', selectedProject.value?.folder_name)
-			
+
 			const result = await runTask({
 				projectId: selectedProjectId.value,
 				projectFolder: selectedProject.value.folder_name,
@@ -1698,10 +1904,20 @@
 
 	// 标识牌下载(数据json交给后端)
 	function downBiaoShi() {
+		// 检查是否选择了项目
+		if (!selectedProjectId.value) {
+			uni.showModal({
+				title: '提示',
+				content: '请先选择一个项目',
+				showCancel: false
+			})
+			return
+		}
+		
 		uni.showLoading({
 			title: '正在生成文档…'
 		});
-		downloadSignboardWord(signboard)
+		downloadSignboardWord(signboard, selectedProjectId.value)
 			.then(buf => {
 				const fileName = '排污标识牌.docx';
 				// #ifdef H5
@@ -1765,134 +1981,129 @@
 	// 以下监测方案模块的方法--------------------------
 	const plan = ref(false)
 
-	/* 监测方案生成进度条 */
-	// 1. 先声明计时器句柄和状态变量
-	let monitorProgressTimer = null
-	let monitorCurrentPercent = 0
-	let monitorSprintTimer = null
-	let monitorProgressDone = false
-
-	// 2. 开始"假进度" - 3分钟到99%
-	function startMonitorFakeProgress(totalTime = 180000) { // 3分钟
-		monitorCurrentPercent = 0
-		monitorProgressDone = false
-
-		// 计算步长：99% / (总时间/间隔时间)
-		const step = 99 / (totalTime / 200) // 每200ms更新一次
-
-		monitorProgressTimer = setInterval(() => {
-			if (monitorProgressDone) {
-				clearInterval(monitorProgressTimer)
-				monitorProgressTimer = null
-				return
-			}
-
-			monitorCurrentPercent += step
-			if (monitorCurrentPercent >= 99) {
-				monitorCurrentPercent = 99
-				clearInterval(monitorProgressTimer)
-				monitorProgressTimer = null
-			}
-
-			uni.showLoading({
-				title: `正在生成监测方案... ${Math.floor(monitorCurrentPercent)}%`,
-				mask: true
+	// 生成监测方案（异步任务模式）
+	async function saveMonitorPlan() {
+		// 1. 前置检查：是否选择了项目
+		if (!selectedProjectId.value) {
+			uni.showModal({
+				title: '提示',
+				content: '请先选择一个项目',
+				showCancel: false,
+				confirmText: '知道了'
 			})
-		}, 200)
-	}
-
-	// 3. 冲刺到100%并完成
-	function sprintMonitorToComplete() {
-		monitorProgressDone = true
-
-		// 清除假进度计时器
-		if (monitorProgressTimer) {
-			clearInterval(monitorProgressTimer)
-			monitorProgressTimer = null
+			return
 		}
 
-		// 1秒内从当前进度冲到100%
-		const startPercent = monitorCurrentPercent
-		const targetPercent = 100
-		const duration = 1000 // 1秒
-		const stepTime = 10 // 每10ms更新一次
-		const totalSteps = duration / stepTime
-		const stepValue = (targetPercent - startPercent) / totalSteps
-
-		let currentStep = 0
-		monitorSprintTimer = setInterval(() => {
-			currentStep++
-			monitorCurrentPercent = startPercent + (stepValue * currentStep)
-
-			if (monitorCurrentPercent >= 100) {
-				monitorCurrentPercent = 100
-				clearInterval(monitorSprintTimer)
-				monitorSprintTimer = null
-
-				// 显示100%并停留0.5秒
-				uni.showLoading({
-					title: `正在生成监测方案... 100%`,
-					mask: true
-				})
-
-				setTimeout(() => {
-					uni.hideLoading()
-					// 显示成功提示
-					uni.showModal({
-						title: '监测方案已下载',
-						content: '文件已下载，请到下载目录或保存路径查看！',
-						showCancel: false,
-						confirmText: '确定'
-					})
-				}, 500)
-				plan.value = true
-				return
-			}
-
-			uni.showLoading({
-				title: `正在生成监测方案... ${Math.floor(monitorCurrentPercent)}%`,
-				mask: true
+		// 2. 检查是否已提取项目信息
+		if (!extractionOk.value || baseTable.value.length === 0) {
+			uni.showModal({
+				title: '提示',
+				content: '请先提取项目基本信息',
+				showCancel: false,
+				confirmText: '知道了'
 			})
-		}, stepTime)
-	}
+			return
+		}
 
-	// 下载检测方案
-	async function saveMonitorPlan() {
-		// 1. 启动假进度（3分钟到99%）
-		startMonitorFakeProgress(180000)
+		// 3. 清理之前的进度状态
+		clearProgressTimer()
+
+		// 4. 初始化弹窗状态并打开
+		taskProgressTitle.value = '监测方案生成中'
+		taskProgress.value = 0
+		taskStatusText.value = '正在提交任务...'
+		taskState.value = 'pending'
+		taskProgressModal.value?.open()
 
 		try {
-			// 2. 调用接口获取文件数据
-			const arrayBuffer = await downloadMonitorPlan({
-				timeout: 300000
+			// 5. 调用后端异步任务
+			console.log('提交监测方案生成任务，项目ID:', selectedProjectId.value)
+
+			const result = await generateMonitorPlan({
+				projectId: selectedProjectId.value,
+				// 进度回调函数
+				onProgress: (progress, statusText, state) => {
+					updateProgressSmooth(progress, statusText, state)
+				},
+				pollInterval: 3000,
+				timeout: 1800000  // 30分钟超时
 			})
 
-			// 3. 收到后端响应，开始冲刺到100%
-			sprintMonitorToComplete()
+			// 6. 任务完成，确保进度到100%
+			updateProgressSmooth(100, '生成完成', 'success')
 
-			// 4. 保存文件
-			await saveMonitorPlanFile(arrayBuffer)
+			// 7. 下载文件
+			console.log('✅ 监测方案生成完成，开始下载...')
+			
+			// 延迟1秒后下载，让用户看到100%
+			setTimeout(async () => {
+				try {
+					const arrayBuffer = await downloadMonitorPlan(selectedProjectId.value, 'docx')
+					
+					// 保存文件
+					await saveMonitorPlanFile(arrayBuffer)
+					
+					// 标记完成
+					plan.value = true
+					
+					// 关闭进度弹窗
+					taskProgressModal.value?.close()
+					
+					// 显示成功提示
+					uni.showToast({
+						title: '监测方案已下载',
+						icon: 'success',
+						duration: 2000
+					})
+				} catch (downloadError) {
+					console.error('下载监测方案失败:', downloadError)
+					taskProgressModal.value?.close()
+					
+					uni.showModal({
+						title: '下载失败',
+						content: downloadError.message || '文件下载失败，请稍后重试',
+						showCancel: false
+					})
+				}
+			}, 1000)
 
 		} catch (error) {
-			// 错误时清除所有进度条
-			monitorProgressDone = true
-			if (monitorProgressTimer) {
-				clearInterval(monitorProgressTimer)
-				monitorProgressTimer = null
-			}
-			if (monitorSprintTimer) {
-				clearInterval(monitorSprintTimer)
-				monitorSprintTimer = null
-			}
-			uni.hideLoading()
+			// 错误时清除进度计时器并关闭弹窗
+			clearProgressTimer()
+			taskProgressModal.value?.close()
 
-			console.error('生成监测方案失败:', error)
+			console.error('[MonitorPlan] 生成失败:', error)
 
-			uni.showModal({
-				title: '生成失败',
-				content: error.message || '监测方案生成失败，请稍后重试',
-				showCancel: false
-			})
+			// 错误分类处理
+			if (error.message.includes('超时') || error.message.includes('timeout')) {
+				uni.showModal({
+					title: '生成超时',
+					content: '监测方案生成时间过长，可能原因：\n1. 项目数据较多\n2. 网络不稳定\n3. 服务器繁忙\n\n建议稍后重试',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			} else if (error.message.includes('已有一个监测方案生成任务正在运行')) {
+				uni.showModal({
+					title: '任务进行中',
+					content: '您已有一个监测方案生成任务正在运行，请等待完成后再提交新任务',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			} else if (error.message.includes('项目提取结果文件不存在')) {
+				uni.showModal({
+					title: '生成失败',
+					content: '未找到项目提取结果，请先提取项目基本信息',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			} else {
+				uni.showModal({
+					title: '生成失败',
+					content: error.message || '监测方案生成失败，请稍后重试',
+					showCancel: false,
+					confirmText: '知道了'
+				})
+			}
 		}
 	}
 
@@ -2766,11 +2977,265 @@
 	.section-body {
 		padding: 0 24rpx 24rpx;
 	}
-	.projectSel{
-		height: 100%;
-		// position: absolute;
+
+	/* 自定义项目选择器触发按钮 */
+	.project-selector {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 24rpx;
+		background: $white;
+		border: 2rpx solid #e5e7eb;
+		border-radius: $radius;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		min-height: 100rpx;
 	}
-	
+
+	.project-selector:active {
+		background: #f9fafb;
+		border-color: $brand;
+	}
+
+	.selector-content {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.selected-project {
+		display: flex;
+		align-items: center;
+		gap: 16rpx;
+	}
+
+	.project-info {
+		display: flex;
+		flex-direction: column;
+		gap: 6rpx;
+		flex: 1;
+		min-width: 0;
+	}
+
+	.project-name {
+		font-size: 28rpx;
+		color: $ink;
+		font-weight: 600;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.project-desc {
+		font-size: 24rpx;
+		color: $muted;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.placeholder {
+		display: flex;
+		align-items: center;
+		gap: 12rpx;
+	}
+
+	.placeholder-text {
+		font-size: 28rpx;
+		color: #9ca3af;
+	}
+
+	/* 项目选择器弹窗样式 */
+	.project-picker-modal {
+		width: 90vw;
+		max-width: 700rpx;
+		max-height: 80vh;
+		background: $white;
+		border-radius: 24rpx;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
+	}
+
+	.picker-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 32rpx 32rpx 24rpx;
+		border-bottom: 2rpx solid #f3f4f6;
+		background: linear-gradient(135deg, #f8fafb 0%, #ffffff 100%);
+	}
+
+	.picker-title {
+		font-size: 32rpx;
+		color: $ink;
+		font-weight: 700;
+	}
+
+	.picker-close {
+		width: 48rpx;
+		height: 48rpx;
+		border-radius: 12rpx;
+		background: #f3f4f6;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+	}
+
+	.picker-close:active {
+		background: #e5e7eb;
+		transform: scale(0.95);
+	}
+
+	.picker-search {
+		padding: 24rpx 32rpx;
+		background: $white;
+		border-bottom: 2rpx solid #f3f4f6;
+	}
+
+	.picker-stats {
+		padding: 16rpx 32rpx;
+		background: #f9fafb;
+		border-bottom: 1rpx solid #e5e7eb;
+	}
+
+	.stats-text {
+		font-size: 24rpx;
+		color: $muted;
+	}
+
+	.stats-highlight {
+		color: $brand;
+		font-weight: 600;
+	}
+
+	.picker-list {
+		flex: 1;
+		min-height: 0;
+		max-height: 60vh;
+		padding: 16rpx 0;
+	}
+
+	.picker-item {
+		display: flex;
+		align-items: center;
+		gap: 20rpx;
+		padding: 24rpx 32rpx;
+		margin: 0 16rpx 12rpx;
+		background: $white;
+		border: 2rpx solid #f3f4f6;
+		border-radius: 16rpx;
+		transition: all 0.2s ease;
+		cursor: pointer;
+	}
+
+	.picker-item:active {
+		transform: translateY(-2rpx);
+		box-shadow: 0 8rpx 20rpx rgba(22, 101, 52, 0.08);
+	}
+
+	.picker-item--active {
+		background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+		border-color: $brand;
+		box-shadow: 0 4rpx 16rpx rgba(22, 101, 52, 0.12);
+	}
+
+	.picker-item-icon {
+		flex-shrink: 0;
+		width: 56rpx;
+		height: 56rpx;
+		border-radius: 12rpx;
+		background: #f3f4f6;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.picker-item--active .picker-item-icon {
+		background: linear-gradient(135deg, $brand 0%, $brand-600 100%);
+	}
+
+	.picker-item--active .picker-item-icon uni-icons {
+		color: $white !important;
+	}
+
+	.picker-item-content {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8rpx;
+	}
+
+	.picker-item-name {
+		font-size: 28rpx;
+		color: $ink;
+		font-weight: 600;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.picker-item--active .picker-item-name {
+		color: $brand;
+	}
+
+	.picker-item-desc {
+		font-size: 24rpx;
+		color: $muted;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.picker-item-meta {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		margin-top: 4rpx;
+	}
+
+	.meta-text {
+		font-size: 22rpx;
+		color: #9ca3af;
+	}
+
+	.picker-item-action {
+		flex-shrink: 0;
+	}
+
+	.selected-badge {
+		width: 40rpx;
+		height: 40rpx;
+		border-radius: 50%;
+		background: linear-gradient(135deg, $brand 0%, $brand-600 100%);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 4rpx 12rpx rgba(22, 101, 52, 0.3);
+	}
+
+	.picker-empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 16rpx;
+		padding: 80rpx 32rpx;
+		text-align: center;
+	}
+
+	.picker-empty-text {
+		font-size: 28rpx;
+		color: #64748b;
+		font-weight: 600;
+	}
+
+	.picker-empty-tip {
+		font-size: 24rpx;
+		color: #9ca3af;
+	}
+
 
 	/* 表单 */
 	.form-group {
@@ -2904,7 +3369,7 @@
 	.icon-btn:active {
 		background: #f3f6fa;
 	}
-	
+
 	/* 项目文件列表样式 */
 	.file-list {
 		display: flex;
@@ -2912,7 +3377,7 @@
 		gap: 24rpx;
 		margin-top: 24rpx;
 	}
-	
+
 	.file-item {
 		display: flex;
 		align-items: center;
@@ -2923,12 +3388,12 @@
 		border: 2rpx solid #e5e9ed;
 		transition: all 0.2s;
 	}
-	
+
 	.file-item:hover {
 		background: #f3f6f9;
 		border-color: #d1dce5;
 	}
-	
+
 	.file-info {
 		display: flex;
 		align-items: center;
@@ -2936,7 +3401,7 @@
 		flex: 1;
 		min-width: 0;
 	}
-	
+
 	.file-details {
 		display: flex;
 		flex-direction: column;
@@ -2944,7 +3409,7 @@
 		flex: 1;
 		min-width: 0;
 	}
-	
+
 	.file-name {
 		font-size: 28rpx;
 		color: #1f2937;
@@ -2953,17 +3418,17 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	
+
 	.file-meta {
 		font-size: 24rpx;
 		color: #6b7280;
 	}
-	
+
 	.file-status {
 		flex-shrink: 0;
 		margin-left: 20rpx;
 	}
-	
+
 	.status-badge {
 		display: inline-block;
 		padding: 8rpx 20rpx;
@@ -2972,27 +3437,27 @@
 		font-weight: 500;
 		white-space: nowrap;
 	}
-	
+
 	.status-uploaded {
 		background: #e0f2fe;
 		color: #0369a1;
 	}
-	
+
 	.status-processing {
 		background: #fef3c7;
 		color: #d97706;
 	}
-	
+
 	.status-success {
 		background: #d1fae5;
 		color: #065f46;
 	}
-	
+
 	.status-error {
 		background: #fee2e2;
 		color: #dc2626;
 	}
-	
+
 
 	/* 基本信息表：响应式行 */
 
@@ -3539,13 +4004,13 @@
 
 	/* 响应式设计 - 移动端 */
 	@media (max-width: 768px) {
-		
+
 		.file-item {
 			flex-direction: column;
 			align-items: flex-start;
 			gap: 16rpx;
 		}
-		
+
 		.file-status {
 			margin-left: 0;
 			align-self: flex-end;
@@ -4239,4 +4704,3 @@
 		}
 	}
 </style>
-

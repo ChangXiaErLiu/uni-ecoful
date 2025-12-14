@@ -21,32 +21,42 @@ const _sfc_main = {
       "/pages/profile/index"
     ]);
     const cards = common_vendor.ref([
+      // {
+      //   id: 'chat',
+      //   title: 'AI问答',
+      //   subtitle: '环保领域智能问答',
+      //   icon: 'chat',
+      //   path: '/pages/chat/index',
+      //   isTab: false,
+      //   color: '#10b981'
+      // },
+      // {
+      //   id: 'doc',
+      //   title: '报告生成',
+      //   subtitle: '模板+资料智能生成',
+      //   icon: 'compose',
+      //   path: '/pages/doc-generator/index',
+      //   isTab: false,
+      //   color: '#3b82f6'
+      // },
+      // {
+      //   id: 'review',
+      //   title: '合规审查',
+      //   subtitle: '文档合规性智能审查',
+      //   icon: 'calendar',
+      //   path: '/pages/compliance/index',
+      //   isTab: false,
+      //   color: '#f59e0b'
+      // },
       {
-        id: "chat",
-        title: "AI问答",
-        subtitle: "环保领域智能问答",
-        icon: "chat",
-        path: "/pages/chat/index",
-        isTab: false,
-        color: "#10b981"
-      },
-      {
-        id: "doc",
-        title: "报告生成",
-        subtitle: "模板+资料智能生成",
-        icon: "compose",
-        path: "/pages/doc-generator/index",
-        isTab: false,
-        color: "#3b82f6"
-      },
-      {
-        id: "review",
-        title: "合规审查",
-        subtitle: "文档合规性智能审查",
+        id: "project",
+        title: "项目管理",
+        subtitle: "企业项目管理，包含项目新建、修改等",
         icon: "calendar",
-        path: "/pages/compliance/index",
-        isTab: false,
-        color: "#f59e0b"
+        path: "/pages/project/index",
+        isTab: true,
+        color: "#aaaa00",
+        status: "beta"
       },
       {
         id: "acceptance",
@@ -58,25 +68,25 @@ const _sfc_main = {
         status: "beta",
         color: "#8b5cf6"
       },
-      {
-        id: "eia",
-        title: "环评报告",
-        subtitle: "环评行业报告辅助",
-        icon: "paperplane",
-        path: "/pages/reports/eia/index",
-        isTab: false,
-        status: "beta",
-        color: "#ef4444"
-      },
-      {
-        id: "kb",
-        title: "知识库",
-        subtitle: "资料管理与检索",
-        icon: "folder-add",
-        path: "/pages/knowledge/index",
-        isTab: true,
-        color: "#06b6d4"
-      },
+      // {
+      //   id: 'eia',
+      //   title: '环评报告',
+      //   subtitle: '环评行业报告辅助',
+      //   icon: 'paperplane',
+      //   path: '/pages/reports/eia/index',
+      //   isTab: false,
+      //   status: 'beta',
+      //   color: '#ef4444'
+      // },
+      // {
+      //   id: 'kb',
+      //   title: '知识库',
+      //   subtitle: '资料管理与检索',
+      //   icon: 'folder-add',
+      //   path: '/pages/knowledge/index',
+      //   isTab: true,
+      //   color: '#06b6d4'
+      // },
       {
         id: "reconnoitre",
         title: "现场踏查",
@@ -86,27 +96,17 @@ const _sfc_main = {
         isTab: true,
         color: "#aa55ff",
         status: "beta"
-      },
-      {
-        id: "ledger",
-        title: "环保台账",
-        subtitle: "企业环境管理的基础，也是环保部门执法检查的重点内容",
-        icon: "calendar",
-        path: "/pages/ledger/index",
-        isTab: true,
-        color: "#00007f",
-        status: "beta"
-      },
-      {
-        id: "project",
-        title: "项目管理",
-        subtitle: "企业项目管理，包含项目新建、修改等",
-        icon: "calendar",
-        path: "/pages/project/index",
-        isTab: true,
-        color: "#aaaa00",
-        status: "beta"
       }
+      // {
+      //   id: 'ledger',
+      //   title: '环保台账',
+      //   subtitle: '企业环境管理的基础，也是环保部门执法检查的重点内容',
+      //   icon: 'calendar',
+      //   path: '/pages/ledger/index',
+      //   isTab: true,
+      //   color: '#00007f',
+      // 	status: 'beta',
+      // },
     ]);
     const keyword = common_vendor.ref("");
     const filteredCards = common_vendor.computed(() => {

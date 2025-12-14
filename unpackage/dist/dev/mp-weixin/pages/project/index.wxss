@@ -771,10 +771,19 @@ to {
   background: #f8fafc;
   transition: all 0.3s ease;
   text-align: center;
+  cursor: pointer;
 }
 .upload-area.data-v-47879d53:active {
   border-color: #3b82f6;
   background: rgba(59, 130, 246, 0.05);
+}
+
+/* 拖拽状态 */
+.upload-area--dragging.data-v-47879d53 {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  border-width: 3rpx;
+  transform: scale(1.02);
 }
 .upload-text.data-v-47879d53 {
   font-size: 28rpx;
@@ -872,6 +881,13 @@ to {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16rpx;
+}
+.selected-files-info.data-v-47879d53 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
 }
 .selected-files-title.data-v-47879d53 {
   font-size: 26rpx;
@@ -881,6 +897,25 @@ to {
 .selected-files-size.data-v-47879d53 {
   font-size: 22rpx;
   color: #64748b;
+}
+.clear-all-btn.data-v-47879d53 {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 12rpx 20rpx;
+  height: auto;
+  line-height: 1;
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1rpx solid #fecaca;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.clear-all-btn.data-v-47879d53:active {
+  background: #fee2e2;
+  transform: scale(0.98);
 }
 .selected-files-scroll.data-v-47879d53 {
   max-height: 400rpx;
@@ -892,9 +927,13 @@ to {
   padding: 16rpx 20rpx;
   background: #ffffff;
   border-bottom: 1rpx solid #f1f5f9;
+  transition: background 0.2s ease;
 }
 .selected-file-item.data-v-47879d53:last-child {
   border-bottom: none;
+}
+.selected-file-item.data-v-47879d53:active {
+  background: #f8fafc;
 }
 .file-item-name.data-v-47879d53 {
   flex: 1;
@@ -908,6 +947,22 @@ to {
   font-size: 22rpx;
   color: #94a3b8;
   flex-shrink: 0;
+}
+.file-item-remove.data-v-47879d53 {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.file-item-remove.data-v-47879d53:active {
+  background: #fee2e2;
+  transform: scale(0.95);
 }
 
 /* 上传进度浮窗样式 */

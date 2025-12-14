@@ -260,8 +260,13 @@ function formatValue(value) {
   }
   return value || "未提取到相关信息";
 }
-function downloadSignboardWord(signboard) {
+function downloadSignboardWord(signboard, projectId) {
+  if (!projectId) {
+    throw new Error("项目ID不能为空");
+  }
   const payload = {
+    project_id: projectId,
+    // 添加项目ID
     sections: signboard.sections.map((sec) => ({
       block: sec.block,
       items: sec.items.map((it) => ({
@@ -271,16 +276,21 @@ function downloadSignboardWord(signboard) {
     }))
   };
   return new Promise((resolve, reject) => {
+    const token = common_vendor.index.getStorageSync("token");
+    const header = {
+      "Content-Type": "application/json"
+    };
+    if (token) {
+      header["Authorization"] = `Bearer ${token}`;
+    }
     common_vendor.index.request({
       url: utils_config.BASE_URL + "/api/v1/completion/signboard/download",
       method: "POST",
       data: payload,
-      header: {
-        "Content-Type": "application/json"
-      },
+      header,
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:496", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:523", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -300,20 +310,94 @@ function downloadSignboardWord(signboard) {
     });
   });
 }
-function downloadMonitorPlan(options = {}) {
+async function generateMonitorPlan(options = {}) {
   const {
-    hideLoading = false,
-    timeout = 6e5
-    // 默认10分钟，因为涉及 RAG 检索 + LLM 生成
+    projectId = null,
+    onProgress = null,
+    pollInterval = 3e3,
+    timeout = 18e5
+    // 默认30分钟
   } = options;
+  if (!projectId) {
+    throw new Error("项目ID不能为空");
+  }
+  try {
+    const submitResult = await utils_request.request.post("/api/v1/completion/monitor-plan/async/start", {
+      project_id: projectId
+    });
+    const taskId = submitResult.task_id;
+    common_vendor.index.__f__("log", "at api/acceptance.js:575", `✅ 监测方案任务已提交，Task ID: ${taskId}`);
+    const startTime = Date.now();
+    return new Promise((resolve, reject) => {
+      const pollStatus = async () => {
+        try {
+          if (Date.now() - startTime > timeout) {
+            reject(new Error("任务超时，请稍后重试"));
+            return;
+          }
+          const statusResult = await utils_request.request.get(`/api/v1/tasks/${taskId}/status`);
+          const {
+            status,
+            progress = 0,
+            current_step = "",
+            task_result,
+            error_message
+          } = statusResult;
+          common_vendor.index.__f__("log", "at api/acceptance.js:600", `[${status}] ${progress}% - ${current_step}`);
+          if (onProgress && typeof onProgress === "function") {
+            onProgress(progress, current_step, status);
+          }
+          if (status === "success") {
+            common_vendor.index.__f__("log", "at api/acceptance.js:609", "✅ 监测方案生成完成！");
+            resolve({
+              status: "success",
+              result: task_result,
+              project_id: projectId
+            });
+            return;
+          }
+          if (status === "failed") {
+            common_vendor.index.__f__("error", "at api/acceptance.js:620", "❌ 任务失败:", error_message);
+            reject(new Error(error_message || "监测方案生成失败"));
+            return;
+          }
+          if (status === "cancelled") {
+            reject(new Error("任务已被取消"));
+            return;
+          }
+          setTimeout(pollStatus, pollInterval);
+        } catch (error) {
+          common_vendor.index.__f__("error", "at api/acceptance.js:635", "查询任务状态失败:", error);
+          reject(error);
+        }
+      };
+      pollStatus();
+    });
+  } catch (error) {
+    if (error.message && error.message.includes("已有一个监测方案生成任务正在运行")) {
+      throw new Error("您已有一个监测方案生成任务正在运行，请等待完成");
+    }
+    throw error;
+  }
+}
+function downloadMonitorPlan(projectId, format = "docx") {
+  if (!projectId) {
+    throw new Error("项目ID不能为空");
+  }
+  const url = `/api/v1/completion/monitor-plan/${projectId}/download?format=${format}`;
   return new Promise((resolve, reject) => {
-    const requestTask = common_vendor.index.request({
-      url: utils_config.BASE_URL + "/api/v1/completion/monitor-plan/generate",
+    const token = common_vendor.index.getStorageSync("token");
+    const header = {};
+    if (token) {
+      header["Authorization"] = `Bearer ${token}`;
+    }
+    common_vendor.index.request({
+      url: utils_config.BASE_URL + url,
       method: "GET",
+      header,
       responseType: "arraybuffer",
-      timeout,
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:564", "监测方案下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:705", "监测方案下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -323,22 +407,23 @@ function downloadMonitorPlan(options = {}) {
           } else {
             reject(new Error("空文件"));
           }
+        } else if (res.statusCode === 403) {
+          reject(new Error("您不是该项目的成员，无权下载监测方案"));
+        } else if (res.statusCode === 404) {
+          reject(new Error("监测方案文件不存在，请先生成监测方案"));
         } else {
-          reject(new Error("生成失败"));
+          reject(new Error("下载失败"));
         }
       },
       fail: (error) => {
         reject(new Error(error.errMsg || "网络请求失败"));
       }
     });
-    setTimeout(() => {
-      requestTask.abort();
-      reject(new Error("请求超时，监测方案生成时间较长，请稍后重试"));
-    }, timeout);
   });
 }
 exports.downloadMonitorPlan = downloadMonitorPlan;
 exports.downloadSignboardWord = downloadSignboardWord;
+exports.generateMonitorPlan = generateMonitorPlan;
 exports.runTask = runTask;
 exports.transformExtractResult = transformExtractResult;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/api/acceptance.js.map
