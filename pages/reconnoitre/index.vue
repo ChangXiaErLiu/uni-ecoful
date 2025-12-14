@@ -1089,14 +1089,14 @@ function removeOutletGroup(section, groupIndex) {
 /* 列宽定义 - 自适应 */
 .device-name {
 	flex: 2; /* 设备名称列占2份 */
-	min-width: 200rpx;
+	min-width: 180rpx;
 	max-width: none;
 }
 
 .device-quantity {
-	flex: 1.5; /* 数量列占1份 */
-	min-width: 120rpx;
-	max-width: 150rpx;
+	flex: 1; /* 数量列占1份 */
+	min-width: 220rpx;
+	max-width: 260rpx;
 }
 
 .device-remark {
@@ -1106,9 +1106,9 @@ function removeOutletGroup(section, groupIndex) {
 }
 
 .device-images {
-	flex: 1.5; /* 图片列占1.5份 */
-	min-width: 150rpx;
-	max-width: 250rpx;
+	flex: 1; /* 图片列占1.5份 */
+	min-width: 100rpx;
+	max-width: 150rpx;
 }
 
 .device-actions {
