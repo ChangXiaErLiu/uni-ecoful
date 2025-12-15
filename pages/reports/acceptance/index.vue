@@ -1671,17 +1671,19 @@
 			list.forEach(item => {
 				const codes = splitOutletCodes(item['排污口编号']);
 				const pollutantName = item['污染物名称'] || '';
+				const wryz = item['污染因子'] || '';
 
 				codes.forEach(code => {
 					if (!outletMap.has(code)) {
 						outletMap.set(code, {
 							pollutants: [],
+							wryz: [],
 							otherInfo: item // 保存其他信息（如执行标准、排放去向等）
 						});
 					}
 					// 合并污染物名称
-					if (pollutantName) {
-						outletMap.get(code).pollutants.push(pollutantName);
+					if (wryz) {
+						outletMap.get(code).wryz.push(wryz);
 					}
 				});
 			});
@@ -1693,7 +1695,7 @@
 		const waterList = emissionData['水污染物'] || [];
 		const waterOutlets = groupByOutletCode(waterList, '废水');
 		waterOutlets.forEach((data, code) => {
-			const pollutants = [...new Set(data.pollutants)].join('、'); // 去重并合并
+			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '废水').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1701,8 +1703,8 @@
 				title: '排放口编号',
 				content: code
 			}, {
-				title: '污染物种类',
-				content: pollutants
+				title: '污染因子',
+				content: wryz
 			});
 		});
 
@@ -1710,7 +1712,7 @@
 		const gasList = emissionData['大气污染物'] || [];
 		const gasOutlets = groupByOutletCode(gasList, '废气');
 		gasOutlets.forEach((data, code) => {
-			const pollutants = [...new Set(data.pollutants)].join('、'); // 去重并合并
+			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '废气').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1718,8 +1720,8 @@
 				title: '排放口编号',
 				content: code
 			}, {
-				title: '污染物种类',
-				content: pollutants
+				title: '污染因子',
+				content: wryz
 			});
 		});
 
@@ -1727,6 +1729,7 @@
 		const noiseList = emissionData['噪声'] || [];
 		const noiseOutlets = groupByOutletCode(noiseList, '噪声');
 		noiseOutlets.forEach((data, code) => {
+			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '噪声').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1734,7 +1737,7 @@
 				title: '排放口编号',
 				content: code
 			}, {
-				title: '污染物种类',
+				title: '污染因子',
 				content: '设备噪声'
 			});
 		});
@@ -1850,7 +1853,7 @@
 				content: code
 			},
 			{
-				title: '污染物种类',
+				title: '污染因子',
 				content: '设备噪声'
 			}
 		];
@@ -2017,7 +2020,7 @@
 
 		try {
 			// 5. 调用后端异步任务
-			console.log('提交监测方案生成任务，项目ID:', selectedProjectId.value)
+			// console.log('提交监测方案生成任务，项目ID:', selectedProjectId.value)
 
 			const result = await generateMonitorPlan({
 				projectId: selectedProjectId.value,
@@ -2033,7 +2036,7 @@
 			updateProgressSmooth(100, '生成完成', 'success')
 
 			// 7. 下载文件
-			console.log('✅ 监测方案生成完成，开始下载...')
+			// console.log('✅ 监测方案生成完成，开始下载...')
 			
 			// 延迟1秒后下载，让用户看到100%
 			setTimeout(async () => {
@@ -2260,7 +2263,7 @@
 
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
-					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
+					url: 'http://172.16.1.61:8000/api/v1/completion/tzdDetail/datasheet',
 					method: 'GET',
 					timeout: 10000,
 					data: {
@@ -2325,7 +2328,7 @@
 
 		// 如果URL是相对路径，添加基础URL
 		if (url.startsWith('/')) {
-			return `http://127.0.0.1:8000${url}`
+			return `http://172.16.1.61:8000${url}`
 		}
 
 		// 如果URL已经是完整路径，直接返回
