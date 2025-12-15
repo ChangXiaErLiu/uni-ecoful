@@ -2183,7 +2183,7 @@
 
 			console.log('开始请求数据...')
 
-			// 使用 Promise 包装 uni.request 以确保正确解析
+			// modify by wilson 使用 Promise  包装 uni.request 以确保正确解析
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
 					url: 'http://172.16.1.61:8000/api/v1/completion/datasheet',

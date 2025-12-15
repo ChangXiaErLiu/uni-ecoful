@@ -10,7 +10,7 @@
 						:key="index" 
 						class="tab-item"
 						:class="{ 'tab-item--active': currentTab === index }"
-						@tap="currentTab = index"
+						@tap="handleTabChange(index)"
 					>
 						<text class="tab-label">{{ tab }}</text>
 					</view>
@@ -100,43 +100,89 @@
 										<uni-icons type="plus" size="16" color="#166534" />
 										<text>新增设备</text>
 									</button>
+									<button class="btn btn--primary" @tap="fetchEquipmentData" :disabled="loadingEquipment">
+										<uni-icons :type="loadingEquipment ? 'spinner-cycle' : 'refresh'" size="16" color="#ffffff" />
+										<text>{{ loadingEquipment ? '加载中...' : '刷新数据' }}</text>
+									</button>
 								</view>
 
-								<view v-if="equipmentList.length" class="data-table">
-									<view class="table-header">
-										<text class="table-th w200">设备名称</text>
-										<text class="table-th w120">数量</text>
-										<text class="table-th">备注</text>
-										<text class="table-th w200">图片</text>
-										<text class="table-th w80">操作</text>
-									</view>
-									<view class="table-body">
-										<view class="table-row" v-for="(item, index) in equipmentList" :key="item.id">
-											<uni-easyinput class="table-td w200" v-model="item.name" placeholder="设备名称" />
-											<uni-easyinput class="table-td w120" v-model="item.quantity" placeholder="数量" />
-											<uni-easyinput class="table-td" v-model="item.remark" placeholder="备注" />
-											<view class="table-td w200">
-												<uni-file-picker 
-													v-model="item.images" 
-													fileMediatype="image" 
-													mode="grid"
-													:limit="3"
-													:auto-upload="false"
-												/>
+								<!-- 加载状态 -->
+								<view v-if="loadingEquipment" class="loading-state">
+									<uni-icons type="spinner-cycle" size="48" color="#166534" class="loading-icon" />
+									<text class="loading-text">正在加载设备数据...</text>
+								</view>
+
+								<!-- 错误状态 -->
+								<view v-else-if="fetchEquipmentError" class="error-state">
+									<uni-icons type="close-circle" size="48" color="#dc2626" />
+									<text class="error-text">加载失败: {{ fetchEquipmentError }}</text>
+									<button class="btn btn--secondary" @tap="fetchEquipmentData">
+										<text>重新加载</text>
+									</button>
+								</view>
+
+								<!-- 数据表格 -->
+								<view v-else-if="equipmentList.length" class="data-table-container">
+									<scroll-view class="data-table-scroll" scroll-x>
+										<view class="data-table">
+											<view class="table-header">
+												<text class="table-th device-name">设备名称</text>
+												<text class="table-th device-quantity">数量</text>
+												<text class="table-th device-remark">备注</text>
+												<text class="table-th device-images">图片</text>
+												<text class="table-th device-actions">操作</text>
 											</view>
-											<view class="table-td w80">
-												<button class="icon-btn icon-btn--danger" @tap="() => removeEquipment(index)">
-													<uni-icons type="trash" size="16" color="#d92d20" />
-												</button>
+											<view class="table-body">
+												<view class="table-row" v-for="(item, index) in equipmentList" :key="item.id">
+													<view class="table-td device-name">
+														<uni-easyinput 
+															v-model="item.name" 
+															placeholder="设备名称" 
+															:clearable="true"
+															class="table-input"
+														/>
+													</view>
+													<view class="table-td device-quantity">
+														<uni-easyinput 
+															v-model="item.quantity" 
+															placeholder="数量" 
+															:clearable="true"
+															class="table-input"
+														/>
+													</view>
+													<view class="table-td device-remark">
+														<uni-easyinput 
+															v-model="item.remark" 
+															placeholder="备注" 
+															:clearable="true"
+															class="table-input"
+														/>
+													</view>
+													<view class="table-td device-images">
+														<uni-file-picker 
+															v-model="item.images" 
+															fileMediatype="image" 
+															mode="grid"
+															:limit="3"
+															:auto-upload="false"
+															class="file-picker"
+														/>
+													</view>
+													<view class="table-td device-actions">
+														<button class="icon-btn icon-btn--danger" @tap="() => removeEquipment(index)">
+															<uni-icons type="trash" size="16" color="#d92d20" />
+														</button>
+													</view>
+												</view>
 											</view>
 										</view>
-									</view>
+									</scroll-view>
 								</view>
 
 								<view v-else class="empty-state">
 									<uni-icons type="gear" size="48" color="#cbd5e1" />
 									<text class="empty-text">暂无设备信息</text>
-									<text class="empty-tip">点击新增按钮添加设备</text>
+									<text class="empty-tip">点击新增按钮添加设备，或刷新数据从接口获取</text>
 								</view>
 							</view>
 						</view>
@@ -158,35 +204,61 @@
 									</button>
 								</view>
 
-								<view v-if="pollutionFacilityList.length" class="data-table">
-									<view class="table-header">
-										<text class="table-th w200">设施名称</text>
-										<text class="table-th w120">数量</text>
-										<text class="table-th">备注</text>
-										<text class="table-th w200">图片</text>
-										<text class="table-th w80">操作</text>
-									</view>
-									<view class="table-body">
-										<view class="table-row" v-for="(item, index) in pollutionFacilityList" :key="item.id">
-											<uni-easyinput class="table-td w200" v-model="item.name" placeholder="设施名称" />
-											<uni-easyinput class="table-td w120" v-model="item.quantity" placeholder="数量" />
-											<uni-easyinput class="table-td" v-model="item.remark" placeholder="备注" />
-											<view class="table-td w200">
-												<uni-file-picker 
-													v-model="item.images" 
-													fileMediatype="image" 
-													mode="grid"
-													:limit="3"
-													:auto-upload="false"
-												/>
+								<view v-if="pollutionFacilityList.length" class="data-table-container">
+									<scroll-view class="data-table-scroll" scroll-x>
+										<view class="data-table">
+											<view class="table-header">
+												<text class="table-th device-name">设施名称</text>
+												<text class="table-th device-quantity">数量</text>
+												<text class="table-th device-remark">备注</text>
+												<text class="table-th device-images">图片</text>
+												<text class="table-th device-actions">操作</text>
 											</view>
-											<view class="table-td w80">
-												<button class="icon-btn icon-btn--danger" @tap="() => removePollutionFacility(index)">
-													<uni-icons type="trash" size="16" color="#d92d20" />
-												</button>
+											<view class="table-body">
+												<view class="table-row" v-for="(item, index) in pollutionFacilityList" :key="item.id">
+													<view class="table-td device-name">
+														<uni-easyinput 
+															v-model="item.name" 
+															placeholder="设施名称" 
+															:clearable="true"
+															class="table-input"
+														/>
+													</view>
+													<view class="table-td device-quantity">
+														<uni-easyinput 
+															v-model="item.quantity" 
+															placeholder="数量" 
+															:clearable="true"
+															class="table-input"
+														/>
+													</view>
+													<view class="table-td device-remark">
+														<uni-easyinput 
+															v-model="item.remark" 
+															placeholder="备注" 
+															:clearable="true"
+															class="table-input"
+														/>
+													</view>
+													<view class="table-td device-images">
+														<uni-file-picker 
+															v-model="item.images" 
+															fileMediatype="image" 
+															mode="grid"
+															:limit="3"
+															:auto-upload="false"
+															class="file-picker"
+														/>
+													</view>
+													<view class="table-td device-actions">
+														<button class="icon-btn icon-btn--danger" @tap="() => removePollutionFacility(index)">
+															<uni-icons type="trash" size="16" color="#d92d20" />
+														</button>
+													</view>
+												</view>
 											</view>
 										</view>
-									</view>
+									</scroll-view>
 								</view>
 
 								<view v-else class="empty-state">
@@ -284,7 +356,7 @@
 
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { onShow } from '@dcloudio/uni-app'
 import { navTitleStore } from '@/stores/navTitle.js'
@@ -296,6 +368,19 @@ onShow(() => navTitle.setTitle('现场踏勘'))
 // Tab定义
 const tabs = ['建设内容', '设备情况', '污染物设施', '排污口情况']
 const currentTab = ref(0)
+
+// 设备数据加载状态
+const loadingEquipment = ref(false)
+const fetchEquipmentError = ref('')
+
+// 监听Tab切换
+function handleTabChange(index) {
+	currentTab.value = index
+	// 当切换到设备情况Tab时，自动获取数据
+	if (index === 1 && !equipmentList.value.length) {
+		fetchEquipmentData()
+	}
+}
 
 // ========== Tab 0: 主要建设内容 ==========
 const mainContentTable = ref([
@@ -356,10 +441,155 @@ function confirmAddMainContent() {
 
 
 // ========== Tab 1: 设备列表情况 ==========
-const equipmentList = ref([
-	{ id: 'eq_1', name: '废水处理设备', quantity: '1', remark: '运行正常', images: [] },
-	{ id: 'eq_2', name: '废气处理设备', quantity: '2', remark: '定期维护', images: [] }
-])
+const equipmentList = ref([])
+
+// 解析设备数据
+function parseEquipmentData(apiData) {
+	try {
+		const parsedEquipment = []
+		
+		// 检查数据是否有效
+		if (!apiData || !Array.isArray(apiData) || apiData.length <= 1) {
+			return []
+		}
+		
+		// 跳过表头行（第一行），从索引1开始
+		for (let i = 1; i < apiData.length; i++) {
+			const row = apiData[i]
+			
+			// 获取column_1字段，这是主要数据字段
+			if (row.column_1) {
+				// 使用 '\\t' 分隔符分割字符串
+				const columns = row.column_1.split('\\t')
+				
+				// 确保有足够的列（至少4列：序号、设备名称、型号、数量）
+				if (columns.length >= 4) {
+					// 设备名称是第二个字段（索引1），数量是第四个字段（索引3）
+					const deviceName = columns[1] || ''
+					const quantity = columns[3] || ''
+					
+					// 只添加有设备名称的数据
+					if (deviceName.trim()) {
+						parsedEquipment.push({
+							id: 'eq_' + Date.now() + '_' + i,
+							name: deviceName.trim(),
+							quantity: quantity.trim(),
+							remark: '', // 接口没有提供备注，留空
+							images: []
+						})
+					}
+				} else {
+					console.warn(`第${i+1}行数据列数不足:`, columns)
+				}
+			} else {
+				console.warn(`第${i+1}行没有column_1字段:`, row)
+			}
+		}
+		
+		return parsedEquipment
+	} catch (error) {
+		console.error('解析设备数据失败:', error)
+		return []
+	}
+}
+
+// 从接口获取设备数据
+async function fetchEquipmentData() {
+	loadingEquipment.value = true
+	fetchEquipmentError.value = ''
+	
+	try {
+	
+		// modify by wilson 使用 Promise  包装 uni.request 以确保正确解析
+		const response = await new Promise((resolve, reject) => {
+			uni.request({
+				url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/getDeviceDetail',
+				method: 'GET',
+				timeout: 10000,
+				data: {
+					memberId: 3,
+				},
+				success: (res) => {
+					console.log('请求成功:', res)
+					resolve(res)
+				},
+				fail: (err) => {
+					console.log('请求失败:', err)
+					reject(err)
+				}
+			})
+		})
+		
+		// uni.request 返回的是一个数组 [data, statusCode, header]
+		// 或者直接是response.data（取决于uni-app版本）
+		let resData
+		
+		// 处理不同版本的返回值
+		if (Array.isArray(response)) {
+			// 如果是数组格式 [data, statusCode, header]
+			resData = response[0]
+		} else if (response && response.data) {
+			// 如果是对象格式 {data, statusCode, header}
+			resData = response.data
+		} else {
+			resData = response
+		}
+		
+		console.log('接口返回完整数据:', resData)
+		
+		// 根据您提供的JSON结构，数据在resData.data中
+		if (resData && resData.data) {
+			const apiData = resData.data
+			console.log('设备数据数组:', apiData)
+			
+			if (apiData && Array.isArray(apiData) && apiData.length > 1) {
+				const parsedData = parseEquipmentData(apiData)
+				console.log('解析后的设备数据:', parsedData)
+				
+				if (parsedData.length > 0) {
+					// 清空现有数据，用接口数据替换
+					equipmentList.value = parsedData
+					uni.showToast({ 
+						title: `加载成功，共${parsedData.length}条设备数据`, 
+						icon: 'success',
+						duration: 2000
+					})
+				} else {
+					fetchEquipmentError.value = '解析到的设备数据为空'
+					uni.showToast({ 
+						title: '设备数据解析为空', 
+						icon: 'none',
+						duration: 2000
+					})
+				}
+			} else {
+				fetchEquipmentError.value = '接口返回的设备数据格式不正确'
+				uni.showToast({ 
+					title: '设备数据格式错误', 
+					icon: 'none',
+					duration: 2000
+				})
+			}
+		} else {
+			fetchEquipmentError.value = resData?.message || '接口返回数据格式异常'
+			uni.showToast({ 
+				title: '获取设备数据失败', 
+				icon: 'none',
+				duration: 2000
+			})
+		}
+	} catch (error) {
+		console.error('获取设备数据失败:', error)
+		fetchEquipmentError.value = error.message || '网络请求失败'
+		uni.showToast({ 
+			title: '网络请求失败，请检查网络连接', 
+			icon: 'none',
+			duration: 2000
+		})
+	} finally {
+		loadingEquipment.value = false
+	}
+}
 
 function addEquipment() {
 	const newEquipment = {
@@ -644,8 +874,50 @@ function removeOutletGroup(section, groupIndex) {
 	flex-wrap: wrap;
 }
 
-/* 按钮
-样式 */
+/* 加载状态样式 */
+.loading-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 80rpx 32rpx;
+	gap: 16rpx;
+}
+
+.loading-icon {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+
+.loading-text {
+	font-size: 28rpx;
+	color: #64748b;
+	font-weight: 500;
+}
+
+/* 错误状态样式 */
+.error-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 80rpx 32rpx;
+	gap: 16rpx;
+	text-align: center;
+}
+
+.error-text {
+	font-size: 28rpx;
+	color: #dc2626;
+	font-weight: 500;
+	margin-bottom: 16rpx;
+}
+
+/* 按钮样式 */
 .btn {
 	display: flex;
 	align-items: center;
@@ -767,15 +1039,29 @@ function removeOutletGroup(section, groupIndex) {
 	overflow: hidden;
 }
 
+/* 表格容器 */
+.data-table-container {
+	width: 100%;
+	max-width: 100%;
+	overflow: hidden;
+	box-sizing: border-box;
+}
+
+.data-table-scroll {
+	width: 100%;
+	max-width: 100%;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
 /* 表格样式 */
 .data-table {
 	background: #ffffff;
 	border: 1px solid #e2e8f0;
 	border-radius: 12rpx;
-	overflow-x: auto;
-	overflow-y: hidden;
+	overflow: hidden;
 	width: 100%;
-	max-width: 100%;
+	min-width: 800rpx; /* PC端最小宽度 */
 	box-sizing: border-box;
 }
 
@@ -789,16 +1075,47 @@ function removeOutletGroup(section, groupIndex) {
 }
 
 .table-th {
-	flex: 1;
 	font-size: 26rpx;
 	color: #64748b;
 	font-weight: 600;
 	text-align: center;
+	padding: 0 12rpx;
+	box-sizing: border-box;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.table-th.w80 { width: 80rpx; flex: none; }
-.table-th.w120 { width: 120rpx; flex: none; }
-.table-th.w200 { width: 200rpx; flex: none; }
+/* 列宽定义 - 自适应 */
+.device-name {
+	flex: 2; /* 设备名称列占2份 */
+	min-width: 180rpx;
+	max-width: none;
+}
+
+.device-quantity {
+	flex: 1; /* 数量列占1份 */
+	min-width: 220rpx;
+	max-width: 260rpx;
+}
+
+.device-remark {
+	flex: 2; /* 备注列占2份 */
+	min-width: 200rpx;
+	max-width: none;
+}
+
+.device-images {
+	flex: 1; /* 图片列占1.5份 */
+	min-width: 100rpx;
+	max-width: 150rpx;
+}
+
+.device-actions {
+	flex: 0.5; /* 操作列占0.5份 */
+	min-width: 80rpx;
+	max-width: 100rpx;
+}
 
 .table-body {
 	display: flex;
@@ -807,11 +1124,12 @@ function removeOutletGroup(section, groupIndex) {
 
 .table-row {
 	display: flex;
-	align-items: center;
-	padding: 16rpx;
+	align-items: stretch;
+	padding: 0;
 	border-bottom: 1px solid #f1f5f9;
 	transition: background 0.2s ease;
 	box-sizing: border-box;
+	min-height: 120rpx;
 }
 
 .table-row:last-child {
@@ -827,21 +1145,53 @@ function removeOutletGroup(section, groupIndex) {
 	padding: 20rpx 24rpx;
 	border-bottom: 2px solid #e2e8f0;
 	justify-content: space-between;
+	min-height: auto;
 }
 
 .table-td {
-	flex: 1;
-	font-size: 26rpx;
-	color: #0f172a;
-	padding: 0 8rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding: 12rpx;
+	box-sizing: border-box;
+	overflow: hidden;
 }
 
-.table-td.w80 { width: 80rpx; flex: none; }
-.table-td.w120 { width: 120rpx; flex: none; }
-.table-td.w200 { width: 200rpx; flex: none; }
+/* 表格输入框样式 */
+.table-input {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+}
+
+.table-input :deep(.uni-easyinput__content) {
+	min-height: 80rpx;
+	border: 1px solid #e2e8f0;
+	border-radius: 8rpx;
+}
+
+.table-input :deep(.uni-easyinput__content-input) {
+	font-size: 26rpx;
+	padding: 12rpx 16rpx;
+}
+
+/* 文件选择器样式 */
+.file-picker {
+	width: 100%;
+	max-width: 100%;
+}
+
+.file-picker :deep(.uni-file-picker) {
+	width: 100%;
+}
+
+.file-picker :deep(.uni-file-picker__container) {
+	padding: 0;
+}
+
+.file-picker :deep(.uni-file-picker__header) {
+	padding: 0;
+}
 
 .table-td--section {
 	font-size: 30rpx;
@@ -849,6 +1199,7 @@ function removeOutletGroup(section, groupIndex) {
 	color: #166534;
 	text-align: left;
 	justify-content: flex-start;
+	padding: 0 12rpx;
 }
 
 /* 图标按钮 */
@@ -864,6 +1215,7 @@ function removeOutletGroup(section, groupIndex) {
 	font-size: 24rpx;
 	color: #64748b;
 	transition: all 0.2s ease;
+	min-height: 60rpx;
 }
 
 .icon-btn:active {
@@ -958,7 +1310,6 @@ function removeOutletGroup(section, groupIndex) {
 @media (max-width: 768px) {
 	.reconnoitre-page {
 		height: 89.6vh;
-
 	}
 	
 	.reconnoitre-tabs {
@@ -1025,6 +1376,80 @@ function removeOutletGroup(section, groupIndex) {
 	.modal {
 		width: 90vw;
 		max-width: 90vw;
+	}
+
+	/* 移动端表格调整 */
+	.data-table {
+		min-width: 1000rpx; /* 移动端增加最小宽度，确保内容可显示 */
+	}
+
+	.device-name {
+		flex: 2.5; /* 移动端设备名称列占更多空间 */
+		min-width: 250rpx;
+	}
+
+	.device-quantity {
+		flex: 1.3;
+		min-width: 220rpx;
+		max-width: 230rpx;
+	}
+
+	.device-remark {
+		flex: 2;
+		min-width: 200rpx;
+	}
+
+	.device-images {
+		flex: 1.5;
+		min-width: 150rpx;
+		max-width: 200rpx;
+	}
+
+	.device-actions {
+		flex: 0.5;
+		min-width: 80rpx;
+		max-width: 90rpx;
+	}
+
+	.table-input :deep(.uni-easyinput__content) {
+		min-height: 70rpx;
+	}
+
+	.table-input :deep(.uni-easyinput__content-input) {
+		font-size: 24rpx;
+		padding: 10rpx 12rpx;
+	}
+
+	.icon-btn {
+		padding: 8rpx 12rpx;
+		min-height: 50rpx;
+	}
+}
+
+/* PC端优化 */
+@media (min-width: 1024px) {
+	.data-table {
+		min-width: 900rpx; /* PC端增加最小宽度 */
+	}
+	
+	.device-name {
+		flex: 3; /* PC端设备名称列占更多空间 */
+		min-width: 300rpx;
+	}
+	
+	.device-remark {
+		flex: 2.5; /* PC端备注列占更多空间 */
+		min-width: 250rpx;
+	}
+	
+	.device-images {
+		flex: 1.5;
+		min-width: 180rpx;
+		max-width: 280rpx;
+	}
+	
+	.table-input :deep(.uni-easyinput__content-input) {
+		font-size: 28rpx;
 	}
 }
 </style>
