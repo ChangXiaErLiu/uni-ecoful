@@ -109,10 +109,10 @@ export async function deleteFile(document_id) {
 export async function runTask(options = {}) {
 	const {
 		projectId = null,
-		projectFolder = null,
-		onProgress = null,
-		pollInterval = 3000, // 默认3秒轮询一次
-		timeout = 1800000 // 默认30分钟
+			projectFolder = null,
+			onProgress = null,
+			pollInterval = 3000, // 默认3秒轮询一次
+			timeout = 1800000 // 默认30分钟
 	} = options
 
 	try {
@@ -122,14 +122,15 @@ export async function runTask(options = {}) {
 			project_id: projectId,
 			project_folder: projectFolder,
 			project_data: {}
+		}, {
+			hideLoading: true // 已经有了自定义提示窗)
 		})
-
 		const taskId = submitResult.task_id
 		// console.log(`✅ 任务已提交，Task ID: ${taskId}`)
 
 		// 第二步：轮询任务状态
 		const startTime = Date.now()
-		
+
 		return new Promise((resolve, reject) => {
 			const pollStatus = async () => {
 				try {
@@ -140,8 +141,10 @@ export async function runTask(options = {}) {
 					}
 
 					// 查询任务状态
-					const statusResult = await request.get(`/api/v1/tasks/${taskId}/status`)
-					
+					const statusResult = await request.get(`/api/v1/tasks/${taskId}/status`, {
+						hideLoading: true // 已有自定义进度提示窗
+					})
+
 					const {
 						status,
 						progress = 0,
@@ -160,7 +163,7 @@ export async function runTask(options = {}) {
 					// 任务完成
 					if (status === 'success') {
 						// console.log('✅ 任务完成！')
-						
+
 						// 数据校验
 						const data = task_result?.result || task_result
 						if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
@@ -242,8 +245,8 @@ export async function cancelTask(taskId) {
 export async function getMyTasks(options = {}) {
 	const {
 		status = null,
-		taskType = null,
-		limit = 20
+			taskType = null,
+			limit = 20
 	} = options
 
 	try {
@@ -461,9 +464,9 @@ export function downloadSignboardWord(signboard, projectId) {
 	if (!projectId) {
 		throw new Error('项目ID不能为空')
 	}
-	
+
 	const payload = {
-		project_id: projectId,  // 添加项目ID
+		project_id: projectId, // 添加项目ID
 		sections: signboard.sections.map(sec => ({
 			block: sec.block,
 			items: sec.items.map(it => ({
@@ -482,7 +485,7 @@ export function downloadSignboardWord(signboard, projectId) {
 	if (token) {
 		headers['Authorization'] = `Bearer ${token}`
 	}
-	
+
 	return fetch(BASE_URL + '/api/v1/completion/signboard/download', {
 		method: 'POST',
 		headers: headers,
@@ -512,7 +515,7 @@ export function downloadSignboardWord(signboard, projectId) {
 		if (token) {
 			header['Authorization'] = `Bearer ${token}`
 		}
-		
+
 		uni.request({
 			url: BASE_URL + '/api/v1/completion/signboard/download',
 			method: 'POST',
@@ -527,7 +530,10 @@ export function downloadSignboardWord(signboard, projectId) {
 						resolve(res.data)
 					} else if (typeof res.data === 'string' && res.data.length > 0) {
 						// 如果返回的是字符串，说明小程序没有正确处理 arraybuffer
-						uni.showToast({ title: '文件格式错误', icon: 'none' })
+						uni.showToast({
+							title: '文件格式错误',
+							icon: 'none'
+						})
 						reject(new Error('文件格式错误'))
 					} else {
 						reject(new Error('空文件'))
@@ -556,9 +562,9 @@ export function downloadSignboardWord(signboard, projectId) {
 export async function generateMonitorPlan(options = {}) {
 	const {
 		projectId = null,
-		onProgress = null,
-		pollInterval = 3000,
-		timeout = 1800000  // 默认30分钟
+			onProgress = null,
+			pollInterval = 3000,
+			timeout = 1800000 // 默认30分钟
 	} = options
 
 	if (!projectId) {
@@ -576,7 +582,7 @@ export async function generateMonitorPlan(options = {}) {
 
 		// 第二步：轮询任务状态
 		const startTime = Date.now()
-		
+
 		return new Promise((resolve, reject) => {
 			const pollStatus = async () => {
 				try {
@@ -588,7 +594,7 @@ export async function generateMonitorPlan(options = {}) {
 
 					// 查询任务状态
 					const statusResult = await request.get(`/api/v1/tasks/${taskId}/status`)
-					
+
 					const {
 						status,
 						progress = 0,
@@ -669,7 +675,7 @@ export function downloadMonitorPlan(projectId, format = 'docx') {
 	if (token) {
 		headers['Authorization'] = `Bearer ${token}`
 	}
-	
+
 	return fetch(BASE_URL + url, {
 		method: 'GET',
 		headers: headers
@@ -695,7 +701,7 @@ export function downloadMonitorPlan(projectId, format = 'docx') {
 		if (token) {
 			header['Authorization'] = `Bearer ${token}`
 		}
-		
+
 		uni.request({
 			url: BASE_URL + url,
 			method: 'GET',
@@ -707,7 +713,10 @@ export function downloadMonitorPlan(projectId, format = 'docx') {
 					if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
 						resolve(res.data)
 					} else if (typeof res.data === 'string' && res.data.length > 0) {
-						uni.showToast({ title: '文件格式错误', icon: 'none' })
+						uni.showToast({
+							title: '文件格式错误',
+							icon: 'none'
+						})
 						reject(new Error('文件格式错误'))
 					} else {
 						reject(new Error('空文件'))
@@ -727,5 +736,3 @@ export function downloadMonitorPlan(projectId, format = 'docx') {
 	})
 	// #endif
 }
-
-

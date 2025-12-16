@@ -207,19 +207,19 @@
 																{{ air.产生环节 || '未提取到相关信息' }}
 															</view> -->
 															<view class="pollutants-col pollutants-col--name">
-																{{ air.污染物名称 || '未提取到相关信息' }}
+																{{ air.污染物名称 || '未提取到污染物名称' }}
 															</view>
 															<view class="pollutants-col pollutants-col--name">
 																{{ air.污染因子 || '未提取到污染因子' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
-																{{ air.污染治理措施 || '未提取到相关信息' }}
+																{{ air.污染治理措施 || '未提取到污染治理措施' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ air.排放去向 || '未提取到相关信息' }}
+																{{ air.排放去向 || '大气环境' }}
 															</view>
 															<view class="pollutants-col pollutants-col--standard">
-																{{ air.执行标准 || '未提取到相关信息' }}
+																{{ air.执行标准 || '未提取到执行标准' }}
 															</view>
 														</view>
 
@@ -313,8 +313,8 @@
 														</view>
 
 														<!-- 危险废物 -->
-														<view v-if="item.value.危险废物"
-															v-for="(solid, index) in [item.value.危险废物]"
+														<view v-if="item.value.危险废物 && item.value.危险废物.length"
+															v-for="(solid, index) in item.value.危险废物"
 															:key="'hazard-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">危险废物
 															</view>
@@ -322,19 +322,19 @@
 																{{ item.value.危险废物.产生环节 || '无' }}
 															</view> -->
 															<view class="pollutants-col pollutants-col--link">
-																{{ item.value.危险废物.废物来源 || '无' }}
+																{{ solid.废物来源 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--name">
-																{{ item.value.危险废物.废物名称 || '无' }}
+																{{ solid.废物名称 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
-																{{ item.value.危险废物.危险特性 || '无' }}
+																{{ solid.危险特性 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ item.value.危险废物.危险废物类别 || '无' }}
+																{{ solid.危险废物类别 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ item.value.危险废物.污染治理措施 || '无' }}
+																{{ solid.污染治理措施 || '无' }}
 															</view>
 														</view>
 													</view>
@@ -556,8 +556,6 @@
 								<view class="form-group">
 									<text class="form-label">现场踏勘记录</text>
 									<text class="form-tip">记录现场踏勘发现的问题和差异</text>
-									<textarea class="fieldwork-textarea" v-model="fieldworkRecord"
-										placeholder="请输入现场踏勘记录..." />
 								</view>
 
 								<view class="subsection">
@@ -571,64 +569,9 @@
 											<uni-icons type="gear" size="16" color="#ffffff" />
 											<text>生成详细比对清单</text>
 										</button>
-										<button class="btn btn--secondary" @tap="addComparisonItem">
-											<uni-icons type="plus" size="16" color="#155e3b" />
-											<text>新增比对项</text>
-										</button>
+										
 									</view>
 
-									<view v-if="fieldworkComparison.length" class="data-table">
-										<view class="table-header">
-											<text class="table-th w120">比对项目</text>
-											<text class="table-th">环评要求</text>
-											<text class="table-th">现场情况</text>
-											<text class="table-th w120">差异说明</text>
-											<text class="table-th w80">操作</text>
-										</view>
-										<view class="table-body">
-											<view class="table-row" v-for="(item, index) in fieldworkComparison"
-												:key="item.id">
-												<uni-easyinput class="table-td w120" v-model="item.project"
-													placeholder="项目名称" />
-												<uni-easyinput class="table-td" v-model="item.eiaRequirement"
-													placeholder="环评要求" />
-												<uni-easyinput class="table-td" v-model="item.fieldSituation"
-													placeholder="现场情况" />
-												<uni-easyinput class="table-td w120" v-model="item.difference"
-													placeholder="差异说明" />
-												<view class="table-td w80">
-													<button class="icon-btn icon-btn--danger"
-														@tap="() => removeComparisonItem(index)">
-														<uni-icons type="trash" size="16" color="#d92d20" />
-													</button>
-												</view>
-											</view>
-										</view>
-									</view>
-
-									<view v-else class="empty-state">
-										<uni-icons type="map-pin-ellipse" size="48" color="#cbd5e1" />
-										<text class="empty-text">尚未生成现场踏勘比对清单</text>
-										<text class="empty-tip">点击上方按钮生成或新增比对项</text>
-									</view>
-								</view>
-
-								<view class="subsection">
-									<view class="subsection-head">
-										<uni-icons type="refresh" size="18" color="#166534" />
-										<text class="subsection-title">基本信息更新确认</text>
-									</view>
-									<view class="update-confirm">
-										<text class="update-label">是否根据现场踏勘结果更新项目基本信息表？</text>
-										<view class="update-actions">
-											<button class="btn btn--secondary" @tap="updateBaseInfo(false)">
-												<text>否，继续下一步</text>
-											</button>
-											<button class="btn btn--primary" @tap="updateBaseInfo(true)">
-												<text>是，更新基本信息</text>
-											</button>
-										</view>
-									</view>
 								</view>
 							</view>
 						</view>
@@ -996,7 +939,7 @@
 	function startPollingFileStatus(projectId) {
 		// 如果没有文件在处理，不需要轮询
 		if (!hasProcessingFiles()) {
-			console.log('✅ 所有文件已处理完成，无需轮询')
+			// console.log('✅ 所有文件已处理完成，无需轮询')
 			return
 		}
 
@@ -1013,8 +956,8 @@
 			!['indexed', 'failed'].includes(f.status)
 		).length
 
-		console.log(`🔄 开始轮询项目 ${projectId} 的文件状态...`)
-		console.log(`   还有 ${processingCount} 个文件正在处理`)
+		// console.log(`🔄 开始轮询项目 ${projectId} 的文件状态...`)
+		// console.log(`   还有 ${processingCount} 个文件正在处理`)
 
 		pollingTimer.value = setInterval(async () => {
 			pollingCount.value++
@@ -1068,7 +1011,7 @@
 		}
 		isPolling.value = false
 		pollingCount.value = 0
-		console.log('⏹️ 轮询已停止')
+		// console.log('⏹️ 轮询已停止')
 	}
 
 	// 加载项目列表
@@ -1081,7 +1024,7 @@
 
 			projectList.value = response || []
 
-			console.log('项目列表加载成功:', projectList.value.length, '个项目')
+			// console.log('项目列表加载成功:', projectList.value.length, '个项目')
 		} catch (error) {
 			console.error('加载项目列表失败:', error)
 			uni.showToast({
@@ -1290,7 +1233,7 @@
 				const project = projectList.value.find(p => p.id === projectId)
 				
 				if (project) {
-					console.log('🔄 恢复上次选择的项目:', project.name)
+					// console.log('🔄 恢复上次选择的项目:', project.name)
 					// 自动选择该项目（不显示提示，静默恢复）
 					selectedProjectId.value = project.id
 					selectedProject.value = project
@@ -2674,39 +2617,8 @@
 		})
 	}
 
-	function addComparisonItem() {
-		fieldworkComparison.value.push({
-			id: Date.now() + Math.random(),
-			project: '',
-			eiaRequirement: '',
-			fieldSituation: '',
-			difference: ''
-		})
-	}
-
-	function removeComparisonItem(index) {
-		fieldworkComparison.value.splice(index, 1)
-	}
-
-	function updateBaseInfo(shouldUpdate) {
-		if (shouldUpdate) {
-			// 根据现场踏勘结果更新基本信息
-			fieldworkComparison.value.forEach(comparison => {
-				const baseItem = baseTable.value.find(item => item.label === comparison.project)
-				if (baseItem && comparison.fieldSituation) {
-					baseItem.value = comparison.fieldSituation
-					baseItem.status = 'verified'
-				}
-			})
-			uni.showToast({
-				title: '基本信息已更新',
-				icon: 'success'
-			})
-		}
-		// 进入下一步：监测方案
-		currentStep.value = 3
-	}
-
+	
+	
 
 
 	// 4. 竣工验收报告

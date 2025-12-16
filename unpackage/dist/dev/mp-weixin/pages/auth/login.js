@@ -13,7 +13,7 @@ const _sfc_main = {
   __name: "login",
   setup(__props) {
     const userStore = stores_user.useUserStore();
-    const activeTab = common_vendor.ref("code");
+    const activeTab = common_vendor.ref("password");
     const mobile = common_vendor.ref("");
     const code = common_vendor.ref("");
     const account = common_vendor.ref("");
