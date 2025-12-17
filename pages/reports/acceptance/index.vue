@@ -494,65 +494,65 @@
 
 					<!-- 步骤2: 提资单比对 -->
 					<view v-show="currentStep === 2" class="content-section">
-						<!-- 环保资料提交管理系统界面 -->
-						<view class="tizidan-container">
-							<view class="tizidan-header">
-								<text class="tizidan-title">环保资料提交管理系统</text>
-								<text class="tizidan-subtitle">请按要求提交相关环保资料</text>
-							</view>
-
-							<!-- 加载失败提示 -->
-							<view v-if="tizidanItems.length === 0" class="empty-state">
-								<uni-icons type="refresh" size="48" color="#cbd5e1" />
-								<text class="empty-text">加载失败，请重新刷新！</text>
-								<button class="btn btn--primary" @tap="fetchTizidanData">
-									<uni-icons type="refresh" size="16" color="#ffffff" />
-									<text>重新加载</text>
-								</button>
-							</view>
-
-							<!-- 正常内容 -->
-							<view v-else class="tizidan-content">
-								<view v-for="(item, index) in tizidanItems" :key="index" class="tizidan-item-card">
-									<view class="tizidan-item-content">
-										<text class="tizidan-item-number">{{ index + 1 }}.</text>
-										<text class="tizidan-item-text">{{ item.text }}</text>
-									</view>
-
-									<view class="tizidan-item-status">
-										<text class="tizidan-status-text"
-											:class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'">
-											{{ item.submitted ? '已提交' : '未提交' }}
-										</text>
-
-										<!-- 修改部分：提资单提交按钮的点击事件 -->
-										<!-- 找到提交按钮，修改 @click 事件 -->
-										<button v-if="!item.submitted" class="tizidan-submit-btn"
-										    @click="uploadTizidanFile(index)">
-										    提交
-										</button>
-										
-									</view>
-								</view>
-							</view>
-
-							<view class="tizidan-footer">
-								<text class="tizidan-footer-text">请确保所有资料完整准确</text>
-								<button class="btn btn--primary"
-									@tap="downloadFile(downloadUrls.acceptance_report, '验收报告提资单.docx')"
-									:disabled="!downloadUrls.acceptance_report">
-									下载验收报告提资单
-								</button>
-								<button class="btn btn--secondary"
-									@tap="downloadFile(downloadUrls.comparison_list, '建设内容详细对比清单.docx')"
-									:disabled="!downloadUrls.comparison_list">
-									下载建设内容详细对比清单
-								</button>
-							</view>
-
-						</view>
+					    <!-- 环保资料提交管理系统界面 -->
+					    <view class="tizidan-container">
+					        <view class="tizidan-header">
+					            <text class="tizidan-title">环保资料提交管理系统</text>
+					            <text class="tizidan-subtitle">请按要求提交相关环保资料</text>
+					        </view>
+					
+					        <!-- 加载失败提示 -->
+					        <view v-if="tizidanItems.length === 0" class="empty-state">
+					            <uni-icons type="refresh" size="48" color="#cbd5e1" />
+					            <text class="empty-text">加载失败，请重新刷新！</text>
+					            <button class="btn btn--primary" @tap="fetchTizidanData">
+					                <uni-icons type="refresh" size="16" color="#ffffff" />
+					                <text>重新加载</text>
+					            </button>
+					        </view>
+					
+					        <!-- 正常内容 -->
+					        <view v-else class="tizidan-content">
+					            <view v-for="(item, index) in tizidanItems" :key="index" class="tizidan-item-card">
+					                <view class="tizidan-item-content">
+					                    <text class="tizidan-item-number">{{ index + 1 }}.</text>
+					                    <text class="tizidan-item-text">{{ item.text }}</text>
+					                </view>
+					
+					                <view class="tizidan-item-status">
+					                    <text class="tizidan-status-text"
+					                        :class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'">
+					                        {{ item.submitted ? '已提交' : '未提交' }}
+					                    </text>
+					
+					                    <!-- 修改部分：提资单提交按钮的点击事件 -->
+					                    <!-- 找到提交按钮，修改 @click 事件 -->
+					                    <button v-if="!item.submitted" class="tizidan-submit-btn"
+					                        @click="uploadTizidanFile(index)">
+					                        提交
+					                    </button>
+					                    
+					                    <button v-if="item.submitted" class="tizidan-submit-btn_update"
+					                        @click="uploadTizidanFile(index)">
+					                        重新提交
+					                    </button>
+					                    
+					                </view>
+					            </view>
+					        </view>
+					
+					        <view class="tizidan-footer">
+					            <text class="tizidan-footer-text">请确保所有资料完整准确</text>
+					            <!-- 移除"下载建设内容详细对比清单"按钮，将"下载验收报告提资单"按钮移到这里 -->
+					            <button class="btn btn--primary" @tap="downloadTizidanFile"
+					                :disabled="!selectedProjectId">
+					                下载验收报告提资单
+					            </button>
+					        </view>
+					
+					    </view>
 					</view>
-
+					
 					<!-- 步骤3: 现场踏勘比对 -->
 					<view v-show="currentStep === 3" class="content-section">
 						<view class="section-card">
@@ -2490,6 +2490,7 @@
 	    }
 	}
 	
+	
 	// 上传文件到后端
 	function uploadFileToBackend(file, index) {
 	    return new Promise((resolve, reject) => {
@@ -2499,7 +2500,9 @@
 	            name: 'file',
 	            formData: {
 	                item_index: index,
-	                item_text: tizidanItems.value[index].text
+	                item_text: tizidanItems.value[index].text,
+					user_id: user_id,
+					project_id: project_id,
 	            },
 	            success: (uploadRes) => {
 	                console.log('文件上传响应:', uploadRes);
@@ -2528,110 +2531,32 @@
 	// 提资单数据
 	const tizidanItems = ref([])
 	const downloadUrls = ref({
-		acceptance_report: '',
+		TiZiDan_Doc: '',
 		comparison_list: ''
 	})
-
-	// 获取提资单数据
-	// 在 fetchTizidanData 函数中修改下载URL的赋值逻辑
-	// 在 fetchTizidanData 函数中修改URL处理逻辑
+	
+	//by wilson 获取user_id和project_id从本地缓存uni.getStorageSync
+	// 获取项目ID
+	const project_id = uni.getStorageSync('acceptance_project_id')
+	const userInfoStr = uni.getStorageSync('userInfo')
+	const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null
+	// 获取user_id 
+	const user_id = userInfo?.id || userInfo?.user_id
+	// 获取提资单数据 在 fetchTizidanData 函数中修改下载URL的赋值逻辑
 	async function fetchTizidanData() {
 
 		try {
 			uni.showLoading({
 				title: '加载中...'
 			})
-
-			console.log('开始请求数据...')
-
-			// modify by wilson 使用 Promise  包装 uni.request 以确保正确解析
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
 					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
 					method: 'GET',
-					timeout: 10000,
-					data: {
-						user_id: 7,
-						project_id: 18,
-						
-					},
-					success: (res) => {
-						console.log('请求成功:', res)
-						resolve(res)
-					},
-					fail: (err) => {
-						console.log('请求失败:', err)
-						reject(err)
-					}
-				})
-			})
-
-			console.log('完整响应对象:', response)
-			console.log('响应状态码:', response.statusCode)
-			console.log('响应数据:', response.data)
-
-			// 检查返回结果
-			if (response && response.statusCode === 200) {
-				console.log('状态码为200，开始解析数据')
-
-				// 确保 data 存在
-				if (!response.data) {
-					throw new Error('响应数据为空')
-				}
-
-				const data = response.data
-				console.log('解析后的数据:', data)
-
-				// 确保数据结构正确
-				if (!data.items || !Array.isArray(data.items)) {
-					throw new Error('数据格式不正确: items 不存在或不是数组')
-				}
-
-				tizidanItems.value = data.items
-				downloadUrls.value = data.download_urls || {}
-
-				console.log('最终设置的数据:', {
-					items: tizidanItems.value,
-					urls: downloadUrls.value
-				})
-
-				uni.showToast({
-					title: '数据加载成功',
-					icon: 'success'
-				})
-			} else {
-				throw new Error(`请求失败，状态码：${response?.statusCode || '未知'}`)
-			}
-		} catch (error) {
-			console.error('获取提资单数据失败:', error)
-			// 显示加载失败提示
-			uni.showToast({
-				title: '加载失败，请重新刷新！',
-				icon: 'none',
-				duration: 3000
-			})
-			// 清空数据，显示加载失败状态
-			tizidanItems.value = []
-			downloadUrls.value = {
-				acceptance_report: '',
-				comparison_list: ''
-			}
-		} finally {
-			uni.hideLoading()
-		}
-		try {
-			uni.showLoading({
-				title: '加载中...'
-			})
-
-			const response = await new Promise((resolve, reject) => {
-				uni.request({
-					url: 'http://172.16.1.61:8000/api/v1/completion/tzdDetail/datasheet',
-					method: 'GET',
 					timeout: 1000,
 					data: {
-						user_id: 7,
-						project_id: 18,
+						user_id: user_id,
+						project_id: project_id,
 					},
 					success: (res) => {
 						console.log('请求成功:', res)
@@ -2653,11 +2578,12 @@
 
 				tizidanItems.value = data.items
 				console.log("test", data.download_urls)
-				console.log(uni.getStorage("acceptance_project_id"))
-				// 处理下载URL，确保格式正确
+					
+			
+				
 				const downloadUrlsData = data.download_urls || {}
 				downloadUrls.value = {
-					acceptance_report: formatDownloadUrl(downloadUrlsData.tzd_doc),
+					TiZiDan_Doc: formatDownloadUrl(downloadUrlsData.TiZiDan_Doc),
 					comparison_list: formatDownloadUrl(downloadUrlsData.comparison_list)
 				}
 
@@ -2679,7 +2605,7 @@
 			})
 			tizidanItems.value = []
 			downloadUrls.value = {
-				acceptance_report: '',
+				TiZiDan_Doc: '',
 				comparison_list: ''
 			}
 		} finally {
@@ -2687,13 +2613,112 @@
 		}
 	}
 
+	// 下载验收报告提资单
+	async function downloadTizidanFile() {
+	    if (!selectedProjectId.value) {
+	        uni.showToast({
+	            title: '请先选择项目',
+	            icon: 'none'
+	        })
+	        return
+	    }
+	
+	
+	    // 显示下载中提示
+	    uni.showLoading({
+	        title: '正在生成文档…',
+	        mask: true
+	    })
+	
+		
+	    try {
+	        // 调用后端下载接口
+	        const url = `http://127.0.0.1:8000/api/v1/completion/tzdDetail/download_tzd_doc?user_id=${user_id}&project_id=${project_id}`
+	        
+	        // #ifdef H5
+	        // H5环境：直接打开链接
+	        window.open(url, '_blank')
+	        // #endif
+	
+	        // #ifdef MP-WEIXIN
+	        // 微信小程序环境：使用uni.downloadFile
+	        const downloadTask = uni.downloadFile({
+	            url: url,
+	            success: (res) => {
+	                if (res.statusCode === 200) {
+	                    const filePath = res.tempFilePath
+	                    uni.saveFile({
+	                        tempFilePath: filePath,
+	                        success: (saveRes) => {
+	                            console.log('文件保存成功:', saveRes.savedFilePath)
+	                            uni.showToast({
+	                                title: '文件已保存',
+	                                icon: 'success'
+	                            })
+	                        },
+	                        fail: (saveErr) => {
+	                            console.error('保存文件失败:', saveErr)
+	                            uni.showToast({
+	                                title: '保存失败',
+	                                icon: 'none'
+	                            })
+	                        }
+	                    })
+	                } else {
+	                    throw new Error(`下载失败，状态码: ${res.statusCode}`)
+	                }
+	            },
+	            fail: (err) => {
+	                throw new Error('下载请求失败: ' + (err.errMsg || '未知错误'))
+	            }
+	        })
+	        // #endif
+	
+	        // #ifdef APP-PLUS
+	        // App环境：使用plus.downloader
+	        const dtask = plus.downloader.createDownload(url, {}, (d, status) => {
+	            if (status == 200) {
+	                console.log('下载成功：' + d.filename)
+	                uni.showToast({
+	                    title: '下载成功',
+	                    icon: 'success'
+	                })
+	            } else {
+	                console.log('下载失败：' + status)
+	                uni.showToast({
+	                    title: '下载失败',
+	                    icon: 'none'
+	                })
+	            }
+	        })
+	        dtask.start()
+	        // #endif
+	
+	        uni.showToast({
+	            title: '开始下载',
+	            icon: 'success'
+	        })
+	
+	    } catch (error) {
+	        console.error('下载失败:', error)
+	        uni.showToast({
+	            title: '下载失败: ' + (error.message || '未知错误'),
+	            icon: 'none',
+	            duration: 3000
+	        })
+	    } finally {
+	        uni.hideLoading()
+	    }
+	}
+	
+
 	// 添加URL格式化函数，确保URL格式正确
 	function formatDownloadUrl(url) {
 		if (!url) return ''
 
 		// 如果URL是相对路径，添加基础URL
 		if (url.startsWith('/')) {
-			return `http://172.16.1.61:8000${url}`
+			return `http://127.0.0.1:8000${url}`
 		}
 
 		// 如果URL已经是完整路径，直接返回
@@ -3081,7 +3106,8 @@
 					method: 'GET',
 					timeout: 10000,
 					data: {
-						memberId: 3,
+						user_id: user_id,
+						project_id: project_id,
 					},
 					success: (res) => {
 						console.log('请求成功:', res)
@@ -4650,7 +4676,18 @@
 		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
 		transition: background-color 0.3s;
 	}
-
+	
+	.tizidan-submit-btn_update {
+		background-color: burlywood;
+		color: #ffffff;
+		border-radius: 10rpx;
+		padding: 16rpx 32rpx;
+		font-size: 28rpx;
+		font-weight: 600;
+		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
+		transition: background-color 0.3s;
+	}
+	
 	.tizidan-submit-btn:active {
 		background-color: #2980b9;
 	}
