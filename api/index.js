@@ -15,7 +15,10 @@ export {
 	runTask,
 	transformExtractResult,
 	downloadSignboardWord,
-	downloadMonitorPlan
+	generateMonitorPlan,
+	downloadMonitorPlan,
+	generateReport,
+	downloadReport
 }
 from './acceptance.js'
 

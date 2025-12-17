@@ -577,85 +577,268 @@ export async function generateMonitorPlan(options = {}) {
  * @returns {Promise<{ab:ArrayBuffer,filename:string}>} 文件流+真实文件名
  */
 export function downloadMonitorPlan(projectId) {
-  if (!projectId) throw new Error('项目ID不能为空')
+	if (!projectId) throw new Error('项目ID不能为空')
 
-  const url = `/api/v1/completion/monitor-plan/${projectId}/download`
+	const url = `/api/v1/completion/monitor-plan/${projectId}/download`
 
-  // #ifdef H5
-  const token = uni.getStorageSync('token')
-  const headers = {}
-  if (token) headers.Authorization = `Bearer ${token}`
-  return fetch(BASE_URL + url, { method: 'GET', headers })
-    .then(res => {
-      if (!res.ok) {
-        if (res.status === 403) throw new Error('无权下载')
-        if (res.status === 404) throw new Error('请先点击生成监测方案')
-        throw new Error('下载失败')
-      }
-      // 安全获取响应头（兼容大小写）
-      const contentDisposition = res.headers.get('content-disposition') || 
-                                 res.headers.get('Content-Disposition') || ''
-      const filename = extractFilename(contentDisposition)
-      return res.arrayBuffer().then(ab => ({ ab, filename }))
-    })
-  // #endif
+	// #ifdef H5
+	const token = uni.getStorageSync('token')
+	const headers = {}
+	if (token) headers.Authorization = `Bearer ${token}`
+	return fetch(BASE_URL + url, {
+			method: 'GET',
+			headers
+		})
+		.then(res => {
+			if (!res.ok) {
+				if (res.status === 403) throw new Error('无权下载')
+				if (res.status === 404) throw new Error('请先点击生成监测方案')
+				throw new Error('下载失败')
+			}
+			// 安全获取响应头（兼容大小写）
+			const contentDisposition = res.headers.get('content-disposition') ||
+				res.headers.get('Content-Disposition') || ''
+			const filename = extractFilename(contentDisposition)
+			return res.arrayBuffer().then(ab => ({
+				ab,
+				filename
+			}))
+		})
+	// #endif
 
-  // #ifndef H5
-  return new Promise((resolve, reject) => {
-    const token = uni.getStorageSync('token')
-    const header = {}
-    if (token) header.Authorization = `Bearer ${token}`
-    uni.request({
-      url: BASE_URL + url,
-      method: 'GET',
-      header,
-      responseType: 'arraybuffer',
-      success: (res) => {
-        if (res.statusCode === 200 && res.data instanceof ArrayBuffer) {
-          // 安全获取响应头（兼容大小写）
-          const contentDisposition = res.header?.['Content-Disposition'] || 
-                                     res.header?.['content-disposition'] || ''
-          const filename = extractFilename(contentDisposition)
-          resolve({ ab: res.data, filename })
-        } else if (res.statusCode === 404) {
-          reject(new Error('请先点击生成监测方案'))
-        } else {
-          reject(new Error('下载失败'))
-        }
-      },
-      fail: (e) => reject(new Error(e.errMsg || '网络错误'))
-    })
-  })
-  // #endif
+	// #ifndef H5
+	return new Promise((resolve, reject) => {
+		const token = uni.getStorageSync('token')
+		const header = {}
+		if (token) header.Authorization = `Bearer ${token}`
+		uni.request({
+			url: BASE_URL + url,
+			method: 'GET',
+			header,
+			responseType: 'arraybuffer',
+			success: (res) => {
+				if (res.statusCode === 200 && res.data instanceof ArrayBuffer) {
+					// 安全获取响应头（兼容大小写）
+					const contentDisposition = res.header?.['Content-Disposition'] ||
+						res.header?.['content-disposition'] || ''
+					const filename = extractFilename(contentDisposition)
+					resolve({
+						ab: res.data,
+						filename
+					})
+				} else if (res.statusCode === 404) {
+					reject(new Error('请先点击生成监测方案'))
+				} else {
+					reject(new Error('下载失败'))
+				}
+			},
+			fail: (e) => reject(new Error(e.errMsg || '网络错误'))
+		})
+	})
+	// #endif
 }
 
 /* 从 Content-Disposition 头里抠文件名 */
 function extractFilename(str) {
-  // 确保 str 是字符串，防止 null 或 undefined 导致错误
-  if (!str || typeof str !== 'string') {
-    return '监测方案.docx'
-  }
-  
-  // 优先匹配 RFC 5987 编码格式：filename*=UTF-8''encoded_name
-  const rfc5987Match = str.match(/filename\*=UTF-8''([^;\n]+)/i)
-  if (rfc5987Match && rfc5987Match[1]) {
-    try {
-      return decodeURIComponent(rfc5987Match[1])
-    } catch {
-      // 解码失败，继续尝试普通格式
-    }
-  }
-  
-  // 降级到普通格式：filename="name" 或 filename=name
-  const normalMatch = str.match(/filename=["']?([^;"'\n]+)["']?/i)
-  if (normalMatch && normalMatch[1]) {
-    const name = normalMatch[1].trim()
-    try {
-      return decodeURIComponent(name)
-    } catch {
-      return name
-    }
-  }
-  
-  return '监测方案.docx'
+	// 确保 str 是字符串，防止 null 或 undefined 导致错误
+	if (!str || typeof str !== 'string') {
+		return 'AI生成报告.docx'
+	}
+
+	// 优先匹配 RFC 5987 编码格式：filename*=UTF-8''encoded_name
+	const rfc5987Match = str.match(/filename\*=UTF-8''([^;\n]+)/i)
+	if (rfc5987Match && rfc5987Match[1]) {
+		try {
+			return decodeURIComponent(rfc5987Match[1])
+		} catch {
+			// 解码失败，继续尝试普通格式
+		}
+	}
+
+	// 降级到普通格式：filename="name" 或 filename=name
+	const normalMatch = str.match(/filename=["']?([^;"'\n]+)["']?/i)
+	if (normalMatch && normalMatch[1]) {
+		const name = normalMatch[1].trim()
+		try {
+			return decodeURIComponent(name)
+		} catch {
+			return name
+		}
+	}
+
+	return 'AI生成报告.docx'
+}
+
+
+
+/**
+ * 生成竣工验收报告
+ * @param {Object} options - 选项
+ * @param {number} options.projectId - 项目ID（必填）
+ * @param {Function} options.onProgress - 进度回调函数 (progress, status) => void
+ * @param {number} options.pollInterval - 轮询间隔（毫秒，默认3秒）
+ * @param {number} options.timeout - 超时时间（毫秒，默认30分钟）
+ * @returns {Promise<Object>} 任务执行结果
+ */
+export async function generateReport(options = {}) {
+	const {
+		projectId = null,
+			onProgress = null,
+			pollInterval = 3000,
+			timeout = 1800000 // 默认30分钟
+	} = options
+
+	if (!projectId) {
+		throw new Error('项目ID不能为空')
+	}
+
+	try {
+		// 第一步：提交异步任务
+		 const submitResult = await request.post(
+		   `/api/v1/completion/char/batch/merge/async?project_id=${projectId}`,
+		   {} // body 为空
+		 )
+
+		const taskId = submitResult.task_id
+		// console.log(`竣工验收报告生成任务已提交，Task ID: ${taskId}`)
+
+		// 第二步：轮询任务状态
+		const startTime = Date.now()
+
+		return new Promise((resolve, reject) => {
+			const pollStatus = async () => {
+				try {
+					// 检查是否超时
+					if (Date.now() - startTime > timeout) {
+						reject(new Error('任务超时，请稍后重试'))
+						return
+					}
+
+					// 查询任务状态
+					const statusResult = await request.get(`/api/v1/tasks/${taskId}/status`)
+
+					const {
+						status,
+						progress = 0,
+						current_step = '',
+						task_result,
+						error_message
+					} = statusResult
+
+					console.log(`[${status}] ${progress}% - ${current_step}`)
+
+					// 调用进度回调
+					if (onProgress && typeof onProgress === 'function') {
+						onProgress(progress, current_step, status)
+					}
+
+					// 任务完成
+					if (status === 'success') {
+						console.log('✅ 竣工验收报告已生成！')
+						resolve({
+							status: 'success',
+							result: task_result,
+							project_id: projectId
+						})
+						return
+					}
+
+					// 任务失败
+					if (status === 'failed') {
+						console.error('❌ 任务失败:', error_message)
+						reject(new Error(error_message || '竣工验收报告生成失败'))
+						return
+					}
+
+					// 任务取消
+					if (status === 'cancelled') {
+						reject(new Error('任务已被取消'))
+						return
+					}
+
+					// 继续轮询
+					setTimeout(pollStatus, pollInterval)
+
+				} catch (error) {
+					console.error('查询任务状态失败:', error)
+					reject(error)
+				}
+			}
+
+			// 开始轮询
+			pollStatus()
+		})
+
+	} catch (error) {
+		if (error.message && error.message.includes('已有一个竣工验收报告生成任务正在运行')) {
+			throw new Error('您已有一个竣工验收报告生成任务正在运行，请等待完成')
+		}
+		throw error
+	}
+}
+
+/**
+ * 下载竣工验收报告
+ * @param {number} projectId - 项目ID
+ * @returns {Promise<{ab:ArrayBuffer,filename:string}>} 文件流+真实文件名
+ */
+export function downloadReport(projectId) {
+	if (!projectId) throw new Error('项目ID不能为空')
+
+	const url = `/api/v1/completion/char/batch/merge/download?project_id=${projectId}`
+	// #ifdef H5
+	const token = uni.getStorageSync('token')
+	const headers = {}
+	if (token) headers.Authorization = `Bearer ${token}`
+	return fetch(BASE_URL + url, {
+			method: 'GET',
+			headers
+		})
+		.then(res => {
+			if (!res.ok) {
+				if (res.status === 403) throw new Error('无权下载')
+				if (res.status === 404) throw new Error('请先点击生成竣工验收报告')
+				throw new Error('下载失败')
+			}
+			// 安全获取响应头（兼容大小写）
+			const contentDisposition = res.headers.get('content-disposition') ||
+				res.headers.get('Content-Disposition') || ''
+			const filename = extractFilename(contentDisposition)
+			return res.arrayBuffer().then(ab => ({
+				ab,
+				filename
+			}))
+		})
+	// #endif
+
+	// #ifndef H5
+	return new Promise((resolve, reject) => {
+		const token = uni.getStorageSync('token')
+		const header = {}
+		if (token) header.Authorization = `Bearer ${token}`
+		uni.request({
+			url: BASE_URL + url,
+			method: 'GET',
+			header,
+			responseType: 'arraybuffer',
+			success: (res) => {
+				if (res.statusCode === 200 && res.data instanceof ArrayBuffer) {
+					// 安全获取响应头（兼容大小写）
+					const contentDisposition = res.header?.['Content-Disposition'] ||
+						res.header?.['content-disposition'] || ''
+					const filename = extractFilename(contentDisposition)
+					resolve({
+						ab: res.data,
+						filename
+					})
+				} else if (res.statusCode === 404) {
+					reject(new Error('请先点击生成竣工验收报告'))
+				} else {
+					reject(new Error('下载失败'))
+				}
+			},
+			fail: (e) => reject(new Error(e.errMsg || '网络错误'))
+		})
+	})
+	// #endif
 }
