@@ -520,10 +520,13 @@
 											{{ item.submitted ? '已提交' : '未提交' }}
 										</text>
 
+										<!-- 修改部分：提资单提交按钮的点击事件 -->
+										<!-- 找到提交按钮，修改 @click 事件 -->
 										<button v-if="!item.submitted" class="tizidan-submit-btn"
-											@click="submitTizidanItem(index)">
-											提交
+										    @click="uploadTizidanFile(index)">
+										    提交
 										</button>
+										
 									</view>
 								</view>
 							</view>
@@ -2161,6 +2164,118 @@
 	}
 
 	// 以下提资单比对的方法-modify by wilson-------------------------
+	// 上传提资单文件
+	// 上传提资单文件
+	async function uploadTizidanFile(index) {
+	    // 1. 选择文件
+	    uni.chooseFile({
+	        count: 1, // 只能选择一个文件
+	        extension: ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'],
+	        success: async (chooseRes) => {
+	            const tempFile = chooseRes.tempFiles[0];
+	            console.log('选择的文件:', tempFile);
+	            
+	            // 2. 显示确认弹窗
+	            uni.showModal({
+	                title: '确认提交',
+	                content: `您确定要提交 "${tizidanItems.value[index].text}" 并上传文件 "${tempFile.name}" 吗？`,
+	                success: async (modalRes) => {
+	                    if (modalRes.confirm) {
+	                        // 3. 上传文件
+	                        await uploadAndSubmitFile(index, tempFile);
+	                    }
+	                }
+	            });
+	        },
+	        fail: (err) => {
+	            console.error('选择文件失败:', err);
+	            uni.showToast({
+	                title: '选择文件失败',
+	                icon: 'none'
+	            });
+	        }
+	    });
+	}
+	
+	// 上传文件并提交
+	async function uploadAndSubmitFile(index, file) {
+	    uni.showLoading({
+	        title: '上传文件中...',
+	        mask: true
+	    });
+	    
+	    try {
+	        // 1. 上传文件
+	        const uploadRes = await uploadFileToBackend(file, index);
+	        
+	        if (uploadRes.success) {
+	            // 2. 直接更新前端状态，不再调用 submit-item 接口
+	            tizidanItems.value[index].submitted = true;
+	            
+	            // 3. 显示成功提示
+	            uni.showToast({
+	                title: '提交成功',
+	                icon: 'success',
+	                duration: 2000
+	            });
+	            
+	            // 4. 弹出成功窗口
+	            uni.showModal({
+	                title: '提交成功',
+	                content: `文件 "${file.name}" 上传成功！`,
+	                showCancel: false,
+	                confirmText: '确定'
+	            });
+	        } else {
+	            throw new Error(uploadRes.message || '文件上传失败');
+	        }
+	    } catch (error) {
+	        console.error('提交失败:', error);
+	        uni.showToast({
+	            title: '提交失败：' + error.message,
+	            icon: 'none',
+	            duration: 3000
+	        });
+	    } finally {
+	        uni.hideLoading();
+	    }
+	}
+	
+	// 上传文件到后端
+	function uploadFileToBackend(file, index) {
+	    return new Promise((resolve, reject) => {
+	        uni.uploadFile({
+	            url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/upload_file',
+	            filePath: file.path,
+	            name: 'file',
+	            formData: {
+	                item_index: index,
+	                item_text: tizidanItems.value[index].text
+	            },
+	            success: (uploadRes) => {
+	                console.log('文件上传响应:', uploadRes);
+	                
+	                if (uploadRes.statusCode === 200) {
+	                    try {
+	                        const data = JSON.parse(uploadRes.data);
+	                        resolve(data);
+	                    } catch (e) {
+	                        console.error('解析响应失败:', e);
+	                        reject(new Error('服务器响应格式错误'));
+	                    }
+	                } else {
+	                    reject(new Error(`上传失败，状态码：${uploadRes.statusCode}`));
+	                }
+	            },
+	            fail: (err) => {
+	                console.error('上传请求失败:', err);
+	                reject(new Error('网络请求失败'));
+	            }
+	        });
+	    });
+	}
+	
+	
 	// 提资单数据
 	const tizidanItems = ref([])
 	const downloadUrls = ref({
@@ -2183,11 +2298,13 @@
 			// modify by wilson 使用 Promise  包装 uni.request 以确保正确解析
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
-					url: 'http://172.16.1.61:8000/api/v1/completion/datasheet',
+					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
 					method: 'GET',
 					timeout: 10000,
 					data: {
-						memberId: 3,
+						user_id: 7,
+						project_id: 18,
+						
 					},
 					success: (res) => {
 						console.log('请求成功:', res)
@@ -2262,9 +2379,10 @@
 				uni.request({
 					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
 					method: 'GET',
-					timeout: 10000,
+					timeout: 1000,
 					data: {
-						memberId: 3,
+						user_id: 7,
+						project_id: 18,
 					},
 					success: (res) => {
 						console.log('请求成功:', res)
@@ -2286,6 +2404,7 @@
 
 				tizidanItems.value = data.items
 				console.log("test", data.download_urls)
+				console.log(uni.getStorage("acceptance_project_id"))
 				// 处理下载URL，确保格式正确
 				const downloadUrlsData = data.download_urls || {}
 				downloadUrls.value = {
@@ -2454,76 +2573,6 @@
 					reject(new Error('下载请求失败: ' + (err.errMsg || '未知错误')))
 				}
 			})
-		})
-	}
-
-	// 提交提资单项
-	async function submitTizidanItem(index) {
-		uni.showModal({
-			title: '确认提交',
-			content: '您确定要提交此项资料吗？',
-			success: async (res) => {
-				if (res.confirm) {
-					try {
-						uni.showLoading({
-							title: '提交中...'
-						})
-
-						console.log('开始提交项目:', index, tizidanItems.value[index].text)
-
-						// 使用 Promise 包装 uni.request
-						const response = await new Promise((resolve, reject) => {
-							uni.request({
-								url: 'http://172.16.1.61:8000/api/v1/completion/submit-item',
-								method: 'POST',
-								header: {
-									'Content-Type': 'application/json'
-								},
-								data: {
-									item_index: index,
-									item_text: tizidanItems.value[index].text
-								},
-								timeout: 10000,
-								success: (res) => {
-									console.log('提交响应:', res)
-									resolve(res)
-								},
-								fail: (err) => {
-									console.log('提交失败:', err)
-									reject(err)
-								}
-							})
-						})
-
-						console.log('提交完整响应:', response)
-
-						// 检查返回结果
-						if (response && response.statusCode === 200) {
-							if (response.data && response.data.success) {
-								// 更新前端状态
-								tizidanItems.value[index].submitted = true
-								uni.showToast({
-									title: '提交成功',
-									icon: 'success',
-									duration: 2000
-								})
-							} else {
-								throw new Error(response.data.message || '提交失败')
-							}
-						} else {
-							throw new Error(`提交失败，状态码：${response?.statusCode || '未知'}`)
-						}
-					} catch (error) {
-						console.error('提交失败:', error)
-						uni.showToast({
-							title: '提交失败，请重试',
-							icon: 'none'
-						})
-					} finally {
-						uni.hideLoading()
-					}
-				}
-			}
 		})
 	}
 
