@@ -12,13 +12,9 @@ export * from './chat'
 
 // 验收报告相关
 export {
-	uploadFileToBackend,
-	uploadMultipleFiles,
 	runTask,
 	transformExtractResult,
 	downloadSignboardWord,
-	fetchUploadedFiles,
-	deleteFile,
 	downloadMonitorPlan
 }
 from './acceptance.js'

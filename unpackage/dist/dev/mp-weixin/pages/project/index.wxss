@@ -64,7 +64,7 @@
 /* 主要内容区域 */
 .projects__content.data-v-47879d53 {
   display: flex;
-  gap: 32rpx;
+  gap: 16rpx;
   flex: 1;
 }
 
@@ -132,9 +132,9 @@
   transform: translateY(2rpx);
 }
 .projects__button--primary.data-v-47879d53 {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: #3b82f6;
   color: #ffffff;
-  box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4rpx 6rpx rgba(59, 130, 246, 0.3);
 }
 .projects__button--primary.data-v-47879d53:active {
   box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.4);
@@ -746,7 +746,7 @@ to {
 }
 .form-textarea.data-v-47879d53 {
   width: 95%;
-  min-height: 160rpx;
+  min-height: 50rpx;
   padding: 20rpx;
   border: 2rpx solid #e2e8f0;
   border-radius: 12rpx;

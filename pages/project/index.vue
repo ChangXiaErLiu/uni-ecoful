@@ -14,11 +14,15 @@
 				<!-- 左侧项目列表 -->
 				<view class="projects__list-panel">
 					<view class="projects__panel-header">
-						<text class="projects__panel-title">项目列表</text>
-						<button class="projects__button projects__button--primary" @tap="addProject">
-							<uni-icons type="plus" size="16" color="#ffffff" />
-							<text>新建项目</text>
-						</button>
+						<view class="projects__detail-header">
+							<text class="projects__panel-title">项目列表</text>
+						</view>
+						<view class="projects__detail-actions">
+							<button class="projects__button projects__button--primary" @tap="addProject">
+								<uni-icons type="plus" size="16" color="#ffffff" />
+								<text>新建项目</text>
+							</button>
+						</view>
 					</view>
 
 					<scroll-view class="projects__scroll"> <!-- scroll-y -->
@@ -1176,7 +1180,7 @@
 	/* 主要内容区域 */
 	.projects__content {
 		display: flex;
-		gap: 32rpx;
+		gap: 16rpx;
 		flex: 1;
 	}
 
@@ -1253,9 +1257,9 @@
 	}
 
 	.projects__button--primary {
-		background: linear-gradient(135deg, #3b82f6, #2563eb);
+		background: #3b82f6;
 		color: #ffffff;
-		box-shadow: 0 4rpx 16rpx rgba(59, 130, 246, 0.3);
+		box-shadow: 0 4rpx 6rpx rgba(59, 130, 246, 0.3);
 	}
 
 	.projects__button--primary:active {
@@ -1976,7 +1980,7 @@
 
 	.form-textarea {
 		width: 95%;
-		min-height: 160rpx;
+		min-height: 50rpx;
 		padding: 20rpx;
 		border: 2rpx solid #e2e8f0;
 		border-radius: 12rpx;
