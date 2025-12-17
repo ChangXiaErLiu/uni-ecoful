@@ -304,11 +304,11 @@ function loadUserInfo() {
       userPhone.value = userInfo.phone_num || userInfo.phone || ''
       userCompany.value = userInfo.company_name || userInfo.company || ''
       
-      console.log('用户信息加载成功:', {
-        userId: userId.value,
-        userName: userName.value,
-        userCompany: userCompany.value
-      })
+      // console.log('用户信息加载成功:', {
+      //   userId: userId.value,
+      //   userName: userName.value,
+      //   userCompany: userCompany.value
+      // })
     }
   } catch (error) {
     console.error('加载用户信息失败:', error)
@@ -324,7 +324,7 @@ function loadProjectInfo() {
     
     if (projectInfoStr) {
       currentProject.value = JSON.parse(projectInfoStr)
-      console.log('项目信息加载成功:', currentProject.value)
+      // console.log('项目信息加载成功:', currentProject.value)
     } else if (projectId) {
       // 如果只有 ID，显示简化信息
       currentProject.value = {

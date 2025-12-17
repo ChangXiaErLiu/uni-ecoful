@@ -407,7 +407,10 @@ function downloadMonitorPlan(projectId) {
         if (res.statusCode === 200 && res.data instanceof ArrayBuffer) {
           const contentDisposition = ((_a = res.header) == null ? void 0 : _a["Content-Disposition"]) || ((_b = res.header) == null ? void 0 : _b["content-disposition"]) || "";
           const filename = extractFilename(contentDisposition);
-          resolve({ ab: res.data, filename });
+          resolve({
+            ab: res.data,
+            filename
+          });
         } else if (res.statusCode === 404) {
           reject(new Error("请先点击生成监测方案"));
         } else {
@@ -420,7 +423,7 @@ function downloadMonitorPlan(projectId) {
 }
 function extractFilename(str) {
   if (!str || typeof str !== "string") {
-    return "监测方案.docx";
+    return "AI生成报告.docx";
   }
   const rfc5987Match = str.match(/filename\*=UTF-8''([^;\n]+)/i);
   if (rfc5987Match && rfc5987Match[1]) {
@@ -438,11 +441,117 @@ function extractFilename(str) {
       return name;
     }
   }
-  return "监测方案.docx";
+  return "AI生成报告.docx";
+}
+async function generateReport(options = {}) {
+  const {
+    projectId = null,
+    onProgress = null,
+    pollInterval = 3e3,
+    timeout = 18e5
+    // 默认30分钟
+  } = options;
+  if (!projectId) {
+    throw new Error("项目ID不能为空");
+  }
+  try {
+    const submitResult = await utils_request.request.post(
+      `/api/v1/completion/char/batch/merge/async?project_id=${projectId}`,
+      {}
+      // body 为空
+    );
+    const taskId = submitResult.task_id;
+    const startTime = Date.now();
+    return new Promise((resolve, reject) => {
+      const pollStatus = async () => {
+        try {
+          if (Date.now() - startTime > timeout) {
+            reject(new Error("任务超时，请稍后重试"));
+            return;
+          }
+          const statusResult = await utils_request.request.get(`/api/v1/tasks/${taskId}/status`);
+          const {
+            status,
+            progress = 0,
+            current_step = "",
+            task_result,
+            error_message
+          } = statusResult;
+          common_vendor.index.__f__("log", "at api/acceptance.js:728", `[${status}] ${progress}% - ${current_step}`);
+          if (onProgress && typeof onProgress === "function") {
+            onProgress(progress, current_step, status);
+          }
+          if (status === "success") {
+            common_vendor.index.__f__("log", "at api/acceptance.js:737", "✅ 竣工验收报告已生成！");
+            resolve({
+              status: "success",
+              result: task_result,
+              project_id: projectId
+            });
+            return;
+          }
+          if (status === "failed") {
+            common_vendor.index.__f__("error", "at api/acceptance.js:748", "❌ 任务失败:", error_message);
+            reject(new Error(error_message || "竣工验收报告生成失败"));
+            return;
+          }
+          if (status === "cancelled") {
+            reject(new Error("任务已被取消"));
+            return;
+          }
+          setTimeout(pollStatus, pollInterval);
+        } catch (error) {
+          common_vendor.index.__f__("error", "at api/acceptance.js:763", "查询任务状态失败:", error);
+          reject(error);
+        }
+      };
+      pollStatus();
+    });
+  } catch (error) {
+    if (error.message && error.message.includes("已有一个竣工验收报告生成任务正在运行")) {
+      throw new Error("您已有一个竣工验收报告生成任务正在运行，请等待完成");
+    }
+    throw error;
+  }
+}
+function downloadReport(projectId) {
+  if (!projectId)
+    throw new Error("项目ID不能为空");
+  const url = `/api/v1/completion/char/batch/merge/download?project_id=${projectId}`;
+  return new Promise((resolve, reject) => {
+    const token = common_vendor.index.getStorageSync("token");
+    const header = {};
+    if (token)
+      header.Authorization = `Bearer ${token}`;
+    common_vendor.index.request({
+      url: utils_config.BASE_URL + url,
+      method: "GET",
+      header,
+      responseType: "arraybuffer",
+      success: (res) => {
+        var _a, _b;
+        if (res.statusCode === 200 && res.data instanceof ArrayBuffer) {
+          const contentDisposition = ((_a = res.header) == null ? void 0 : _a["Content-Disposition"]) || ((_b = res.header) == null ? void 0 : _b["content-disposition"]) || "";
+          const filename = extractFilename(contentDisposition);
+          resolve({
+            ab: res.data,
+            filename
+          });
+        } else if (res.statusCode === 404) {
+          reject(new Error("请先点击生成竣工验收报告"));
+        } else {
+          reject(new Error("下载失败"));
+        }
+      },
+      fail: (e) => reject(new Error(e.errMsg || "网络错误"))
+    });
+  });
 }
 exports.downloadMonitorPlan = downloadMonitorPlan;
+exports.downloadReport = downloadReport;
 exports.downloadSignboardWord = downloadSignboardWord;
 exports.generateMonitorPlan = generateMonitorPlan;
+exports.generateReport = generateReport;
 exports.runTask = runTask;
 exports.transformExtractResult = transformExtractResult;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/api/acceptance.js.map

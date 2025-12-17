@@ -51,15 +51,19 @@ const _sfc_main = {
     const filteredProjects = common_vendor.computed(() => {
       return projects.value.filter((project) => !project.is_deleted);
     });
+    const projectTotal = common_vendor.ref("");
     const loadProjects = async () => {
       try {
         const response = await api_project.getProjects();
         projects.value = response;
+        const total = response.length;
+        common_vendor.index.setStorageSync("project_total_count", total);
+        projectTotal.value = total;
         if (response.length > 0 && !activeProjectId.value) {
           await switchProject(response[0].id);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:401", "加载项目列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:402", "加载项目列表失败:", error);
         common_vendor.index.showToast({
           title: "加载项目列表失败",
           icon: "error"
@@ -72,7 +76,7 @@ const _sfc_main = {
         activeProject.value = response;
         await loadProjectDocuments(projectId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:418", "加载项目详情失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:419", "加载项目详情失败:", error);
         common_vendor.index.showToast({
           title: "加载项目详情失败",
           icon: "error"
@@ -87,7 +91,7 @@ const _sfc_main = {
           activeProject.value.documents = documents.value;
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:438", "加载项目文档失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:439", "加载项目文档失败:", error);
       }
     };
     const switchProject = async (projectId) => {
@@ -127,7 +131,7 @@ const _sfc_main = {
         await loadProjects();
         await switchProject(response.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:495", "创建项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:496", "创建项目失败:", error);
         common_vendor.index.showToast({
           title: "创建项目失败",
           icon: "error"
@@ -151,7 +155,7 @@ const _sfc_main = {
         });
         showEditProjectModal.value = true;
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:524", "编辑项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:525", "编辑项目失败:", error);
         common_vendor.index.showToast({
           title: "编辑项目失败",
           icon: "error"
@@ -181,7 +185,7 @@ const _sfc_main = {
         await loadProjects();
         await loadProjectDetail(editProjectForm.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:563", "更新项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:564", "更新项目失败:", error);
         common_vendor.index.showToast({
           title: "更新项目失败",
           icon: "error"
@@ -213,7 +217,7 @@ const _sfc_main = {
           }
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:604", "删除项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:605", "删除项目失败:", error);
         common_vendor.index.showToast({
           title: "删除项目失败",
           icon: "error"
@@ -241,7 +245,20 @@ const _sfc_main = {
       common_vendor.index.chooseMessageFile({
         count: 9,
         type: "all",
-        extension: [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".md", ".txt", ".jpg", ".jpeg", ".png"],
+        extension: [
+          ".pdf",
+          ".doc",
+          ".docx",
+          ".xls",
+          ".xlsx",
+          ".ppt",
+          ".pptx",
+          ".md",
+          ".txt",
+          ".jpg",
+          ".jpeg",
+          ".png"
+        ],
         success: (res) => {
           const files = res.tempFiles.map((file) => ({
             name: file.name,
@@ -253,7 +270,7 @@ const _sfc_main = {
           handleSelectedFiles(files);
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/project/index.vue:683", "选择文件失败:", err);
+          common_vendor.index.__f__("error", "at pages/project/index.vue:686", "选择文件失败:", err);
         }
       });
     };
@@ -298,7 +315,7 @@ const _sfc_main = {
         });
       }
       selectedFiles.value = uniqueFiles;
-      common_vendor.index.__f__("log", "at pages/project/index.vue:758", "已选择文件:", selectedFiles.value.length, "个");
+      common_vendor.index.__f__("log", "at pages/project/index.vue:761", "已选择文件:", selectedFiles.value.length, "个");
     };
     const removeFile = (index) => {
       selectedFiles.value.splice(index, 1);
@@ -404,7 +421,7 @@ const _sfc_main = {
               const successCount = status.success_count || 0;
               const failedCount = status.failed_count || 0;
               const total = status.total || 0;
-              common_vendor.index.__f__("log", "at pages/project/index.vue:924", "成功数量:", successCount, "失败数量:", failedCount, "总数:", total);
+              common_vendor.index.__f__("log", "at pages/project/index.vue:925", "成功数量:", successCount, "失败数量:", failedCount, "总数:", total);
               let content = "";
               if (failedCount === 0) {
                 content = `全部上传成功！共 ${successCount} 个文件`;
@@ -441,7 +458,7 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
             }, 1e3);
           }
         } catch (e) {
-          common_vendor.index.__f__("error", "at pages/project/index.vue:959", "轮询任务状态失败:", e);
+          common_vendor.index.__f__("error", "at pages/project/index.vue:960", "轮询任务状态失败:", e);
           stopPollingTaskStatus();
           batchUploading.value = false;
           showUploadProgress.value = false;
@@ -500,7 +517,7 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
             });
           },
           fail: (err) => {
-            common_vendor.index.__f__("log", "at pages/project/index.vue:1057", "打开文档失败:", err);
+            common_vendor.index.__f__("log", "at pages/project/index.vue:1058", "打开文档失败:", err);
             common_vendor.index.showModal({
               title: "提示",
               content: "文件已下载，但当前文件类型不支持预览。文件已保存到微信文件中。",

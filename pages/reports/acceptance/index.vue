@@ -680,53 +680,76 @@
 														</button>
 													</view>
 
-													<!-- 数据表格 -->
-													<view v-else-if="equipmentList.length" class="data-table-container">
-														<scroll-view class="data-table-scroll" scroll-x>
-															<view class="data-table">
-																<view class="table-header">
-																	<text class="table-th device-name">设备名称</text>
-																	<text class="table-th device-quantity">数量</text>
-																	<text class="table-th device-remark">备注</text>
-																	<text class="table-th device-images">图片</text>
-																	<text class="table-th device-actions">操作</text>
+													<!-- 设备卡片列表 -->
+													<view v-else-if="equipmentList.length" class="facility-list">
+														<view 
+															v-for="(item, index) in equipmentList"
+															:key="item.id"
+															class="facility-card"
+														>
+
+
+															<!-- 卡片内容 -->
+															<view class="facility-card__body">
+																<!-- 设备名称 -->
+																<view class="facility-field">
+																	<text class="facility-field__label">设备名称</text>
+																	<uni-easyinput 
+																		v-model="item.name"
+																		placeholder="请输入设备名称" 
+																		:clearable="true"
+																		class="facility-field__input"
+																	/>
 																</view>
-																<view class="table-body">
-																	<view class="table-row"
-																		v-for="(item, index) in equipmentList"
-																		:key="item.id">
-																		<view class="table-td device-name">
-																			<uni-easyinput v-model="item.name"
-																				placeholder="设备名称" :clearable="true"
-																				class="table-input" />
-																		</view>
-																		<view class="table-td device-quantity">
-																			<uni-easyinput v-model="item.quantity"
-																				placeholder="数量" :clearable="true"
-																				class="table-input" />
-																		</view>
-																		<view class="table-td device-remark">
-																			<uni-easyinput v-model="item.remark"
-																				placeholder="备注" :clearable="true"
-																				class="table-input" />
-																		</view>
-																		<view class="table-td device-images">
-																			<uni-file-picker v-model="item.images"
-																				fileMediatype="image" mode="grid"
-																				:limit="3" :auto-upload="false"
-																				class="file-picker" />
-																		</view>
-																		<view class="table-td device-actions">
-																			<button class="icon-btn icon-btn--danger"
-																				@tap="() => removeEquipment(index)">
-																				<uni-icons type="trash" size="16"
-																					color="#d92d20" />
-																			</button>
-																		</view>
+
+																<!-- 数量和备注（横向布局） -->
+																<view class="facility-field-row">
+																	<view class="facility-field facility-field--half">
+																		<text class="facility-field__label">数量</text>
+																		<uni-easyinput 
+																			v-model="item.quantity"
+																			placeholder="数量" 
+																			:clearable="true"
+																			class="facility-field__input"
+																		/>
+																	</view>
+																	<view class="facility-field facility-field--half">
+																		<text class="facility-field__label">备注</text>
+																		<uni-easyinput 
+																			v-model="item.remark"
+																			placeholder="备注信息" 
+																			:clearable="true"
+																			class="facility-field__input"
+																		/>
 																	</view>
 																</view>
+
+																<!-- 图片上传 -->
+																<view class="facility-field">
+																	<text class="facility-field__label">设备图片（最多3张）</text>
+																	<uni-file-picker 
+																		v-model="item.images"
+																		fileMediatype="image" 
+																		mode="grid"
+																		:limit="3" 
+																		:auto-upload="false"
+																		class="facility-field__picker"
+																	/>
+																</view>
 															</view>
-														</scroll-view>
+															<!-- 卡片头部 -->
+															<view class="facility-card__header">
+																<view class="facility-card__number">
+																	<text class="facility-card__number-text">#{{ index + 1 }}</text>
+																</view>
+																<button 
+																	class="facility-card__delete"
+																	@tap="() => removeEquipment(index)"
+																>
+																	<uni-icons type="trash" size="16" color="#ef4444" />
+																</button>
+															</view>
+														</view>
 													</view>
 
 													<view v-else class="empty-state">
@@ -754,53 +777,75 @@
 														</button>
 													</view>
 
-													<view v-if="pollutionFacilityList.length"
-														class="data-table-container">
-														<scroll-view class="data-table-scroll" scroll-x>
-															<view class="data-table">
-																<view class="table-header">
-																	<text class="table-th device-name">设施名称</text>
-																	<text class="table-th device-quantity">数量</text>
-																	<text class="table-th device-remark">备注</text>
-																	<text class="table-th device-images">图片</text>
-																	<text class="table-th device-actions">操作</text>
+													<!-- 设施卡片列表 -->
+													<view v-if="pollutionFacilityList.length" class="facility-list">
+														<view 
+															v-for="(item, index) in pollutionFacilityList"
+															:key="item.id"
+															class="facility-card"
+														>
+															<!-- 卡片头部 -->
+															<view class="facility-card__header">
+																<view class="facility-card__number">
+																	<text class="facility-card__number-text">#{{ index + 1 }}</text>
 																</view>
-																<view class="table-body">
-																	<view class="table-row"
-																		v-for="(item, index) in pollutionFacilityList"
-																		:key="item.id">
-																		<view class="table-td device-name">
-																			<uni-easyinput v-model="item.name"
-																				placeholder="设施名称" :clearable="true"
-																				class="table-input" />
-																		</view>
-																		<view class="table-td device-quantity">
-																			<uni-easyinput v-model="item.quantity"
-																				placeholder="数量" :clearable="true"
-																				class="table-input" />
-																		</view>
-																		<view class="table-td device-remark">
-																			<uni-easyinput v-model="item.remark"
-																				placeholder="备注" :clearable="true"
-																				class="table-input" />
-																		</view>
-																		<view class="table-td device-images">
-																			<uni-file-picker v-model="item.images"
-																				fileMediatype="image" mode="grid"
-																				:limit="3" :auto-upload="false"
-																				class="file-picker" />
-																		</view>
-																		<view class="table-td device-actions">
-																			<button class="icon-btn icon-btn--danger"
-																				@tap="() => removePollutionFacility(index)">
-																				<uni-icons type="trash" size="16"
-																					color="#d92d20" />
-																			</button>
-																		</view>
+																<button 
+																	class="facility-card__delete"
+																	@tap="() => removePollutionFacility(index)"
+																>
+																	<uni-icons type="trash" size="16" color="#ef4444" />
+																</button>
+															</view>
+
+															<!-- 卡片内容 -->
+															<view class="facility-card__body">
+																<!-- 设施名称 -->
+																<view class="facility-field">
+																	<text class="facility-field__label">设施名称</text>
+																	<uni-easyinput 
+																		v-model="item.name"
+																		placeholder="请输入设施名称" 
+																		:clearable="true"
+																		class="facility-field__input"
+																	/>
+																</view>
+
+																<!-- 数量和备注（横向布局） -->
+																<view class="facility-field-row">
+																	<view class="facility-field facility-field--half">
+																		<text class="facility-field__label">数量</text>
+																		<uni-easyinput 
+																			v-model="item.quantity"
+																			placeholder="数量" 
+																			:clearable="true"
+																			class="facility-field__input"
+																		/>
+																	</view>
+																	<view class="facility-field facility-field--half">
+																		<text class="facility-field__label">备注</text>
+																		<uni-easyinput 
+																			v-model="item.remark"
+																			placeholder="备注信息" 
+																			:clearable="true"
+																			class="facility-field__input"
+																		/>
 																	</view>
 																</view>
+
+																<!-- 图片上传 -->
+																<view class="facility-field">
+																	<text class="facility-field__label">设施图片（最多3张）</text>
+																	<uni-file-picker 
+																		v-model="item.images"
+																		fileMediatype="image" 
+																		mode="grid"
+																		:limit="3" 
+																		:auto-upload="false"
+																		class="facility-field__picker"
+																	/>
+																</view>
 															</view>
-														</scroll-view>
+														</view>
 													</view>
 
 													<view v-else class="empty-state">
@@ -950,13 +995,13 @@
 
 									<view class="generation-actions">
 										<button class="btn btn--primary" @tap="generateAcceptanceReport">
-											<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
+											<uni-icons type="refresh-filled" size="16" color="#ffffff" />
 											<text>生成验收报告</text>
 										</button>
 										<!-- 生成后可点 -->
 										<button v-if="canDownloadReport" class="btn btn--primary" @tap="downAcceptanceReport">
 											<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
-											<text>下载监测方案</text>
+											<text>下载竣工验收报告</text>
 										</button>
 									</view>
 
@@ -1239,7 +1284,6 @@
 	async function selectProject(project) {
 		selectedProjectId.value = project.id
 		selectedProject.value = project
-		// console.log('选择项目:', project.name)
 
 		// 保存到 uni.setStorageSync，跨平台兼容
 		try {
@@ -1250,26 +1294,6 @@
 				description: project.description,
 				folder_name: project.folder_name
 			}))
-			// console.log('✅ 已保存项目选择到缓存')
-
-			// // 获取用户信息
-			// const userInfoStr = uni.getStorageSync('userInfo')
-			// const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null
-
-			// // 获取用户ID
-			// const userId = userInfo?.id || userInfo?.user_id
-
-			// console.log('用户ID:', userId)
-			// console.log('用户名:', userInfo?.username)
-			// console.log('手机号:', userInfo?.phone_num)
-			// console.log('企业名称:', userInfo?.company_name)
-			// // 获取项目ID
-			// const projectId = uni.getStorageSync('acceptance_project_id')
-			// console.log("projectId：", projectId)
-			// // 获取项目完整信息
-			// const projectInfoStr = uni.getStorageSync('acceptance_project_info')
-			// const projectInfo = projectInfoStr ? JSON.parse(projectInfoStr) : null
-			// console.log("projectInfo",projectInfo)
 		} catch (e) {
 			console.warn('⚠️ 保存项目选择失败:', e)
 		}
@@ -4171,6 +4195,143 @@
 		color: #dc2626;
 	}
 
+	/* 设施卡片列表样式 */
+	.facility-list {
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+		margin-top: 24rpx;
+	}
+
+	.facility-card {
+		background: #ffffff;
+		border: 2rpx solid #e5e7eb;
+		border-radius: 16rpx;
+		overflow: hidden;
+		transition: all 0.3s ease;
+	}
+
+	.facility-card:hover {
+		border-color: #16a34a;
+		box-shadow: 0 4rpx 12rpx rgba(22, 163, 74, 0.1);
+	}
+
+	.facility-card__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 20rpx 24rpx;
+		background: #f0fdf4 0%;
+		border-bottom: 2rpx solid #bbf7d0;
+	}
+
+	.facility-card__number {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 56rpx;
+		height: 56rpx;
+		background: #ffffff;
+		border-radius: 12rpx;
+		box-shadow: 0 2rpx 8rpx rgba(22, 101, 52, 0.1);
+	}
+
+	.facility-card__number-text {
+		font-size: 28rpx;
+		font-weight: 700;
+		color: #166534;
+	}
+
+	.facility-card__delete {
+		width: 56rpx;
+		height: 56rpx;
+		border-radius: 12rpx;
+		background: #ffffff;
+		border: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+	}
+
+	.facility-card__delete:active {
+		background: #fee2e2;
+		transform: scale(0.95);
+	}
+
+	.facility-card__body {
+		padding: 32rpx 24rpx;
+		display: flex;
+		flex-direction: column;
+		gap: 28rpx;
+	}
+
+	.facility-field {
+		display: flex;
+		flex-direction: column;
+		gap: 12rpx;
+	}
+
+	.facility-field--half {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.facility-field-row {
+		display: flex;
+		gap: 20rpx;
+	}
+
+	.facility-field__label {
+		font-size: 26rpx;
+		color: #475569;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	.facility-field__label::before {
+		content: '•';
+		color: #16a34a;
+		margin-right: 8rpx;
+		font-weight: 700;
+	}
+
+	.facility-field__input {
+		width: 100%;
+	}
+
+	.facility-field__picker {
+		width: 100%;
+	}
+
+	/* 响应式优化 */
+	@media (max-width: 768px) {
+		.facility-field-row {
+			flex-direction: column;
+			gap: 28rpx;
+		}
+
+		.facility-field--half {
+			width: 100%;
+		}
+
+		.facility-card__body {
+			padding: 24rpx 20rpx;
+		}
+	}
+
+	/* 桌面端优化 */
+	@media (min-width: 768px) {
+		.facility-list {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(600rpx, 1fr));
+			gap: 32rpx;
+		}
+
+		.facility-card:hover {
+			transform: translateY(-4rpx);
+		}
+	}
 
 	/* 基本信息表：响应式行 */
 
@@ -4906,19 +5067,19 @@
 
 		/* 用 nth-child 给出列标题（与 header 顺序一致） */
 		.table-row .table-td:nth-child(1)::before {
-			content: '字段';
+			content: '名称';
 		}
 
 		.table-row .table-td:nth-child(2)::before {
-			content: '当前值';
+			content: '数量';
 		}
 
 		.table-row .table-td:nth-child(3)::before {
-			content: '类型';
+			content: '备注';
 		}
 
 		.table-row .table-td:nth-child(4)::before {
-			content: '状态';
+			content: '上传图片';
 		}
 
 		.table-row .table-td:nth-child(5)::before {
@@ -5491,6 +5652,221 @@
 		.tizidan-footer {
 			padding: 60rpx 80rpx;
 			/* 进一步增大底部内边距 */
+		}
+	}
+
+	/* ========== 设施/设备卡片样式 ========== */
+	.facility-list {
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+		margin-top: 24rpx;
+	}
+
+	.facility-card {
+		background: #ffffff;
+		border-radius: 16rpx;
+		overflow: hidden;
+		transition: all 0.3s ease;
+	}
+
+	.facility-card:hover {
+		box-shadow: 0 4rpx 20rpx rgba(22, 101, 52, 0.12);
+		transform: translateY(-2rpx);
+	}
+
+	.facility-card__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		background: #15803d;
+	}
+
+	.facility-card__number {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 56rpx;
+		height: 56rpx;
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 50%;
+		backdrop-filter: blur(10rpx);
+	}
+
+	.facility-card__number-text {
+		font-size: 28rpx;
+		font-weight: 600;
+		color: #ffffff;
+	}
+
+	.facility-card__delete {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 56rpx;
+		height: 56rpx;
+		background: rgba(239, 68, 68, 0.1);
+		border-radius: 50%;
+		border: none;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.facility-card__delete:hover {
+		background: rgba(239, 68, 68, 0.2);
+		transform: scale(1.1);
+	}
+
+	.facility-card__body {
+		padding: 32rpx 24rpx;
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+	}
+
+	.facility-field {
+		display: flex;
+		flex-direction: column;
+		gap: 12rpx;
+	}
+
+	.facility-field__label {
+		font-size: 28rpx;
+		font-weight: 500;
+		color: #374151;
+		margin-bottom: 4rpx;
+	}
+
+	.facility-field__input {
+		width: 100%;
+	}
+
+	.facility-field__picker {
+		width: 100%;
+	}
+
+	.facility-field-row {
+		display: flex;
+		gap: 16rpx;
+		width: 100%;
+	}
+
+	.facility-field--half {
+		flex: 1;
+		min-width: 0;
+	}
+
+	/* 移动端适配 */
+	@media (max-width: 768px) {
+		.facility-list {
+			gap: 20rpx;
+			margin-top: 20rpx;
+		}
+
+		.facility-card {
+			border-radius: 12rpx;
+		}
+
+		.facility-card__header {
+			padding: 16rpx 20rpx;
+		}
+
+		.facility-card__number {
+			width: 48rpx;
+			height: 48rpx;
+		}
+
+		.facility-card__number-text {
+			font-size: 24rpx;
+		}
+
+		.facility-card__delete {
+			width: 48rpx;
+			height: 48rpx;
+		}
+
+		.facility-card__body {
+			padding: 24rpx 20rpx;
+			gap: 20rpx;
+		}
+
+		.facility-field {
+			gap: 8rpx;
+		}
+
+		.facility-field__label {
+			font-size: 26rpx;
+		}
+
+		.facility-field-row {
+			flex-direction: column;
+			gap: 20rpx;
+		}
+
+		.facility-field--half {
+			width: 100%;
+		}
+	}
+
+	/* 桌面端适配 */
+	@media (min-width: 961px) {
+		.facility-list {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 32rpx;
+			margin-top: 32rpx;
+		}
+
+		.facility-card {
+			border-radius: 20rpx;
+		}
+
+		.facility-card__header {
+			padding: 24rpx 32rpx;
+		}
+
+		.facility-card__number {
+			width: 64rpx;
+			height: 64rpx;
+		}
+
+		.facility-card__number-text {
+			font-size: 32rpx;
+		}
+
+		.facility-card__delete {
+			width: 64rpx;
+			height: 64rpx;
+		}
+
+		.facility-card__body {
+			padding: 40rpx 32rpx;
+			gap: 28rpx;
+		}
+
+		.facility-field {
+			gap: 14rpx;
+		}
+
+		.facility-field__label {
+			font-size: 30rpx;
+		}
+
+		.facility-field-row {
+			gap: 20rpx;
+		}
+	}
+
+	/* 超大屏幕适配 */
+	@media (min-width: 1200px) {
+		.facility-list {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 40rpx;
+		}
+
+		.facility-card__body {
+			padding: 48rpx 40rpx;
 		}
 	}
 </style>

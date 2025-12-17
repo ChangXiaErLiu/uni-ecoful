@@ -596,6 +596,124 @@
   color: #dc2626;
 }
 
+/* 设施卡片列表样式 */
+.facility-list.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-top: 24rpx;
+}
+.facility-card.data-v-41308e16 {
+  background: #ffffff;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 16rpx;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.facility-card.data-v-41308e16:hover {
+  border-color: #16a34a;
+  box-shadow: 0 4rpx 12rpx rgba(22, 163, 74, 0.1);
+}
+.facility-card__header.data-v-41308e16 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  background: #f0fdf4 0%;
+  border-bottom: 2rpx solid #bbf7d0;
+}
+.facility-card__number.data-v-41308e16 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  background: #ffffff;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(22, 101, 52, 0.1);
+}
+.facility-card__number-text.data-v-41308e16 {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #166534;
+}
+.facility-card__delete.data-v-41308e16 {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 12rpx;
+  background: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.facility-card__delete.data-v-41308e16:active {
+  background: #fee2e2;
+  transform: scale(0.95);
+}
+.facility-card__body.data-v-41308e16 {
+  padding: 32rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+.facility-field.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+.facility-field--half.data-v-41308e16 {
+  flex: 1;
+  min-width: 0;
+}
+.facility-field-row.data-v-41308e16 {
+  display: flex;
+  gap: 20rpx;
+}
+.facility-field__label.data-v-41308e16 {
+  font-size: 26rpx;
+  color: #475569;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.facility-field__label.data-v-41308e16::before {
+  content: "•";
+  color: #16a34a;
+  margin-right: 8rpx;
+  font-weight: 700;
+}
+.facility-field__input.data-v-41308e16 {
+  width: 100%;
+}
+.facility-field__picker.data-v-41308e16 {
+  width: 100%;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+.facility-field-row.data-v-41308e16 {
+    flex-direction: column;
+    gap: 28rpx;
+}
+.facility-field--half.data-v-41308e16 {
+    width: 100%;
+}
+.facility-card__body.data-v-41308e16 {
+    padding: 24rpx 20rpx;
+}
+}
+/* 桌面端优化 */
+@media (min-width: 768px) {
+.facility-list.data-v-41308e16 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(600rpx, 1fr));
+    gap: 32rpx;
+}
+.facility-card.data-v-41308e16:hover {
+    transform: translateY(-4rpx);
+}
+}
 /* 基本信息表：响应式行 */
 .form-grid--base.data-v-41308e16 {
   display: grid;
@@ -1228,16 +1346,16 @@
 
   /* 用 nth-child 给出列标题（与 header 顺序一致） */
 .table-row .table-td.data-v-41308e16:nth-child(1)::before {
-    content: "字段";
+    content: "名称";
 }
 .table-row .table-td.data-v-41308e16:nth-child(2)::before {
-    content: "当前值";
+    content: "数量";
 }
 .table-row .table-td.data-v-41308e16:nth-child(3)::before {
-    content: "类型";
+    content: "备注";
 }
 .table-row .table-td.data-v-41308e16:nth-child(4)::before {
-    content: "状态";
+    content: "上传图片";
 }
 .table-row .table-td.data-v-41308e16:nth-child(5)::before {
     content: "操作";
@@ -1702,5 +1820,184 @@
 .tizidan-footer.data-v-41308e16 {
     padding: 60rpx 80rpx;
     /* 进一步增大底部内边距 */
+}
+}
+/* ========== 设施/设备卡片样式 ========== */
+.facility-list.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+  margin-top: 24rpx;
+}
+.facility-card.data-v-41308e16 {
+  background: #ffffff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.facility-card.data-v-41308e16:hover {
+  box-shadow: 0 4rpx 20rpx rgba(22, 101, 52, 0.12);
+  transform: translateY(-2rpx);
+}
+.facility-card__header.data-v-41308e16 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: #15803d;
+}
+.facility-card__number.data-v-41308e16 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  -webkit-backdrop-filter: blur(10rpx);
+          backdrop-filter: blur(10rpx);
+}
+.facility-card__number-text.data-v-41308e16 {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+.facility-card__delete.data-v-41308e16 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.facility-card__delete.data-v-41308e16:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.1);
+}
+.facility-card__body.data-v-41308e16 {
+  padding: 32rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.facility-field.data-v-41308e16 {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+.facility-field__label.data-v-41308e16 {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4rpx;
+}
+.facility-field__input.data-v-41308e16 {
+  width: 100%;
+}
+.facility-field__picker.data-v-41308e16 {
+  width: 100%;
+}
+.facility-field-row.data-v-41308e16 {
+  display: flex;
+  gap: 16rpx;
+  width: 100%;
+}
+.facility-field--half.data-v-41308e16 {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+.facility-list.data-v-41308e16 {
+    gap: 20rpx;
+    margin-top: 20rpx;
+}
+.facility-card.data-v-41308e16 {
+    border-radius: 12rpx;
+}
+.facility-card__header.data-v-41308e16 {
+    padding: 16rpx 20rpx;
+}
+.facility-card__number.data-v-41308e16 {
+    width: 48rpx;
+    height: 48rpx;
+}
+.facility-card__number-text.data-v-41308e16 {
+    font-size: 24rpx;
+}
+.facility-card__delete.data-v-41308e16 {
+    width: 48rpx;
+    height: 48rpx;
+}
+.facility-card__body.data-v-41308e16 {
+    padding: 24rpx 20rpx;
+    gap: 20rpx;
+}
+.facility-field.data-v-41308e16 {
+    gap: 8rpx;
+}
+.facility-field__label.data-v-41308e16 {
+    font-size: 26rpx;
+}
+.facility-field-row.data-v-41308e16 {
+    flex-direction: column;
+    gap: 20rpx;
+}
+.facility-field--half.data-v-41308e16 {
+    width: 100%;
+}
+}
+/* 桌面端适配 */
+@media (min-width: 961px) {
+.facility-list.data-v-41308e16 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32rpx;
+    margin-top: 32rpx;
+}
+.facility-card.data-v-41308e16 {
+    border-radius: 20rpx;
+}
+.facility-card__header.data-v-41308e16 {
+    padding: 24rpx 32rpx;
+}
+.facility-card__number.data-v-41308e16 {
+    width: 64rpx;
+    height: 64rpx;
+}
+.facility-card__number-text.data-v-41308e16 {
+    font-size: 32rpx;
+}
+.facility-card__delete.data-v-41308e16 {
+    width: 64rpx;
+    height: 64rpx;
+}
+.facility-card__body.data-v-41308e16 {
+    padding: 40rpx 32rpx;
+    gap: 28rpx;
+}
+.facility-field.data-v-41308e16 {
+    gap: 14rpx;
+}
+.facility-field__label.data-v-41308e16 {
+    font-size: 30rpx;
+}
+.facility-field-row.data-v-41308e16 {
+    gap: 20rpx;
+}
+}
+/* 超大屏幕适配 */
+@media (min-width: 1200px) {
+.facility-list.data-v-41308e16 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40rpx;
+}
+.facility-card__body.data-v-41308e16 {
+    padding: 48rpx 40rpx;
 }
 }
