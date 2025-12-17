@@ -33,7 +33,7 @@
 					<view v-show="currentStep === 0" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
-								<uni-icons type="folder" size="20" color="#166534" />
+								<uni-icons type="folder-add" size="20" color="#166534" />
 								<text class="section-title">选择项目</text>
 							</view>
 							<view class="section-body">
@@ -928,14 +928,14 @@
 					<view v-show="currentStep === 4" class="content-section">
 						<view class="section-card">
 							<view class="section-header">
-								<uni-icons type="document" size="20" color="#166534" />
+								<uni-icons type="calendar" size="20" color="#166534" />
 								<text class="section-title">竣工验收报告</text>
 							</view>
 							<view class="section-body">
 								<view class="report-generation">
 									<view class="generation-options">
 										<view class="option-group">
-											<text class="option-label">报告类型</text>
+											<text class="option-label">请选择要生成的报告类型</text>
 											<radio-group class="radio-group" @change="onReportTypeChange">
 												<label class="radio-item" v-for="type in reportTypes" :key="type.value">
 													<radio :value="type.value" :checked="reportType === type.value" />
@@ -956,12 +956,17 @@
 											<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
 											<text>生成验收报告</text>
 										</button>
+										<!-- 生成后可点 -->
+										<button v-if="canDownloadReport" class="btn btn--primary" @tap="downAcceptanceReport">
+											<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
+											<text>下载监测方案</text>
+										</button>
 									</view>
 
 									<view v-if="reportGenerated" class="report-preview">
 										<view class="preview-header">
-											<uni-icons type="checkmark-circle" size="18" color="#166534" />
-											<text class="preview-title">报告生成完成</text>
+											<uni-icons type="checkmarkempty" size="18" color="#166534" />
+											<text class="preview-title">{{previewTitle}}</text>
 										</view>
 										<view class="preview-content">
 											<text class="preview-text">竣工验收报告已生成，包含以下内容：</text>
@@ -1112,7 +1117,9 @@
 		transformExtractResult,
 		downloadSignboardWord,
 		generateMonitorPlan,
-		downloadMonitorPlan
+		downloadMonitorPlan,
+		generateReport,
+		downloadReport
 	} from '@/api/acceptance.js'
 
 	//手机端头部页面标题
@@ -1235,7 +1242,7 @@
 	async function selectProject(project) {
 		selectedProjectId.value = project.id
 		selectedProject.value = project
-		console.log('选择项目:', project.name)
+		// console.log('选择项目:', project.name)
 
 		// 保存到 uni.setStorageSync，跨平台兼容
 		try {
@@ -1246,7 +1253,26 @@
 				description: project.description,
 				folder_name: project.folder_name
 			}))
-			console.log('✅ 已保存项目选择到缓存')
+			// console.log('✅ 已保存项目选择到缓存')
+
+			// // 获取用户信息
+			// const userInfoStr = uni.getStorageSync('userInfo')
+			// const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null
+
+			// // 获取用户ID
+			// const userId = userInfo?.id || userInfo?.user_id
+
+			// console.log('用户ID:', userId)
+			// console.log('用户名:', userInfo?.username)
+			// console.log('手机号:', userInfo?.phone_num)
+			// console.log('企业名称:', userInfo?.company_name)
+			// // 获取项目ID
+			// const projectId = uni.getStorageSync('acceptance_project_id')
+			// console.log("projectId：", projectId)
+			// // 获取项目完整信息
+			// const projectInfoStr = uni.getStorageSync('acceptance_project_info')
+			// const projectInfo = projectInfoStr ? JSON.parse(projectInfoStr) : null
+			// console.log("projectInfo",projectInfo)
 		} catch (e) {
 			console.warn('⚠️ 保存项目选择失败:', e)
 		}
@@ -1566,7 +1592,9 @@
 
 					// 清空当前显示的数据
 					baseTable.value = []
-					signboard.value = { sections: [] }
+					signboard.value = {
+						sections: []
+					}
 					showSignboard.value = false
 					extractionOk.value = false
 
@@ -3428,6 +3456,8 @@
 	// 以下是竣工验收报告的方法-------------------------
 	const reportType = ref('withoutData')
 	const testReportFiles = ref([])
+	const canDownloadReport = ref(false) // 是否已生成竣工验收报告
+	const previewTitle = ref("")
 
 	//选择有无监测方案报告
 	const reportGenerated = ref(false)
@@ -3446,17 +3476,18 @@
 		reportType.value = e.detail.value
 	}
 
-	// 验证有无上传环评报告
-	function generateAcceptanceReport() {
-		// 验证必要数据
-		if (!eiaFiles.value.length) {
-			uni.showToast({
-				title: '请上传环评报告、批复文件等基本资料',
-				icon: 'none'
-			})
-			return
-		}
-
+	// 生成竣工验收报告
+	async function generateAcceptanceReport() {
+		if (!selectedProjectId.value) return uni.showModal({
+			title: '提示',
+			content: '请先选择项目',
+			showCancel: false
+		})
+		if (!extractionOk.value) return uni.showModal({
+			title: '提示',
+			content: '请先提取项目信息',
+			showCancel: false
+		})
 		if (reportType.value === 'withData' && !testReportFiles.value.length) {
 			uni.showToast({
 				title: '有监测数据报告，必须要先上传监测报告',
@@ -3464,16 +3495,77 @@
 			})
 			return
 		}
+		clearProgressTimer()
+		taskProgressTitle.value = '竣工验收报告生成中'
+		taskProgress.value = 0
+		taskState.value = 'pending'
+		taskProgressModal.value?.open()
 
-		// 模拟生成报告
-		setTimeout(() => {
-			reportGenerated.value = true
+		try {
+			await generateReport({
+				projectId: selectedProjectId.value,
+				onProgress: (p, txt) => updateProgressSmooth(p, txt)
+			})
+			// 生成完只开下载权限
+			canDownloadReport.value = true
+			taskProgressModal.value?.close()
 			uni.showToast({
-				title: '验收报告生成成功',
+				title: '生成成功，可下载报告',
 				icon: 'success'
 			})
-		}, 1500)
+			previewTitle.value = '无监测数据的竣工验收报告已生成，请点击下载！'
+			reportGenerated.value = true
+		} catch (e) {
+			clearProgressTimer()
+			taskProgressModal.value?.close()
+
+			// 先把后端返回的完整错误打印出来
+			console.error('生成报告失败', e, e.response?.data)
+
+			// 只取人类可读部分
+			let msg = e.message || '请稍后重试'
+			if (Array.isArray(e.response?.data?.detail)) {
+				// FastAPI 422 默认返回 {detail:[{loc:[],msg:'xxx',type:''},...]}
+				msg = e.response.data.detail.map(d => d.msg).join('；')
+			} else if (typeof e.response?.data === 'string') {
+				msg = e.response.data
+			}
+
+			uni.showModal({
+				title: '生成失败',
+				content: msg,
+				showCancel: false
+			})
+		}
 	}
+
+	// 下载监测方案
+	async function downAcceptanceReport() {
+		uni.showLoading({
+			title: '正在竣工验收报告…',
+			mask: true
+		})
+		try {
+			const {
+				ab,
+				filename
+			} = await downloadReport(selectedProjectId.value)
+			await saveArrayBuffer(ab, filename) // 各端统一保存
+			uni.hideLoading()
+			uni.showToast({
+				title: '已保存：' + filename,
+				icon: 'success'
+			})
+		} catch (e) {
+			uni.hideLoading()
+			uni.showModal({
+				title: '下载失败',
+				content: e.message,
+				showCancel: false
+			})
+		}
+	}
+
 </script>
 
 <style lang="scss" scoped>
