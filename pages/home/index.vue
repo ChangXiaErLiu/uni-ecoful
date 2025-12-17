@@ -51,7 +51,7 @@
       <view class="home__stats-grid">
         <view class="stats-card stats-card--green">
           <view class="stats-card__icon">
-            <uni-icons type="folder" size="24" color="#ffffff" />
+            <uni-icons type="folder-add" size="24" color="#ffffff" />
           </view>
           <view class="stats-card__content">
             <text class="stats-card__value">{{ statsData.projects }}</text>
@@ -354,7 +354,7 @@ function loadStatsData() {
     // 这里可以从 localStorage 或后端 API 获取真实数据
     // 目前使用模拟数据
     statsData.value = {
-      projects: Math.floor(Math.random() * 20) + 1,
+      projects: uni.getStorageSync('project_total_count') || 0,
       documents: Math.floor(Math.random() * 50) + 10,
       completed: Math.floor(Math.random() * 15) + 1
     }
@@ -526,7 +526,7 @@ const cards = ref([
     path: '/pages/project/index',
     isTab: true,
     color: '#aaaa00',
-  	status: 'beta',
+  	// status: 'beta',
   },
   {
     id: 'acceptance',
@@ -535,7 +535,7 @@ const cards = ref([
     icon: 'flag',
     path: '/pages/reports/acceptance/index',
     isTab: false,
-    status: 'beta',
+    // status: 'beta',
     color: '#8b5cf6'
   },
   // {

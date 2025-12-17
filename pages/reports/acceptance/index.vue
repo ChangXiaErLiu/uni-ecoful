@@ -1239,7 +1239,7 @@
 	async function selectProject(project) {
 		selectedProjectId.value = project.id
 		selectedProject.value = project
-		console.log('选择项目:', project.name)
+		// console.log('选择项目:', project.name)
 
 		// 保存到 uni.setStorageSync，跨平台兼容
 		try {
@@ -1250,7 +1250,7 @@
 				description: project.description,
 				folder_name: project.folder_name
 			}))
-			console.log('✅ 已保存项目选择到缓存')
+			// console.log('✅ 已保存项目选择到缓存')
 
 			// // 获取用户信息
 			// const userInfoStr = uni.getStorageSync('userInfo')

@@ -218,25 +218,17 @@
 				<view class="modal-content">
 					<!-- 统一上传区域 -->
 					<!-- #ifdef H5 -->
-					<div 
-						class="upload-area" 
-						@click="chooseFiles"
-						@drop.prevent="handleDrop"
-						@dragover.prevent="handleDragOver"
-						@dragleave="handleDragLeave"
-						:class="{ 'upload-area--dragging': isDragging }"
-					>
+					<div class="upload-area" @click="chooseFiles" @drop.prevent="handleDrop"
+						@dragover.prevent="handleDragOver" @dragleave="handleDragLeave"
+						:class="{ 'upload-area--dragging': isDragging }">
 						<uni-icons type="cloud-upload" size="48" :color="isDragging ? '#10b981' : '#3b82f6'" />
 						<text class="upload-text">{{ isDragging ? '松开鼠标上传文件' : '点击选择文件' }}</text>
 						<text class="upload-subtext">或拖拽文件到这里（支持多个文件）</text>
 					</div>
 					<!-- #endif -->
-					
+
 					<!-- #ifndef H5 -->
-					<view 
-						class="upload-area" 
-						@tap="chooseFiles"
-					>
+					<view class="upload-area" @tap="chooseFiles">
 						<uni-icons type="cloud-upload" size="48" color="#3b82f6" />
 						<text class="upload-text">点击选择文件</text>
 						<text class="upload-subtext">最多选择9个文件</text>
@@ -250,7 +242,8 @@
 						<view class="selected-files-header">
 							<view class="selected-files-info">
 								<text class="selected-files-title">已选择 {{ selectedFiles.length }} 个文件</text>
-								<text class="selected-files-size">总大小: {{ fmtSize(selectedFiles.reduce((sum, f) => sum + f.size, 0)) }}</text>
+								<text class="selected-files-size">总大小:
+									{{ fmtSize(selectedFiles.reduce((sum, f) => sum + f.size, 0)) }}</text>
 							</view>
 							<button class="clear-all-btn" @tap="clearAllFiles">
 								<uni-icons type="trash" size="14" color="#ef4444" />
@@ -279,13 +272,14 @@
 				</view>
 			</view>
 		</view>
-		
+
 		<!-- 上传进度浮窗 -->
 		<view v-if="showUploadProgress" class="upload-progress-float">
 			<view class="progress-float-container">
 				<view class="progress-float-header">
 					<text class="progress-float-title">文件上传中</text>
-					<uni-icons v-if="!batchUploading" type="close" size="20" color="#64748b" @tap="closeUploadProgress" />
+					<uni-icons v-if="!batchUploading" type="close" size="20" color="#64748b"
+						@tap="closeUploadProgress" />
 				</view>
 				<view class="progress-float-content">
 					<view class="progress-info">
@@ -369,7 +363,7 @@
 	const selectedFile = ref(null)
 	const uploadProgress = ref(0)
 	const isDragging = ref(false) // 拖拽状态
-	
+
 	// 批量上传相关
 	const selectedFiles = ref([])
 	const batchUploading = ref(false)
@@ -385,13 +379,20 @@
 	const filteredProjects = computed(() => {
 		return projects.value.filter(project => !project.is_deleted)
 	})
-
+	
+	// 项目总数
+	const  projectTotal = ref("")
+	
 	// 初始化加载数据
 	const loadProjects = async () => {
 		try {
 			const response = await getProjects()
 			projects.value = response
-			// console.log("项目：", response)
+			
+			const total = response.length
+			uni.setStorageSync('project_total_count', total) 
+			projectTotal.value = total // 获取项目总数
+			// console.log('项目列表加载成功，共', total, '个项目')
 
 			// 如果有项目，默认选中第一个
 			if (response.length > 0 && !activeProjectId.value) {
@@ -633,18 +634,18 @@
 	}
 
 	// ========== 统一文件选择 ==========
-	
+
 	// 统一的文件选择入口
 	const chooseFiles = () => {
 		// #ifdef H5
 		chooseFilesH5()
 		// #endif
-		
+
 		// #ifdef MP-WEIXIN
 		chooseFilesWechat()
 		// #endif
 	}
-	
+
 	// H5 版本：支持多选
 	const chooseFilesH5 = () => {
 		// #ifdef H5
@@ -652,23 +653,25 @@
 		input.type = 'file'
 		input.multiple = true
 		input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.md,.txt,.jpg,.jpeg,.png,.gif'
-		
+
 		input.onchange = (e) => {
 			const files = Array.from(e.target.files)
 			handleSelectedFiles(files)
 		}
-		
+
 		input.click()
 		// #endif
 	}
-	
+
 	// 微信小程序版本：最多9个
 	const chooseFilesWechat = () => {
 		// #ifdef MP-WEIXIN
 		uni.chooseMessageFile({
 			count: 9,
 			type: 'all',
-			extension: ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.md', '.txt', '.jpg', '.jpeg', '.png'],
+			extension: ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.md', '.txt', '.jpg',
+				'.jpeg', '.png'
+			],
 			success: (res) => {
 				const files = res.tempFiles.map(file => ({
 					name: file.name,
@@ -685,16 +688,16 @@
 		})
 		// #endif
 	}
-	
+
 	// 统一处理选择的文件
 	const handleSelectedFiles = (files) => {
 		if (!files || files.length === 0) return
-		
+
 		// 检查累加后的总数量
 		const currentCount = selectedFiles.value.length
 		const newCount = files.length
 		const totalCount = currentCount + newCount
-		
+
 		if (totalCount > 50) {
 			uni.showToast({
 				title: `最多选择50个文件，当前已选${currentCount}个`,
@@ -703,7 +706,7 @@
 			})
 			return
 		}
-		
+
 		// 验证文件大小
 		const maxSize = 100 * 1024 * 1024
 		const invalidFiles = files.filter(f => f.size > maxSize)
@@ -715,10 +718,10 @@
 			})
 			return
 		}
-		
+
 		// 转换为统一格式
 		let newFiles = []
-		
+
 		// #ifdef H5
 		newFiles = files.map(file => ({
 			name: file.name,
@@ -727,22 +730,22 @@
 			file: file
 		}))
 		// #endif
-		
+
 		// #ifdef MP-WEIXIN
 		// 小程序的文件已经在 chooseFilesWechat 中转换好了
 		newFiles = files
 		// #endif
-		
+
 		// 合并新旧文件
 		const allFiles = [...selectedFiles.value, ...newFiles]
-		
+
 		// 去重（根据文件名 + 大小）
-		const uniqueFiles = allFiles.filter((file, index, self) => 
-			index === self.findIndex(f => 
+		const uniqueFiles = allFiles.filter((file, index, self) =>
+			index === self.findIndex(f =>
 				f.name === file.name && f.size === file.size
 			)
 		)
-		
+
 		// 如果有重复文件，提示用户
 		const duplicateCount = allFiles.length - uniqueFiles.length
 		if (duplicateCount > 0) {
@@ -752,12 +755,12 @@
 				duration: 1500
 			})
 		}
-		
+
 		selectedFiles.value = uniqueFiles
-		
+
 		console.log('已选择文件:', selectedFiles.value.length, '个')
 	}
-	
+
 	// 删除单个文件
 	const removeFile = (index) => {
 		selectedFiles.value.splice(index, 1)
@@ -767,11 +770,11 @@
 			duration: 1000
 		})
 	}
-	
+
 	// 清空所有文件
 	const clearAllFiles = () => {
 		if (selectedFiles.value.length === 0) return
-		
+
 		uni.showModal({
 			title: '确认清空',
 			content: `确定要清空所有已选文件吗？（共${selectedFiles.value.length}个）`,
@@ -787,28 +790,28 @@
 			}
 		})
 	}
-	
+
 	// ========== 拖拽上传（仅H5） ==========
-	
+
 	// 拖拽进入
 	const handleDragOver = (e) => {
 		// #ifdef H5
 		isDragging.value = true
 		// #endif
 	}
-	
+
 	// 拖拽离开
 	const handleDragLeave = (e) => {
 		// #ifdef H5
 		isDragging.value = false
 		// #endif
 	}
-	
+
 	// 拖拽放下
 	const handleDrop = (e) => {
 		// #ifdef H5
 		isDragging.value = false
-		
+
 		const files = Array.from(e.dataTransfer.files)
 		handleSelectedFiles(files)
 		// #endif
@@ -824,17 +827,17 @@
 			})
 			return
 		}
-		
+
 		// 保存文件列表（因为关闭弹窗会清空）
 		const filesToUpload = [...selectedFiles.value]
 		const totalFiles = filesToUpload.length
-		
+
 		// 立即关闭弹窗
 		showUploadModal.value = false
 		selectedFile.value = null
 		selectedFiles.value = []
 		uploadProgress.value = 0
-		
+
 		// 单个文件：直接上传
 		if (totalFiles === 1) {
 			uni.showLoading({
@@ -860,7 +863,7 @@
 			}
 			return
 		}
-		
+
 		// 多个文件：批量上传
 		showUploadProgress.value = true
 		batchUploading.value = true
@@ -868,17 +871,17 @@
 		batchCurrent.value = 0
 		batchTotal.value = totalFiles
 		batchMessage.value = '准备上传...'
-		
+
 		try {
 			// 调用批量上传接口
 			const result = await batchUploadProjectFiles(activeProjectId.value, filesToUpload)
-			
+
 			batchTaskId.value = result.task_id
 			batchMessage.value = '正在处理文件...'
-			
+
 			// 开始轮询任务状态
 			startPollingTaskStatus()
-			
+
 		} catch (e) {
 			batchUploading.value = false
 			showUploadProgress.value = false
@@ -889,40 +892,38 @@
 			})
 		}
 	}
-	
 
-	
 	// 开始轮询任务状态
 	const startPollingTaskStatus = () => {
 		if (pollTimer) {
 			clearInterval(pollTimer)
 		}
-		
+
 		pollTimer = setInterval(async () => {
 			try {
 				const status = await getTaskStatus(batchTaskId.value)
-				
+
 				batchProgress.value = status.progress
 				batchCurrent.value = status.current
 				batchTotal.value = status.total
 				batchMessage.value = status.message
-				
+
 				// 任务完成或失败，停止轮询
 				if (status.status === 'success' || status.status === 'failed') {
 					stopPollingTaskStatus()
 					batchUploading.value = false
-					
+
 					// 刷新文件列表
 					await loadProjectDocuments(activeProjectId.value)
-					
+
 					// 显示详细结果
 					if (status.status === 'success') {
 						const successCount = status.success_count || 0
 						const failedCount = status.failed_count || 0
 						const total = status.total || 0
-						
+
 						console.log('成功数量:', successCount, '失败数量:', failedCount, '总数:', total) // 调试日志
-						
+
 						let content = ''
 						if (failedCount === 0) {
 							content = `全部上传成功！共 ${successCount} 个文件`
@@ -935,7 +936,7 @@
 								}
 							}
 						}
-						
+
 						uni.showModal({
 							title: '上传结果',
 							content: content,
@@ -949,7 +950,7 @@
 							showCancel: false
 						})
 					}
-					
+
 					// 延迟关闭进度浮窗
 					setTimeout(() => {
 						showUploadProgress.value = false
@@ -968,7 +969,7 @@
 			}
 		}, 3000) // 每3秒轮询一次
 	}
-	
+
 	// 停止轮询
 	const stopPollingTaskStatus = () => {
 		if (pollTimer) {
@@ -984,7 +985,7 @@
 		selectedFiles.value = []
 		uploadProgress.value = 0
 	}
-	
+
 	// 关闭上传进度浮窗
 	const closeUploadProgress = () => {
 		if (batchUploading.value) {
@@ -994,7 +995,7 @@
 			})
 			return
 		}
-		
+
 		stopPollingTaskStatus()
 		showUploadProgress.value = false
 		batchProgress.value = 0
@@ -1041,7 +1042,7 @@
 		try {
 			const tempFilePath = await downloadProjectFile(activeProjectId.value, doc.document_id)
 			uni.hideLoading()
-			
+
 			// 尝试打开文档
 			uni.openDocument({
 				filePath: tempFilePath,
@@ -2014,7 +2015,7 @@
 		border-color: #3b82f6;
 		background: rgba(59, 130, 246, 0.05);
 	}
-	
+
 	/* 拖拽状态 */
 	.upload-area--dragging {
 		border-color: #10b981;
@@ -2242,6 +2243,7 @@
 			opacity: 0;
 			transform: translateY(40rpx);
 		}
+
 		to {
 			opacity: 1;
 			transform: translateY(0);
