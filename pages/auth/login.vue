@@ -141,7 +141,7 @@ import { useUserStore } from '@/stores/user.js'
 const userStore = useUserStore()
 
 // 响应式数据
-const activeTab = ref('code') // 默认验证码登录
+const activeTab = ref('password') // 默认验证码登录
 const mobile = ref('')
 const code = ref('')
 const account = ref('')

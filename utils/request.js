@@ -272,6 +272,15 @@ class Request {
 		})
 	}
 
+	patch(url, data = {}, config = {}) {
+		return this.request({
+			...config,
+			url,
+			method: 'PATCH',
+			data
+		})
+	}
+
 	delete(url, config = {}) {
 		return this.request({
 			...config,

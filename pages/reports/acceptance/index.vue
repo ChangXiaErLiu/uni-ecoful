@@ -207,19 +207,19 @@
 																{{ air.产生环节 || '未提取到相关信息' }}
 															</view> -->
 															<view class="pollutants-col pollutants-col--name">
-																{{ air.污染物名称 || '未提取到相关信息' }}
+																{{ air.污染物名称 || '未提取到污染物名称' }}
 															</view>
 															<view class="pollutants-col pollutants-col--name">
 																{{ air.污染因子 || '未提取到污染因子' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
-																{{ air.污染治理措施 || '未提取到相关信息' }}
+																{{ air.污染治理措施 || '未提取到污染治理措施' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ air.排放去向 || '未提取到相关信息' }}
+																{{ air.排放去向 || '大气环境' }}
 															</view>
 															<view class="pollutants-col pollutants-col--standard">
-																{{ air.执行标准 || '未提取到相关信息' }}
+																{{ air.执行标准 || '未提取到执行标准' }}
 															</view>
 														</view>
 
@@ -313,8 +313,8 @@
 														</view>
 
 														<!-- 危险废物 -->
-														<view v-if="item.value.危险废物"
-															v-for="(solid, index) in [item.value.危险废物]"
+														<view v-if="item.value.危险废物 && item.value.危险废物.length"
+															v-for="(solid, index) in item.value.危险废物"
 															:key="'hazard-' + index" class="pollutants-row">
 															<view class="pollutants-col pollutants-col--type">危险废物
 															</view>
@@ -322,19 +322,19 @@
 																{{ item.value.危险废物.产生环节 || '无' }}
 															</view> -->
 															<view class="pollutants-col pollutants-col--link">
-																{{ item.value.危险废物.废物来源 || '无' }}
+																{{ solid.废物来源 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--name">
-																{{ item.value.危险废物.废物名称 || '无' }}
+																{{ solid.废物名称 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--measure">
-																{{ item.value.危险废物.危险特性 || '无' }}
+																{{ solid.危险特性 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ item.value.危险废物.危险废物类别 || '无' }}
+																{{ solid.危险废物类别 || '无' }}
 															</view>
 															<view class="pollutants-col pollutants-col--direction">
-																{{ item.value.危险废物.污染治理措施 || '无' }}
+																{{ solid.污染治理措施 || '无' }}
 															</view>
 														</view>
 													</view>
@@ -461,15 +461,20 @@
 
 								<view class="action-row">
 									<button class="btn btn--primary" @tap="saveMonitorPlan">
-										<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
+										<uni-icons type="refresh-filled" size="16" color="#ffffff" />
 										<text>生成监测方案</text>
+									</button>
+									<!-- 生成后可点 -->
+									<button v-if="canDownload" class="btn btn--primary" @tap="downloadPlan">
+										<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
+										<text>下载监测方案</text>
 									</button>
 								</view>
 
 								<view v-if="plan" class="paln-preview">
 									<view class="preview-header">
 										<uni-icons type="checkmark-circle" size="18" color="#166534" />
-										<text class="preview-title">环保验收监测方案已为您已生成！</text>
+										<text class="preview-title">环保验收监测方案已为您已生成，请点击下载！</text>
 									</view>
 									<view class="preview-content">
 										<text class="preview-text">环保验收监测方案已生成，包含以下内容：</text>
@@ -477,7 +482,7 @@
 											<text class="section-item">• 项目基本情况</text>
 											<text class="section-item">• 环保设施建设情况</text>
 											<text class="section-item">• 污染物详细情况</text>
-											<text class="section-item">• 方案已下载，到文件保存位置查看</text>
+											<text class="section-item">• 方案已生成，请点击下载</text>
 										</view>
 									</view>
 								</view>
@@ -559,9 +564,346 @@
 								<view class="form-group">
 									<text class="form-label">现场踏勘记录</text>
 									<text class="form-tip">记录现场踏勘发现的问题和差异</text>
-									<textarea class="fieldwork-textarea" v-model="fieldworkRecord"
-										placeholder="请输入现场踏勘记录..." />
 								</view>
+								<!-- Tab切换 -->
+								<view class="reconnoitre-tabs">
+									<view class="tabs-container">
+										<view v-for="(tab, index) in tabs" :key="index" class="tab-item"
+											:class="{ 'tab-item--active': currentTab === index }"
+											@tap="handleTabChange(index)">
+											<text class="tab-label">{{ tab }}</text>
+										</view>
+									</view>
+								</view>
+								<!-- 现场踏勘四个功能 -->
+								<view class="reconnoitre-content">
+									<scroll-view class="content-scroll" scroll-y>
+										<!-- Tab 0: 主要建设内容 -->
+										<view v-show="currentTab === 0" class="content-section">
+											<view class="section-card">
+												<view class="section-header">
+													<uni-icons type="list" size="20" color="#166534" />
+													<text class="section-title">主要建设内容</text>
+												</view>
+												<view class="section-body">
+													<view class="section-actions">
+														<button class="btn btn--ghost" @tap="openAddMainContent">
+															<uni-icons type="plus" size="16" color="#166534" />
+															<text>新增</text>
+														</button>
+
+														<button v-if="selectModeMain" class="btn btn--danger"
+															:disabled="!selectedMainIds.length"
+															@tap="removeSelectedMain">
+															<uni-icons type="trash" size="16" color="#ffffff" />
+															<text>删除选中（{{ selectedMainIds.length }}）</text>
+														</button>
+
+														<button class="btn btn--secondary" @tap="toggleSelectModeMain">
+															<uni-icons :type="selectModeMain ? 'clear' : 'checkbox'"
+																size="16" color="#155e3b" />
+															<text>{{ selectModeMain ? '取消' : '选择删除' }}</text>
+														</button>
+													</view>
+
+													<view v-if="mainContentTable.length"
+														class="form-grid form-grid--base">
+														<view class="form-item" v-for="(item, idx) in mainContentTable"
+															:key="item.id">
+															<view class="baseinfo__row">
+																<text class="form-item__label">{{ item.label }}</text>
+
+																<!-- 图片类型字段 -->
+																<view v-if="item.type === 'image'"
+																	class="form-item__image-upload">
+																	<uni-file-picker v-model="item.value"
+																		fileMediatype="image" mode="grid" :limit="9"
+																		:auto-upload="false" />
+																</view>
+
+																<!-- 普通文本字段 -->
+																<uni-easyinput v-else class="form-item__input"
+																	v-model="item.value" placeholder="请输入具体的值"
+																	:clearable="true" />
+
+																<view v-if="selectModeMain" class="form-item__select">
+																	<checkbox
+																		:checked="selectedMainIds.includes(item.id)"
+																		@tap="() => toggleSelectedMain(item.id)" />
+																</view>
+															</view>
+														</view>
+													</view>
+
+													<view v-else class="empty-state">
+														<uni-icons type="list" size="48" color="#cbd5e1" />
+														<text class="empty-text">暂无建设内容</text>
+														<text class="empty-tip">点击新增按钮添加建设内容</text>
+													</view>
+												</view>
+											</view>
+										</view>
+
+
+										<!-- Tab 1: 设备列表情况 -->
+										<view v-show="currentTab === 1" class="content-section">
+											<view class="section-card">
+												<view class="section-header">
+													<uni-icons type="gear" size="20" color="#166534" />
+													<text class="section-title">设备列表情况</text>
+												</view>
+												<view class="section-body">
+													<view class="section-actions">
+														<button class="btn btn--ghost" @tap="addEquipment">
+															<uni-icons type="plus" size="16" color="#166534" />
+															<text>新增设备</text>
+														</button>
+														<button class="btn btn--primary" @tap="fetchEquipmentData"
+															:disabled="loadingEquipment">
+															<uni-icons
+																:type="loadingEquipment ? 'spinner-cycle' : 'refresh'"
+																size="16" color="#ffffff" />
+															<text>{{ loadingEquipment ? '加载中...' : '刷新数据' }}</text>
+														</button>
+													</view>
+
+													<!-- 加载状态 -->
+													<view v-if="loadingEquipment" class="loading-state">
+														<uni-icons type="spinner-cycle" size="48" color="#166534"
+															class="loading-icon" />
+														<text class="loading-text">正在加载设备数据...</text>
+													</view>
+
+													<!-- 错误状态 -->
+													<view v-else-if="fetchEquipmentError" class="error-state">
+														<uni-icons type="close-circle" size="48" color="#dc2626" />
+														<text class="error-text">加载失败: {{ fetchEquipmentError }}</text>
+														<button class="btn btn--secondary" @tap="fetchEquipmentData">
+															<text>重新加载</text>
+														</button>
+													</view>
+
+													<!-- 数据表格 -->
+													<view v-else-if="equipmentList.length" class="data-table-container">
+														<scroll-view class="data-table-scroll" scroll-x>
+															<view class="data-table">
+																<view class="table-header">
+																	<text class="table-th device-name">设备名称</text>
+																	<text class="table-th device-quantity">数量</text>
+																	<text class="table-th device-remark">备注</text>
+																	<text class="table-th device-images">图片</text>
+																	<text class="table-th device-actions">操作</text>
+																</view>
+																<view class="table-body">
+																	<view class="table-row"
+																		v-for="(item, index) in equipmentList"
+																		:key="item.id">
+																		<view class="table-td device-name">
+																			<uni-easyinput v-model="item.name"
+																				placeholder="设备名称" :clearable="true"
+																				class="table-input" />
+																		</view>
+																		<view class="table-td device-quantity">
+																			<uni-easyinput v-model="item.quantity"
+																				placeholder="数量" :clearable="true"
+																				class="table-input" />
+																		</view>
+																		<view class="table-td device-remark">
+																			<uni-easyinput v-model="item.remark"
+																				placeholder="备注" :clearable="true"
+																				class="table-input" />
+																		</view>
+																		<view class="table-td device-images">
+																			<uni-file-picker v-model="item.images"
+																				fileMediatype="image" mode="grid"
+																				:limit="3" :auto-upload="false"
+																				class="file-picker" />
+																		</view>
+																		<view class="table-td device-actions">
+																			<button class="icon-btn icon-btn--danger"
+																				@tap="() => removeEquipment(index)">
+																				<uni-icons type="trash" size="16"
+																					color="#d92d20" />
+																			</button>
+																		</view>
+																	</view>
+																</view>
+															</view>
+														</scroll-view>
+													</view>
+
+													<view v-else class="empty-state">
+														<uni-icons type="gear" size="48" color="#cbd5e1" />
+														<text class="empty-text">暂无设备信息</text>
+														<text class="empty-tip">点击新增按钮添加设备，或刷新数据从接口获取</text>
+													</view>
+												</view>
+											</view>
+										</view>
+
+
+										<!-- Tab 2: 污染物设施情况 -->
+										<view v-show="currentTab === 2" class="content-section">
+											<view class="section-card">
+												<view class="section-header">
+													<uni-icons type="flag" size="20" color="#166534" />
+													<text class="section-title">污染物设施情况</text>
+												</view>
+												<view class="section-body">
+													<view class="section-actions">
+														<button class="btn btn--ghost" @tap="addPollutionFacility">
+															<uni-icons type="plus" size="16" color="#166534" />
+															<text>新增设施</text>
+														</button>
+													</view>
+
+													<view v-if="pollutionFacilityList.length"
+														class="data-table-container">
+														<scroll-view class="data-table-scroll" scroll-x>
+															<view class="data-table">
+																<view class="table-header">
+																	<text class="table-th device-name">设施名称</text>
+																	<text class="table-th device-quantity">数量</text>
+																	<text class="table-th device-remark">备注</text>
+																	<text class="table-th device-images">图片</text>
+																	<text class="table-th device-actions">操作</text>
+																</view>
+																<view class="table-body">
+																	<view class="table-row"
+																		v-for="(item, index) in pollutionFacilityList"
+																		:key="item.id">
+																		<view class="table-td device-name">
+																			<uni-easyinput v-model="item.name"
+																				placeholder="设施名称" :clearable="true"
+																				class="table-input" />
+																		</view>
+																		<view class="table-td device-quantity">
+																			<uni-easyinput v-model="item.quantity"
+																				placeholder="数量" :clearable="true"
+																				class="table-input" />
+																		</view>
+																		<view class="table-td device-remark">
+																			<uni-easyinput v-model="item.remark"
+																				placeholder="备注" :clearable="true"
+																				class="table-input" />
+																		</view>
+																		<view class="table-td device-images">
+																			<uni-file-picker v-model="item.images"
+																				fileMediatype="image" mode="grid"
+																				:limit="3" :auto-upload="false"
+																				class="file-picker" />
+																		</view>
+																		<view class="table-td device-actions">
+																			<button class="icon-btn icon-btn--danger"
+																				@tap="() => removePollutionFacility(index)">
+																				<uni-icons type="trash" size="16"
+																					color="#d92d20" />
+																			</button>
+																		</view>
+																	</view>
+																</view>
+															</view>
+														</scroll-view>
+													</view>
+
+													<view v-else class="empty-state">
+														<uni-icons type="flag" size="48" color="#cbd5e1" />
+														<text class="empty-text">暂无污染物设施信息</text>
+														<text class="empty-tip">点击新增按钮添加设施</text>
+													</view>
+												</view>
+											</view>
+										</view>
+
+
+										<!-- Tab 3: 排污口情况 -->
+										<view v-show="currentTab === 3" class="content-section">
+											<view class="section-card">
+												<view class="section-header">
+													<uni-icons type="water" size="20" color="#166534" />
+													<text class="section-title">排污口情况</text>
+												</view>
+												<view class="section-body">
+
+													<view class="section-actions">
+														<!-- <button class="btn btn--primary"
+																@tap="() => { generateSignboard(); showSignboard = true }">
+																<uni-icons type="eye-filled" size="16" color="#ffffff" />
+																<text>排污口信息</text>
+															</button> -->
+														<!-- <button class="btn btn--primary" @tap="generateOutletInfo">
+																<uni-icons type="gear" size="16" color="#ffffff" />
+																<text>生成排污口信息</text>
+															</button> -->
+													</view>
+
+													<!-- 排污口标识牌信息列表 -->
+													<view v-if="showSignboard" class="data-table">
+														<view class="table-body">
+															<template v-for="(sec, si) in signboard.sections"
+																:key="'s'+si">
+																<view class="table-row table-row--simple">
+																	<text
+																		class="table-td table-td--section">{{ sec.block }}
+
+																	</text>
+																	<!-- 只有噪声才可以新增 -->
+																	<button v-if="sec.block == '噪声'"
+																		class="pw-ico icon-btn"
+																		@tap="() => addSignItem(si)">
+																		<uni-icons type="plus" size="16"
+																			color="#166534" />
+																		<text>新增</text>
+																	</button>
+																</view>
+																<view class="form-grid form-grid--base">
+																	<!-- 按组渲染，每组 3 条，除了危废以外 -->
+																	<template
+																		v-for="(group, gi) in groupItems(sec.items, sec.block)"
+																		:key="'g'+si+'-'+gi">
+																		<!-- 普通 3 条 -->
+																		<view class="form-item"
+																			v-for="(it, ii) in group"
+																			:key="'r'+si+'-'+gi+'-'+ii">
+																			<view class="form-item__row">
+																				<uni-easyinput v-model="it.title"
+																					placeholder="内容标题" />
+																				<uni-easyinput v-model="it.content"
+																					placeholder="请输入具体的值" />
+																			</view>
+																		</view>
+
+																		<!-- 删除按钮：只有「非危险废物」才显示 -->
+																		<view v-if="sec.block !== '危险废物'"
+																			class="form-item"
+																			style="margin-bottom:12px;">
+																			<view class="form-item__row"
+																				style="justify-content:flex-end;">
+																				<button
+																					class="icon-btn icon-btn--danger"
+																					@tap="() => removeGroup(sec, gi)">
+																					<uni-icons type="trash" size="16"
+																						color="#d92d20" />
+																				</button>
+																			</view>
+																		</view>
+																	</template>
+																</view>
+															</template>
+														</view>
+													</view>
+
+													<view v-else class="empty-state">
+														<uni-icons type="water" size="48" color="#cbd5e1" />
+														<text class="empty-text">排污口信息</text>
+														<text class="empty-tip">点击生成按钮获取排污口信息</text>
+													</view>
+												</view>
+											</view>
+										</view>
+									</scroll-view>
+								</view>
+
 
 								<view class="subsection">
 									<view class="subsection-head">
@@ -574,64 +916,9 @@
 											<uni-icons type="gear" size="16" color="#ffffff" />
 											<text>生成详细比对清单</text>
 										</button>
-										<button class="btn btn--secondary" @tap="addComparisonItem">
-											<uni-icons type="plus" size="16" color="#155e3b" />
-											<text>新增比对项</text>
-										</button>
+
 									</view>
 
-									<view v-if="fieldworkComparison.length" class="data-table">
-										<view class="table-header">
-											<text class="table-th w120">比对项目</text>
-											<text class="table-th">环评要求</text>
-											<text class="table-th">现场情况</text>
-											<text class="table-th w120">差异说明</text>
-											<text class="table-th w80">操作</text>
-										</view>
-										<view class="table-body">
-											<view class="table-row" v-for="(item, index) in fieldworkComparison"
-												:key="item.id">
-												<uni-easyinput class="table-td w120" v-model="item.project"
-													placeholder="项目名称" />
-												<uni-easyinput class="table-td" v-model="item.eiaRequirement"
-													placeholder="环评要求" />
-												<uni-easyinput class="table-td" v-model="item.fieldSituation"
-													placeholder="现场情况" />
-												<uni-easyinput class="table-td w120" v-model="item.difference"
-													placeholder="差异说明" />
-												<view class="table-td w80">
-													<button class="icon-btn icon-btn--danger"
-														@tap="() => removeComparisonItem(index)">
-														<uni-icons type="trash" size="16" color="#d92d20" />
-													</button>
-												</view>
-											</view>
-										</view>
-									</view>
-
-									<view v-else class="empty-state">
-										<uni-icons type="map-pin-ellipse" size="48" color="#cbd5e1" />
-										<text class="empty-text">尚未生成现场踏勘比对清单</text>
-										<text class="empty-tip">点击上方按钮生成或新增比对项</text>
-									</view>
-								</view>
-
-								<view class="subsection">
-									<view class="subsection-head">
-										<uni-icons type="refresh" size="18" color="#166534" />
-										<text class="subsection-title">基本信息更新确认</text>
-									</view>
-									<view class="update-confirm">
-										<text class="update-label">是否根据现场踏勘结果更新项目基本信息表？</text>
-										<view class="update-actions">
-											<button class="btn btn--secondary" @tap="updateBaseInfo(false)">
-												<text>否，继续下一步</text>
-											</button>
-											<button class="btn btn--primary" @tap="updateBaseInfo(true)">
-												<text>是，更新基本信息</text>
-											</button>
-										</view>
-									</view>
 								</view>
 							</view>
 						</view>
@@ -763,7 +1050,8 @@
 				<view v-for="project in filteredProjects" :key="project.id" class="picker-item"
 					:class="{ 'picker-item--active': selectedProjectId === project.id }" @tap="selectProject(project)">
 					<view class="picker-item-icon">
-						<uni-icons type="folder" size="22" :color="selectedProjectId === project.id ? '#166534' : '#6b7280'" />
+						<uni-icons type="folder" size="22"
+							:color="selectedProjectId === project.id ? '#166534' : '#6b7280'" />
 					</view>
 					<view class="picker-item-content">
 						<text class="picker-item-name">{{ project.name }}</text>
@@ -894,7 +1182,7 @@
 		}
 	}
 
-	// 以下提取项目基本信息模块的方法--------------------------
+	// 以下提取项目基本信息模块的方法-------------------------
 
 	// 项目选择相关
 	const selectedProjectId = ref(null) // 选中的项目ID
@@ -949,10 +1237,16 @@
 		selectedProject.value = project
 		console.log('选择项目:', project.name)
 
-		// 保存到 localStorage，刷新后自动恢复
+		// 保存到 uni.setStorageSync，跨平台兼容
 		try {
-			localStorage.setItem('acceptance_selected_project_id', project.id.toString())
-			console.log('✅ 已保存项目选择到本地存储')
+			uni.setStorageSync('acceptance_project_id', project.id)
+			uni.setStorageSync('acceptance_project_info', JSON.stringify({
+				id: project.id,
+				name: project.name,
+				description: project.description,
+				folder_name: project.folder_name
+			}))
+			console.log('✅ 已保存项目选择到缓存')
 		} catch (e) {
 			console.warn('⚠️ 保存项目选择失败:', e)
 		}
@@ -999,7 +1293,7 @@
 	function startPollingFileStatus(projectId) {
 		// 如果没有文件在处理，不需要轮询
 		if (!hasProcessingFiles()) {
-			console.log('✅ 所有文件已处理完成，无需轮询')
+			// console.log('✅ 所有文件已处理完成，无需轮询')
 			return
 		}
 
@@ -1016,8 +1310,8 @@
 			!['indexed', 'failed'].includes(f.status)
 		).length
 
-		console.log(`🔄 开始轮询项目 ${projectId} 的文件状态...`)
-		console.log(`   还有 ${processingCount} 个文件正在处理`)
+		// console.log(`🔄 开始轮询项目 ${projectId} 的文件状态...`)
+		// console.log(`   还有 ${processingCount} 个文件正在处理`)
 
 		pollingTimer.value = setInterval(async () => {
 			pollingCount.value++
@@ -1071,7 +1365,7 @@
 		}
 		isPolling.value = false
 		pollingCount.value = 0
-		console.log('⏹️ 轮询已停止')
+		// console.log('⏹️ 轮询已停止')
 	}
 
 	// 加载项目列表
@@ -1084,7 +1378,7 @@
 
 			projectList.value = response || []
 
-			console.log('项目列表加载成功:', projectList.value.length, '个项目')
+			// console.log('项目列表加载成功:', projectList.value.length, '个项目')
 		} catch (error) {
 			console.error('加载项目列表失败:', error)
 			uni.showToast({
@@ -1259,17 +1553,29 @@
 
 		uni.showModal({
 			title: '清除缓存',
-			content: '确定要清除当前项目的缓存数据吗？清除后需要重新提取信息。',
+			content: '确定要清除当前项目的所有缓存数据吗？清除后需要重新提取信息。',
 			success: (res) => {
 				if (res.confirm) {
+					// 清除项目数据缓存
 					const cacheKey = `project_base_info_${selectedProjectId.value}`
 					uni.removeStorageSync(cacheKey)
 
+					// 清除项目选择缓存
+					uni.removeStorageSync('acceptance_project_id')
+					uni.removeStorageSync('acceptance_project_info')
+
 					// 清空当前显示的数据
 					baseTable.value = []
+					signboard.value = { sections: [] }
+					showSignboard.value = false
 					extractionOk.value = false
 
-					console.log(`🗑️ 已清除项目 ${selectedProjectId.value} 的缓存`)
+					// 清除项目选择
+					selectedProjectId.value = null
+					selectedProject.value = null
+					projectFiles.value = []
+
+					console.log(`🗑️ 已清除项目缓存和选择`)
 
 					uni.showToast({
 						title: '缓存已清除',
@@ -1283,33 +1589,33 @@
 	// 页面加载时获取项目列表
 	onLoad(async () => {
 		await loadProjects()
-		
+
 		// 尝试恢复上次选择的项目
 		try {
-			const savedProjectId = localStorage.getItem('acceptance_selected_project_id')
-			
+			const savedProjectId = uni.getStorageSync('acceptance_project_id')
+
 			if (savedProjectId) {
-				const projectId = parseInt(savedProjectId)
-				const project = projectList.value.find(p => p.id === projectId)
-				
+				const project = projectList.value.find(p => p.id === savedProjectId)
+
 				if (project) {
 					console.log('🔄 恢复上次选择的项目:', project.name)
 					// 自动选择该项目（不显示提示，静默恢复）
 					selectedProjectId.value = project.id
 					selectedProject.value = project
-					
+
 					// 加载项目文件列表
 					await loadProjectFiles(project.id)
-					
+
 					// 启动轮询
 					startPollingFileStatus(project.id)
-					
+
 					// 加载缓存
 					loadProjectCache(project.id)
 				} else {
 					// 项目不存在，清除保存的ID
-					console.log('⚠️ 上次选择的项目已不存在，清除保存的ID')
-					localStorage.removeItem('acceptance_selected_project_id')
+					console.log('⚠️ 上次选择的项目已不存在，清除缓存')
+					uni.removeStorageSync('acceptance_project_id')
+					uni.removeStorageSync('acceptance_project_info')
 				}
 			}
 		} catch (e) {
@@ -1484,12 +1790,6 @@
 		taskProgressModal.value?.open()
 
 		try {
-			// 4. 调用后端异步任务，传入项目信息和进度回调
-			console.log('准备提交任务，项目信息:')
-			console.log('- projectId:', selectedProjectId.value)
-			console.log('- selectedProject:', JSON.stringify(selectedProject.value, null, 2))
-			console.log('- folder_name:', selectedProject.value?.folder_name)
-
 			const result = await runTask({
 				projectId: selectedProjectId.value,
 				projectFolder: selectedProject.value.folder_name,
@@ -1601,7 +1901,11 @@
 		newBaseInfoPopup.value?.close?.()
 	}
 
-	// 以下标识牌模块的方法--------------------------
+
+
+
+
+	// 以下标识牌模块的方法-------------------------
 	//展示标识牌列表
 	const showSignboard = ref(false)
 
@@ -1674,17 +1978,19 @@
 			list.forEach(item => {
 				const codes = splitOutletCodes(item['排污口编号']);
 				const pollutantName = item['污染物名称'] || '';
+				const wryz = item['污染因子'] || '';
 
 				codes.forEach(code => {
 					if (!outletMap.has(code)) {
 						outletMap.set(code, {
 							pollutants: [],
+							wryz: [],
 							otherInfo: item // 保存其他信息（如执行标准、排放去向等）
 						});
 					}
 					// 合并污染物名称
-					if (pollutantName) {
-						outletMap.get(code).pollutants.push(pollutantName);
+					if (wryz) {
+						outletMap.get(code).wryz.push(wryz);
 					}
 				});
 			});
@@ -1696,7 +2002,7 @@
 		const waterList = emissionData['水污染物'] || [];
 		const waterOutlets = groupByOutletCode(waterList, '废水');
 		waterOutlets.forEach((data, code) => {
-			const pollutants = [...new Set(data.pollutants)].join('、'); // 去重并合并
+			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '废水').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1704,8 +2010,8 @@
 				title: '排放口编号',
 				content: code
 			}, {
-				title: '污染物种类',
-				content: pollutants
+				title: '污染因子',
+				content: wryz
 			});
 		});
 
@@ -1713,7 +2019,7 @@
 		const gasList = emissionData['大气污染物'] || [];
 		const gasOutlets = groupByOutletCode(gasList, '废气');
 		gasOutlets.forEach((data, code) => {
-			const pollutants = [...new Set(data.pollutants)].join('、'); // 去重并合并
+			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '废气').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1721,8 +2027,8 @@
 				title: '排放口编号',
 				content: code
 			}, {
-				title: '污染物种类',
-				content: pollutants
+				title: '污染因子',
+				content: wryz
 			});
 		});
 
@@ -1730,6 +2036,7 @@
 		const noiseList = emissionData['噪声'] || [];
 		const noiseOutlets = groupByOutletCode(noiseList, '噪声');
 		noiseOutlets.forEach((data, code) => {
+			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
 			signboard.sections.find(s => s.block === '噪声').items.push({
 				title: '单位名称',
 				content: unitName
@@ -1737,7 +2044,7 @@
 				title: '排放口编号',
 				content: code
 			}, {
-				title: '污染物种类',
+				title: '污染因子',
 				content: '设备噪声'
 			});
 		});
@@ -1853,7 +2160,7 @@
 				content: code
 			},
 			{
-				title: '污染物种类',
+				title: '污染因子',
 				content: '设备噪声'
 			}
 		];
@@ -1916,7 +2223,7 @@
 			})
 			return
 		}
-		
+
 		uni.showLoading({
 			title: '正在生成文档…'
 		});
@@ -1981,183 +2288,125 @@
 	}
 
 
-	// 以下监测方案模块的方法--------------------------
+	// 以下监测方案模块的方法-------------------------
 	const plan = ref(false)
+	const canDownload = ref(false) // 是否已生成监测方案
 
-	// 生成监测方案（异步任务模式）
+	// 生成监测方案
 	async function saveMonitorPlan() {
-		// 1. 前置检查：是否选择了项目
-		if (!selectedProjectId.value) {
-			uni.showModal({
-				title: '提示',
-				content: '请先选择一个项目',
-				showCancel: false,
-				confirmText: '知道了'
-			})
-			return
-		}
+		if (!selectedProjectId.value) return uni.showModal({
+			title: '提示',
+			content: '请先选择项目',
+			showCancel: false
+		})
+		if (!extractionOk.value) return uni.showModal({
+			title: '提示',
+			content: '请先提取项目信息',
+			showCancel: false
+		})
 
-		// 2. 检查是否已提取项目信息
-		if (!extractionOk.value || baseTable.value.length === 0) {
-			uni.showModal({
-				title: '提示',
-				content: '请先提取项目基本信息',
-				showCancel: false,
-				confirmText: '知道了'
-			})
-			return
-		}
-
-		// 3. 清理之前的进度状态
 		clearProgressTimer()
-
-		// 4. 初始化弹窗状态并打开
 		taskProgressTitle.value = '监测方案生成中'
 		taskProgress.value = 0
-		taskStatusText.value = '正在提交任务...'
 		taskState.value = 'pending'
 		taskProgressModal.value?.open()
 
 		try {
-			// 5. 调用后端异步任务
-			console.log('提交监测方案生成任务，项目ID:', selectedProjectId.value)
-
-			const result = await generateMonitorPlan({
+			await generateMonitorPlan({
 				projectId: selectedProjectId.value,
-				// 进度回调函数
-				onProgress: (progress, statusText, state) => {
-					updateProgressSmooth(progress, statusText, state)
-				},
-				pollInterval: 3000,
-				timeout: 1800000  // 30分钟超时
+				onProgress: (p, txt) => updateProgressSmooth(p, txt)
 			})
-
-			// 6. 任务完成，确保进度到100%
-			updateProgressSmooth(100, '生成完成', 'success')
-
-			// 7. 下载文件
-			console.log('✅ 监测方案生成完成，开始下载...')
-			
-			// 延迟1秒后下载，让用户看到100%
-			setTimeout(async () => {
-				try {
-					const arrayBuffer = await downloadMonitorPlan(selectedProjectId.value, 'docx')
-					
-					// 保存文件
-					await saveMonitorPlanFile(arrayBuffer)
-					
-					// 标记完成
-					plan.value = true
-					
-					// 关闭进度弹窗
-					taskProgressModal.value?.close()
-					
-					// 显示成功提示
-					uni.showToast({
-						title: '监测方案已下载',
-						icon: 'success',
-						duration: 2000
-					})
-				} catch (downloadError) {
-					console.error('下载监测方案失败:', downloadError)
-					taskProgressModal.value?.close()
-					
-					uni.showModal({
-						title: '下载失败',
-						content: downloadError.message || '文件下载失败，请稍后重试',
-						showCancel: false
-					})
-				}
-			}, 1000)
-
-		} catch (error) {
-			// 错误时清除进度计时器并关闭弹窗
+			// 生成完只开下载权限
+			canDownload.value = true
+			taskProgressModal.value?.close()
+			uni.showToast({
+				title: '生成成功，可下载报告',
+				icon: 'success'
+			})
+			plan.value = true
+		} catch (e) {
 			clearProgressTimer()
 			taskProgressModal.value?.close()
-
-			console.error('[MonitorPlan] 生成失败:', error)
-
-			// 错误分类处理
-			if (error.message.includes('超时') || error.message.includes('timeout')) {
-				uni.showModal({
-					title: '生成超时',
-					content: '监测方案生成时间过长，可能原因：\n1. 项目数据较多\n2. 网络不稳定\n3. 服务器繁忙\n\n建议稍后重试',
-					showCancel: false,
-					confirmText: '知道了'
-				})
-			} else if (error.message.includes('已有一个监测方案生成任务正在运行')) {
-				uni.showModal({
-					title: '任务进行中',
-					content: '您已有一个监测方案生成任务正在运行，请等待完成后再提交新任务',
-					showCancel: false,
-					confirmText: '知道了'
-				})
-			} else if (error.message.includes('项目提取结果文件不存在')) {
-				uni.showModal({
-					title: '生成失败',
-					content: '未找到项目提取结果，请先提取项目基本信息',
-					showCancel: false,
-					confirmText: '知道了'
-				})
-			} else {
-				uni.showModal({
-					title: '生成失败',
-					content: error.message || '监测方案生成失败，请稍后重试',
-					showCancel: false,
-					confirmText: '知道了'
-				})
-			}
+			uni.showModal({
+				title: '生成失败',
+				content: e.message || '请稍后重试',
+				showCancel: false
+			})
 		}
 	}
 
-	/**
-	 * 保存监测方案文件到本地
-	 * @param {ArrayBuffer} arrayBuffer - 文件二进制数据
-	 */
-	async function saveMonitorPlanFile(arrayBuffer) {
+	// 下载监测方案
+	async function downloadPlan() {
+		uni.showLoading({
+			title: '正在下载监测方案…',
+			mask: true
+		})
+		try {
+			const {
+				ab,
+				filename
+			} = await downloadMonitorPlan(selectedProjectId.value)
+			await saveArrayBuffer(ab, filename) // 各端统一保存
+			uni.hideLoading()
+			uni.showToast({
+				title: '已保存：' + filename,
+				icon: 'success'
+			})
+		} catch (e) {
+			uni.hideLoading()
+			uni.showModal({
+				title: '下载失败',
+				content: e.message,
+				showCancel: false
+			})
+		}
+	}
+
+	// 各端保存逻辑
+	async function saveArrayBuffer(arrayBuffer, filename) {
 		// #ifdef H5
-		// H5 环境：使用 Blob + a 标签下载
 		const blob = new Blob([arrayBuffer], {
 			type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 		})
-		const url = window.URL.createObjectURL(blob)
+		const url = URL.createObjectURL(blob)
 		const a = document.createElement('a')
-		a.href = url
-		a.download = '监测方案.docx'
-		document.body.appendChild(a)
-		a.click()
+		a.href = url;
+		a.download = filename
+		document.body.appendChild(a);
+		a.click();
 		document.body.removeChild(a)
-		window.URL.revokeObjectURL(url)
+		URL.revokeObjectURL(url)
 		// #endif
 
-		// #ifndef H5
-		// 小程序、App 环境：保存到本地文件系统
-		return new Promise((resolve, reject) => {
-			const fs = uni.getFileSystemManager()
-			const fileName = '监测方案.docx'
-			const filePath = `${wx.env.USER_DATA_PATH}/${fileName}`
+		// #ifdef MP-WEIXIN
+		const fs = wx.getFileSystemManager()
+		const filePath = `${wx.env.USER_DATA_PATH}/${filename}`
+		fs.writeFile({
+			filePath,
+			data: arrayBuffer,
+			encoding: 'binary',
+			success: () => wx.openDocument({
+				filePath,
+				fileType: 'docx'
+			}),
+			fail: () => uni.showToast({
+				title: '保存失败',
+				icon: 'error'
+			})
+		})
+		// #endif
 
-			// 写入文件
-			fs.writeFile({
-				filePath: filePath,
-				data: arrayBuffer,
-				encoding: 'binary',
-				success: () => {
-					// 打开文档
-					uni.openDocument({
-						filePath: filePath,
-						fileType: 'docx',
-						success: () => resolve(),
-						fail: (err) => {
-							console.error('打开文档失败:', err)
-							reject(new Error('文件已保存，但打开失败'))
-						}
+		// #ifdef APP-PLUS
+		plus.io.requestFileSystem(plus.io.PUBLIC_DOWNLOADS, fs => {
+			fs.root.getFile(filename, {
+				create: true
+			}, entry => {
+				entry.createWriter(writer => {
+					writer.write(arrayBuffer)
+					writer.onwrite = () => uni.showToast({
+						title: '已保存到下载目录'
 					})
-				},
-				fail: (err) => {
-					console.error('保存文件失败:', err)
-					reject(new Error('保存文件失败'))
-				}
+				})
 			})
 		})
 		// #endif
@@ -2377,7 +2626,7 @@
 
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
-					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
+					url: 'http://172.16.1.61:8000/api/v1/completion/tzdDetail/datasheet',
 					method: 'GET',
 					timeout: 1000,
 					data: {
@@ -2444,7 +2693,7 @@
 
 		// 如果URL是相对路径，添加基础URL
 		if (url.startsWith('/')) {
-			return `http://127.0.0.1:8000${url}`
+			return `http://172.16.1.61:8000${url}`
 		}
 
 		// 如果URL已经是完整路径，直接返回
@@ -2585,24 +2834,6 @@
 		}
 	})
 
-
-
-
-
-
-
-
-	// 1. 信息表/提资单------------
-	const verifyOptions = [{
-		text: '待核对',
-		value: 'pending'
-	}, {
-		text: '已核对',
-		value: 'verified'
-	}, {
-		text: '需补充',
-		value: 'require'
-	}]
 	const baseTable = ref([])
 	const datasheet = ref([])
 	const datasheetTypeOptions = [{
@@ -2612,31 +2843,6 @@
 		text: '需业主核对',
 		value: 'ownerConfirm'
 	}]
-
-	function generateDatasheet() {
-		const list = baseTable.value.filter(r => (r.required && !r.value) || r.status !== 'verified').map(r => ({
-			id: r.id,
-			label: r.label || '未命名',
-			value: r.value || '',
-			type: r.required && !r.value ? 'requireMore' : 'ownerConfirm',
-		}));
-		datasheet.value = list;
-		uni.showToast({
-			title: `已生成提资单（${list.length}项）`,
-			icon: 'none'
-		})
-	}
-
-	function removeDatasheet(i) {
-		datasheet.value.splice(i, 1)
-	}
-
-	function exportDatasheet() {
-		uni.showToast({
-			title: '待对接：导出提资单',
-			icon: 'none'
-		})
-	}
 
 	// 选择删除模式
 	const selectMode = ref(false)
@@ -2699,12 +2905,483 @@
 		})
 	}
 
-	// 2. 现场踏勘比对------------------------
-	const fieldworkRecord = ref('')
-	const fieldworkComparison = ref([])
 
+	// 以下现场踏勘比对的方法-------------------------
+	const fieldworkComparison = ref([])
+	// Tab定义
+	const tabs = ['建设内容', '设备情况', '治理设施', '排污口']
+	const currentTab = ref(0)
+	// 设备数据加载状态
+	const loadingEquipment = ref(false)
+	const fetchEquipmentError = ref('')
+
+	// 监听Tab切换
+	function handleTabChange(index) {
+		currentTab.value = index
+		// 当切换到设备情况Tab时，自动获取数据
+		if (index === 1 && !equipmentList.value.length) {
+			fetchEquipmentData()
+		}
+	}
+	// ========== Tab 0: 主要建设内容 ==========
+	const mainContentTable = ref([{
+			id: 'mc_1',
+			label: '项目名称',
+			value: '',
+			type: 'text'
+		},
+		{
+			id: 'mc_2',
+			label: '建设单位',
+			value: '',
+			type: 'text'
+		},
+		{
+			id: 'mc_3',
+			label: '建设地点',
+			value: '',
+			type: 'text'
+		},
+		{
+			id: 'mc_4',
+			label: '建设规模',
+			value: '',
+			type: 'text'
+		},
+		{
+			id: 'mc_5',
+			label: '主体工程',
+			value: [],
+			type: 'image'
+		}
+	])
+
+	const selectModeMain = ref(false)
+	const selectedMainIds = ref([])
+	const newMainContentPopup = ref(null)
+	const newMainContentLabel = ref('')
+
+	function toggleSelectModeMain() {
+		selectModeMain.value = !selectModeMain.value
+		if (!selectModeMain.value) selectedMainIds.value = []
+	}
+
+	function toggleSelectedMain(id) {
+		const idx = selectedMainIds.value.indexOf(id)
+		if (idx > -1) selectedMainIds.value.splice(idx, 1)
+		else selectedMainIds.value.push(id)
+	}
+
+	function removeSelectedMain() {
+		mainContentTable.value = mainContentTable.value.filter(item => !selectedMainIds.value.includes(item.id))
+		selectedMainIds.value = []
+		selectModeMain.value = false
+		uni.showToast({
+			title: '删除成功',
+			icon: 'success'
+		})
+	}
+
+	function openAddMainContent() {
+		newMainContentLabel.value = ''
+		newMainContentPopup.value?.open()
+	}
+
+	function closeMainContent() {
+		newMainContentPopup.value?.close()
+	}
+
+	function confirmAddMainContent() {
+		if (!newMainContentLabel.value.trim()) {
+			uni.showToast({
+				title: '请输入内容名称',
+				icon: 'none'
+			})
+			return
+		}
+		const newItem = {
+			id: 'mc_' + Date.now(),
+			label: newMainContentLabel.value,
+			value: '',
+			type: 'text'
+		}
+		mainContentTable.value.push(newItem)
+		closeMainContent()
+		uni.showToast({
+			title: '添加成功',
+			icon: 'success'
+		})
+	}
+
+
+	// ========== Tab 1: 设备列表情况 ==========
+	const equipmentList = ref([])
+
+	// 解析设备数据
+	function parseEquipmentData(apiData) {
+		try {
+			const parsedEquipment = []
+
+			// 检查数据是否有效
+			if (!apiData || !Array.isArray(apiData) || apiData.length <= 1) {
+				return []
+			}
+
+			// 跳过表头行（第一行），从索引1开始
+			for (let i = 1; i < apiData.length; i++) {
+				const row = apiData[i]
+
+				// 获取column_1字段，这是主要数据字段
+				if (row.column_1) {
+					// 使用 '\\t' 分隔符分割字符串
+					const columns = row.column_1.split('\\t')
+
+					// 确保有足够的列（至少4列：序号、设备名称、型号、数量）
+					if (columns.length >= 4) {
+						// 设备名称是第二个字段（索引1），数量是第四个字段（索引3）
+						const deviceName = columns[1] || ''
+						const quantity = columns[3] || ''
+
+						// 只添加有设备名称的数据
+						if (deviceName.trim()) {
+							parsedEquipment.push({
+								id: 'eq_' + Date.now() + '_' + i,
+								name: deviceName.trim(),
+								quantity: quantity.trim(),
+								remark: '', // 接口没有提供备注，留空
+								images: []
+							})
+						}
+					} else {
+						console.warn(`第${i+1}行数据列数不足:`, columns)
+					}
+				} else {
+					console.warn(`第${i+1}行没有column_1字段:`, row)
+				}
+			}
+
+			return parsedEquipment
+		} catch (error) {
+			console.error('解析设备数据失败:', error)
+			return []
+		}
+	}
+
+	// 从接口获取设备数据
+	async function fetchEquipmentData() {
+		loadingEquipment.value = true
+		fetchEquipmentError.value = ''
+
+		try {
+
+			// modify by wilson 使用 Promise  包装 uni.request 以确保正确解析
+			const response = await new Promise((resolve, reject) => {
+				uni.request({
+					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/getDeviceDetail',
+					method: 'GET',
+					timeout: 10000,
+					data: {
+						memberId: 3,
+					},
+					success: (res) => {
+						console.log('请求成功:', res)
+						resolve(res)
+					},
+					fail: (err) => {
+						console.log('请求失败:', err)
+						reject(err)
+					}
+				})
+			})
+
+			// uni.request 返回的是一个数组 [data, statusCode, header]
+			// 或者直接是response.data（取决于uni-app版本）
+			let resData
+
+			// 处理不同版本的返回值
+			if (Array.isArray(response)) {
+				// 如果是数组格式 [data, statusCode, header]
+				resData = response[0]
+			} else if (response && response.data) {
+				// 如果是对象格式 {data, statusCode, header}
+				resData = response.data
+			} else {
+				resData = response
+			}
+
+			console.log('接口返回完整数据:', resData)
+
+			// 根据您提供的JSON结构，数据在resData.data中
+			if (resData && resData.data) {
+				const apiData = resData.data
+				console.log('设备数据数组:', apiData)
+
+				if (apiData && Array.isArray(apiData) && apiData.length > 1) {
+					const parsedData = parseEquipmentData(apiData)
+					console.log('解析后的设备数据:', parsedData)
+
+					if (parsedData.length > 0) {
+						// 清空现有数据，用接口数据替换
+						equipmentList.value = parsedData
+						uni.showToast({
+							title: `加载成功，共${parsedData.length}条设备数据`,
+							icon: 'success',
+							duration: 2000
+						})
+					} else {
+						fetchEquipmentError.value = '解析到的设备数据为空'
+						uni.showToast({
+							title: '设备数据解析为空',
+							icon: 'none',
+							duration: 2000
+						})
+					}
+				} else {
+					fetchEquipmentError.value = '接口返回的设备数据格式不正确'
+					uni.showToast({
+						title: '设备数据格式错误',
+						icon: 'none',
+						duration: 2000
+					})
+				}
+			} else {
+				fetchEquipmentError.value = resData?.message || '接口返回数据格式异常'
+				uni.showToast({
+					title: '获取设备数据失败',
+					icon: 'none',
+					duration: 2000
+				})
+			}
+		} catch (error) {
+			console.error('获取设备数据失败:', error)
+			fetchEquipmentError.value = error.message || '网络请求失败'
+			uni.showToast({
+				title: '网络请求失败，请检查网络连接',
+				icon: 'none',
+				duration: 2000
+			})
+		} finally {
+			loadingEquipment.value = false
+		}
+	}
+
+	function addEquipment() {
+		const newEquipment = {
+			id: 'eq_' + Date.now(),
+			name: '',
+			quantity: '',
+			remark: '',
+			images: []
+		}
+		equipmentList.value.push(newEquipment)
+		uni.showToast({
+			title: '已添加新设备',
+			icon: 'success'
+		})
+	}
+
+	function removeEquipment(index) {
+		uni.showModal({
+			title: '确认删除',
+			content: '确定要删除这条设备记录吗？',
+			success: (res) => {
+				if (res.confirm) {
+					equipmentList.value.splice(index, 1)
+					uni.showToast({
+						title: '删除成功',
+						icon: 'success'
+					})
+				}
+			}
+		})
+	}
+
+	// ========== Tab 2: 污染物设施情况 ==========
+	const pollutionFacilityList = ref([{
+			id: 'pf_1',
+			name: '废水处理站',
+			quantity: '1',
+			remark: '处理能力100t/d',
+			images: []
+		},
+		{
+			id: 'pf_2',
+			name: '危废暂存间',
+			quantity: '1',
+			remark: '面积50㎡',
+			images: []
+		}
+	])
+
+	function addPollutionFacility() {
+		const newFacility = {
+			id: 'pf_' + Date.now(),
+			name: '',
+			quantity: '',
+			remark: '',
+			images: []
+		}
+		pollutionFacilityList.value.push(newFacility)
+		uni.showToast({
+			title: '已添加新设施',
+			icon: 'success'
+		})
+	}
+
+	function removePollutionFacility(index) {
+		uni.showModal({
+			title: '确认删除',
+			content: '确定要删除这条设施记录吗？',
+			success: (res) => {
+				if (res.confirm) {
+					pollutionFacilityList.value.splice(index, 1)
+					uni.showToast({
+						title: '删除成功',
+						icon: 'success'
+					})
+				}
+			}
+		})
+	}
+
+
+	// ========== Tab 3: 排污口情况 ==========
+	const outletSignboard = ref({
+		sections: []
+	})
+
+	function generateOutletInfo() {
+		// 模拟生成排污口信息（参考验收页面的标识牌结构）
+		outletSignboard.value = {
+			sections: [{
+					block: '废水排放口',
+					items: [{
+							title: '排放口名称',
+							content: 'WS-001'
+						},
+						{
+							title: '排放口编号',
+							content: '生产废水排放口'
+						},
+						{
+							title: '数量',
+							content: '1'
+						},
+						{
+							title: '位置',
+							content: '市政污水管网'
+						},
+					]
+				},
+				{
+					block: '废气排放口',
+					items: [{
+							title: '排放口编号',
+							content: 'FQ-001'
+						},
+						{
+							title: '排放口名称',
+							content: '锅炉废气排放口'
+						},
+						{
+							title: '排放高度',
+							content: '15米'
+						}
+					]
+				},
+				{
+					block: '噪声',
+					items: [{
+							title: '监测点位',
+							content: '厂界东侧'
+						},
+						{
+							title: '主要噪声源',
+							content: '生产设备'
+						},
+						{
+							title: '执行标准',
+							content: '2类标准'
+						}
+					]
+				},
+				{
+					block: '危险废物',
+					items: [{
+							title: '危废名称',
+							content: '废机油'
+						},
+						{
+							title: '危废代码',
+							content: 'HW08'
+						},
+						{
+							title: '暂存位置',
+							content: '危废暂存间'
+						}
+					]
+				}
+			]
+		}
+		uni.showToast({
+			title: '排污口信息已生成',
+			icon: 'success'
+		})
+	}
+
+	function addOutletItem(sectionIndex) {
+		const section = outletSignboard.value.sections[sectionIndex]
+		if (section) {
+			section.items.push({
+				title: '',
+				content: ''
+			}, {
+				title: '',
+				content: ''
+			}, {
+				title: '',
+				content: ''
+			}, {
+				title: '',
+				content: ''
+			}, {
+				title: '',
+				content: ''
+			}, )
+		}
+	}
+
+	function groupOutletItems(items, blockName) {
+		if (!items || items.length === 0) return []
+		// 危险废物不分组，其他每3个一组
+		if (blockName === '危险废物') {
+			return [items]
+		}
+		const groups = []
+		for (let i = 0; i < items.length; i += 3) {
+			groups.push(items.slice(i, i + 3))
+		}
+		return groups
+	}
+
+	function removeOutletGroup(section, groupIndex) {
+		uni.showModal({
+			title: '确认删除',
+			content: '确定要删除这组信息吗？',
+			success: (res) => {
+				if (res.confirm) {
+					section.items.splice(groupIndex * 3, 3)
+					uni.showToast({
+						title: '删除成功',
+						icon: 'success'
+					})
+				}
+			}
+		})
+	}
+
+	// 基于提资单和基本信息生成现场踏勘比对清单
 	function generateFieldworkComparison() {
-		// 基于提资单和基本信息生成现场踏勘比对清单
 		const comparison = datasheet.value.map(item => ({
 			id: Date.now() + Math.random(),
 			project: item.label,
@@ -2715,51 +3392,16 @@
 
 		fieldworkComparison.value = comparison
 		uni.showToast({
-			title: `已生成比对清单（${comparison.length}项）`,
+			title: `已生成比对清单`,
 			icon: 'success'
 		})
 	}
 
-	function addComparisonItem() {
-		fieldworkComparison.value.push({
-			id: Date.now() + Math.random(),
-			project: '',
-			eiaRequirement: '',
-			fieldSituation: '',
-			difference: ''
-		})
-	}
-
-	function removeComparisonItem(index) {
-		fieldworkComparison.value.splice(index, 1)
-	}
-
-	function updateBaseInfo(shouldUpdate) {
-		if (shouldUpdate) {
-			// 根据现场踏勘结果更新基本信息
-			fieldworkComparison.value.forEach(comparison => {
-				const baseItem = baseTable.value.find(item => item.label === comparison.project)
-				if (baseItem && comparison.fieldSituation) {
-					baseItem.value = comparison.fieldSituation
-					baseItem.status = 'verified'
-				}
-			})
-			uni.showToast({
-				title: '基本信息已更新',
-				icon: 'success'
-			})
-		}
-		// 进入下一步：监测方案
-		currentStep.value = 3
-	}
 
 
-
-	// 4. 竣工验收报告
+	// 以下是竣工验收报告的方法-------------------------
 	const reportType = ref('withoutData')
 	const testReportFiles = ref([])
-
-
 
 	//选择有无监测方案报告
 	const reportGenerated = ref(false)
@@ -2806,27 +3448,6 @@
 			})
 		}, 1500)
 	}
-
-
-
-
-
-
-
-
-	// 在页面加载时，恢复基本信息表缓存
-	// onLoad(() => {
-	// 	const cached = uni.getStorageSync('project_base_info')
-	// 	if (cached) {
-	// 		try {
-	// 			baseTable.value = JSON.parse(cached)
-	// 			console.log('[Cache] 恢复缓存的项目信息，共', baseTable.value.length, '条')
-	// 			// console.log('baseTable项目信息，', baseTable.value)
-	// 		} catch (e) {
-	// 			console.warn('[Cache] 缓存数据解析失败:', e)
-	// 		}
-	// 	}
-	// })
 </script>
 
 <style lang="scss" scoped>
@@ -4051,9 +4672,67 @@
 		font-weight: 600;
 	}
 
+	// 现场踏勘功能样式
+	/* Tab切换样式 */
+	.reconnoitre-tabs {
+		flex-shrink: 0;
+		background: #ffffff;
+		border-bottom: 1px solid #e2e8f0;
+		padding: 0 32rpx;
+		box-shadow: 0 2rpx 8rpx rgba(15, 23, 42, 0.05);
+		z-index: 100;
+	}
+
+	.tabs-container {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+	}
+
+	.tab-item {
+		flex: 1;
+		padding: 24rpx 16rpx;
+		text-align: center;
+		position: relative;
+		transition: all 0.3s ease;
+		cursor: pointer;
+	}
+
+	.tab-item:active {
+		background: #f8fafc;
+	}
+
+	.tab-item--active {
+		color: #166534;
+	}
+
+	.tab-item--active::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 4rpx;
+		background: #166534;
+		border-radius: 2rpx 2rpx 0 0;
+	}
+
+	.tab-label {
+		font-size: 28rpx;
+		font-weight: 500;
+		color: #64748b;
+		transition: color 0.3s ease;
+	}
+
+	.tab-item--active .tab-label {
+		color: #166534;
+		font-weight: 600;
+	}
+
 	/* 响应式设计 - 移动端 */
 	@media (max-width: 768px) {
 
+		// 项目文件列表
 		.file-item {
 			flex-direction: column;
 			align-items: flex-start;
@@ -4319,6 +4998,25 @@
 			width: 100%;
 			margin: 0;
 			justify-content: center;
+		}
+
+		// 现场踏勘样式
+		.reconnoitre-tabs {
+			padding: 0 16rpx;
+			overflow-x: auto;
+		}
+
+		.tabs-container {
+			overflow-x: auto;
+		}
+
+		.tab-item {
+			padding: 20rpx 8rpx;
+			min-width: 120rpx;
+		}
+
+		.tab-label {
+			font-size: 24rpx;
 		}
 	}
 

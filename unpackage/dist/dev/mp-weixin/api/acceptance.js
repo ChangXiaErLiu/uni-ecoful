@@ -17,6 +17,9 @@ async function runTask(options = {}) {
       project_id: projectId,
       project_folder: projectFolder,
       project_data: {}
+    }, {
+      hideLoading: true
+      // 已经有了自定义提示窗)
     });
     const taskId = submitResult.task_id;
     const startTime = Date.now();
@@ -27,7 +30,10 @@ async function runTask(options = {}) {
             reject(new Error("任务超时，请稍后重试"));
             return;
           }
-          const statusResult = await utils_request.request.get(`/api/v1/tasks/${taskId}/status`);
+          const statusResult = await utils_request.request.get(`/api/v1/tasks/${taskId}/status`, {
+            hideLoading: true
+            // 已有自定义进度提示窗
+          });
           const {
             status,
             progress = 0,
@@ -35,7 +41,7 @@ async function runTask(options = {}) {
             task_result,
             error_message
           } = statusResult;
-          common_vendor.index.__f__("log", "at api/acceptance.js:153", `[${status}] ${progress}% - ${current_step}`);
+          common_vendor.index.__f__("log", "at api/acceptance.js:72", `[${status}] ${progress}% - ${current_step}`);
           if (onProgress && typeof onProgress === "function") {
             onProgress(progress, current_step, status);
           }
@@ -52,7 +58,7 @@ async function runTask(options = {}) {
             return;
           }
           if (status === "failed") {
-            common_vendor.index.__f__("error", "at api/acceptance.js:180", "❌ 任务失败:", error_message);
+            common_vendor.index.__f__("error", "at api/acceptance.js:99", "❌ 任务失败:", error_message);
             reject(new Error(error_message || "任务执行失败"));
             return;
           }
@@ -62,7 +68,7 @@ async function runTask(options = {}) {
           }
           setTimeout(pollStatus, pollInterval);
         } catch (error) {
-          common_vendor.index.__f__("error", "at api/acceptance.js:195", "查询任务状态失败:", error);
+          common_vendor.index.__f__("error", "at api/acceptance.js:114", "查询任务状态失败:", error);
           reject(error);
         }
       };
@@ -290,12 +296,15 @@ function downloadSignboardWord(signboard, projectId) {
       header,
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:523", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:442", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
           } else if (typeof res.data === "string" && res.data.length > 0) {
-            common_vendor.index.showToast({ title: "文件格式错误", icon: "none" });
+            common_vendor.index.showToast({
+              title: "文件格式错误",
+              icon: "none"
+            });
             reject(new Error("文件格式错误"));
           } else {
             reject(new Error("空文件"));
@@ -326,7 +335,6 @@ async function generateMonitorPlan(options = {}) {
       project_id: projectId
     });
     const taskId = submitResult.task_id;
-    common_vendor.index.__f__("log", "at api/acceptance.js:575", `✅ 监测方案任务已提交，Task ID: ${taskId}`);
     const startTime = Date.now();
     return new Promise((resolve, reject) => {
       const pollStatus = async () => {
@@ -343,12 +351,12 @@ async function generateMonitorPlan(options = {}) {
             task_result,
             error_message
           } = statusResult;
-          common_vendor.index.__f__("log", "at api/acceptance.js:600", `[${status}] ${progress}% - ${current_step}`);
+          common_vendor.index.__f__("log", "at api/acceptance.js:522", `[${status}] ${progress}% - ${current_step}`);
           if (onProgress && typeof onProgress === "function") {
             onProgress(progress, current_step, status);
           }
           if (status === "success") {
-            common_vendor.index.__f__("log", "at api/acceptance.js:609", "✅ 监测方案生成完成！");
+            common_vendor.index.__f__("log", "at api/acceptance.js:531", "✅ 监测方案生成完成！");
             resolve({
               status: "success",
               result: task_result,
@@ -357,7 +365,7 @@ async function generateMonitorPlan(options = {}) {
             return;
           }
           if (status === "failed") {
-            common_vendor.index.__f__("error", "at api/acceptance.js:620", "❌ 任务失败:", error_message);
+            common_vendor.index.__f__("error", "at api/acceptance.js:542", "❌ 任务失败:", error_message);
             reject(new Error(error_message || "监测方案生成失败"));
             return;
           }
@@ -367,7 +375,7 @@ async function generateMonitorPlan(options = {}) {
           }
           setTimeout(pollStatus, pollInterval);
         } catch (error) {
-          common_vendor.index.__f__("error", "at api/acceptance.js:635", "查询任务状态失败:", error);
+          common_vendor.index.__f__("error", "at api/acceptance.js:557", "查询任务状态失败:", error);
           reject(error);
         }
       };
@@ -380,46 +388,57 @@ async function generateMonitorPlan(options = {}) {
     throw error;
   }
 }
-function downloadMonitorPlan(projectId, format = "docx") {
-  if (!projectId) {
+function downloadMonitorPlan(projectId) {
+  if (!projectId)
     throw new Error("项目ID不能为空");
-  }
-  const url = `/api/v1/completion/monitor-plan/${projectId}/download?format=${format}`;
+  const url = `/api/v1/completion/monitor-plan/${projectId}/download`;
   return new Promise((resolve, reject) => {
     const token = common_vendor.index.getStorageSync("token");
     const header = {};
-    if (token) {
-      header["Authorization"] = `Bearer ${token}`;
-    }
+    if (token)
+      header.Authorization = `Bearer ${token}`;
     common_vendor.index.request({
       url: utils_config.BASE_URL + url,
       method: "GET",
       header,
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:705", "监测方案下载响应:", res);
-        if (res.statusCode === 200 && res.data) {
-          if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
-            resolve(res.data);
-          } else if (typeof res.data === "string" && res.data.length > 0) {
-            common_vendor.index.showToast({ title: "文件格式错误", icon: "none" });
-            reject(new Error("文件格式错误"));
-          } else {
-            reject(new Error("空文件"));
-          }
-        } else if (res.statusCode === 403) {
-          reject(new Error("您不是该项目的成员，无权下载监测方案"));
+        var _a, _b;
+        if (res.statusCode === 200 && res.data instanceof ArrayBuffer) {
+          const contentDisposition = ((_a = res.header) == null ? void 0 : _a["Content-Disposition"]) || ((_b = res.header) == null ? void 0 : _b["content-disposition"]) || "";
+          const filename = extractFilename(contentDisposition);
+          resolve({ ab: res.data, filename });
         } else if (res.statusCode === 404) {
-          reject(new Error("监测方案文件不存在，请先生成监测方案"));
+          reject(new Error("请先点击生成监测方案"));
         } else {
           reject(new Error("下载失败"));
         }
       },
-      fail: (error) => {
-        reject(new Error(error.errMsg || "网络请求失败"));
-      }
+      fail: (e) => reject(new Error(e.errMsg || "网络错误"))
     });
   });
+}
+function extractFilename(str) {
+  if (!str || typeof str !== "string") {
+    return "监测方案.docx";
+  }
+  const rfc5987Match = str.match(/filename\*=UTF-8''([^;\n]+)/i);
+  if (rfc5987Match && rfc5987Match[1]) {
+    try {
+      return decodeURIComponent(rfc5987Match[1]);
+    } catch {
+    }
+  }
+  const normalMatch = str.match(/filename=["']?([^;"'\n]+)["']?/i);
+  if (normalMatch && normalMatch[1]) {
+    const name = normalMatch[1].trim();
+    try {
+      return decodeURIComponent(name);
+    } catch {
+      return name;
+    }
+  }
+  return "监测方案.docx";
 }
 exports.downloadMonitorPlan = downloadMonitorPlan;
 exports.downloadSignboardWord = downloadSignboardWord;
