@@ -1170,6 +1170,16 @@
   box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
   transition: background-color 0.3s;
 }
+.tizidan-submit-btn_update.data-v-41308e16 {
+  background-color: burlywood;
+  color: #ffffff;
+  border-radius: 10rpx;
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
+  transition: background-color 0.3s;
+}
 .tizidan-submit-btn.data-v-41308e16:active {
   background-color: #2980b9;
 }
@@ -1822,6 +1832,24 @@
     /* 进一步增大底部内边距 */
 }
 }
+/* ========== 搜索框样式 ========== */
+.search-box.data-v-41308e16 {
+  margin-bottom: 24rpx;
+  padding: 20rpx;
+  background: #f8faf9;
+  border-radius: 12rpx;
+}
+.search-input.data-v-41308e16 {
+  width: 100%;
+}
+.search-result-text.data-v-41308e16 {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #166534;
+  text-align: center;
+}
+
 /* ========== 设施/设备卡片样式 ========== */
 .facility-list.data-v-41308e16 {
   display: flex;

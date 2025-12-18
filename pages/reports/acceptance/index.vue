@@ -494,65 +494,65 @@
 
 					<!-- 步骤2: 提资单比对 -->
 					<view v-show="currentStep === 2" class="content-section">
-					    <!-- 环保资料提交管理系统界面 -->
-					    <view class="tizidan-container">
-					        <view class="tizidan-header">
-					            <text class="tizidan-title">环保资料提交管理系统</text>
-					            <text class="tizidan-subtitle">请按要求提交相关环保资料</text>
-					        </view>
-					
-					        <!-- 加载失败提示 -->
-					        <view v-if="tizidanItems.length === 0" class="empty-state">
-					            <uni-icons type="refresh" size="48" color="#cbd5e1" />
-					            <text class="empty-text">加载失败，请重新刷新！</text>
-					            <button class="btn btn--primary" @tap="fetchTizidanData">
-					                <uni-icons type="refresh" size="16" color="#ffffff" />
-					                <text>重新加载</text>
-					            </button>
-					        </view>
-					
-					        <!-- 正常内容 -->
-					        <view v-else class="tizidan-content">
-					            <view v-for="(item, index) in tizidanItems" :key="index" class="tizidan-item-card">
-					                <view class="tizidan-item-content">
-					                    <text class="tizidan-item-number">{{ index + 1 }}.</text>
-					                    <text class="tizidan-item-text">{{ item.text }}</text>
-					                </view>
-					
-					                <view class="tizidan-item-status">
-					                    <text class="tizidan-status-text"
-					                        :class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'">
-					                        {{ item.submitted ? '已提交' : '未提交' }}
-					                    </text>
-					
-					                    <!-- 修改部分：提资单提交按钮的点击事件 -->
-					                    <!-- 找到提交按钮，修改 @click 事件 -->
-					                    <button v-if="!item.submitted" class="tizidan-submit-btn"
-					                        @click="uploadTizidanFile(index)">
-					                        提交
-					                    </button>
-					                    
-					                    <button v-if="item.submitted" class="tizidan-submit-btn_update"
-					                        @click="uploadTizidanFile(index)">
-					                        重新提交
-					                    </button>
-					                    
-					                </view>
-					            </view>
-					        </view>
-					
-					        <view class="tizidan-footer">
-					            <text class="tizidan-footer-text">请确保所有资料完整准确</text>
-					            <!-- 移除"下载建设内容详细对比清单"按钮，将"下载验收报告提资单"按钮移到这里 -->
-					            <button class="btn btn--primary" @tap="downloadTizidanFile"
-					                :disabled="!selectedProjectId">
-					                下载验收报告提资单
-					            </button>
-					        </view>
-					
-					    </view>
+						<!-- 环保资料提交管理系统界面 -->
+						<view class="tizidan-container">
+							<view class="tizidan-header">
+								<text class="tizidan-title">环保资料提交管理系统</text>
+								<text class="tizidan-subtitle">请按要求提交相关环保资料</text>
+							</view>
+
+							<!-- 加载失败提示 -->
+							<view v-if="tizidanItems.length === 0" class="empty-state">
+								<uni-icons type="refresh" size="48" color="#cbd5e1" />
+								<text class="empty-text">加载失败，请重新刷新！</text>
+								<button class="btn btn--primary" @tap="fetchTizidanData">
+									<uni-icons type="refresh" size="16" color="#ffffff" />
+									<text>重新加载</text>
+								</button>
+							</view>
+
+							<!-- 正常内容 -->
+							<view v-else class="tizidan-content">
+								<view v-for="(item, index) in tizidanItems" :key="index" class="tizidan-item-card">
+									<view class="tizidan-item-content">
+										<text class="tizidan-item-number">{{ index + 1 }}.</text>
+										<text class="tizidan-item-text">{{ item.text }}</text>
+									</view>
+
+									<view class="tizidan-item-status">
+										<text class="tizidan-status-text"
+											:class="item.submitted ? 'tizidan-submitted' : 'tizidan-unsubmitted'">
+											{{ item.submitted ? '已提交' : '未提交' }}
+										</text>
+
+										<!-- 修改部分：提资单提交按钮的点击事件 -->
+										<!-- 找到提交按钮，修改 @click 事件 -->
+										<button v-if="!item.submitted" class="tizidan-submit-btn"
+											@click="uploadTizidanFile(index)">
+											提交
+										</button>
+
+										<button v-if="item.submitted" class="tizidan-submit-btn_update"
+											@click="uploadTizidanFile(index)">
+											重新提交
+										</button>
+
+									</view>
+								</view>
+							</view>
+
+							<view class="tizidan-footer">
+								<text class="tizidan-footer-text">请确保所有资料完整准确</text>
+								<!-- 移除"下载建设内容详细对比清单"按钮，将"下载验收报告提资单"按钮移到这里 -->
+								<button class="btn btn--primary" @tap="downloadTizidanFile"
+									:disabled="!selectedProjectId">
+									下载验收报告提资单
+								</button>
+							</view>
+
+						</view>
 					</view>
-					
+
 					<!-- 步骤3: 现场踏勘比对 -->
 					<view v-show="currentStep === 3" class="content-section">
 						<view class="section-card">
@@ -587,11 +587,6 @@
 												</view>
 												<view class="section-body">
 													<view class="section-actions">
-														<button class="btn btn--ghost" @tap="openAddMainContent">
-															<uni-icons type="plus" size="16" color="#166534" />
-															<text>新增</text>
-														</button>
-
 														<button v-if="selectModeMain" class="btn btn--danger"
 															:disabled="!selectedMainIds.length"
 															@tap="removeSelectedMain">
@@ -653,6 +648,17 @@
 													<text class="section-title">设备列表情况</text>
 												</view>
 												<view class="section-body">
+													<!-- 搜索框 -->
+													<view class="search-box">
+														<uni-easyinput v-model="equipmentSearchKeyword"
+															placeholder="搜索设备名称、数量或备注..." prefixIcon="search"
+															:clearable="true" @input="onEquipmentSearchInput"
+															class="search-input" />
+														<text v-if="equipmentSearchKeyword" class="search-result-text">
+															找到 {{ filteredEquipmentList.length }} 条结果
+														</text>
+													</view>
+
 													<view class="section-actions">
 														<button class="btn btn--ghost" @tap="addEquipment">
 															<uni-icons type="plus" size="16" color="#166534" />
@@ -684,12 +690,10 @@
 													</view>
 
 													<!-- 设备卡片列表 -->
-													<view v-else-if="equipmentList.length" class="facility-list">
-														<view 
-															v-for="(item, index) in equipmentList"
-															:key="item.id"
-															class="facility-card"
-														>
+													<view v-else-if="filteredEquipmentList.length"
+														class="facility-list">
+														<view v-for="(item, index) in filteredEquipmentList"
+															:key="item.id" class="facility-card">
 
 
 															<!-- 卡片内容 -->
@@ -697,68 +701,61 @@
 																<!-- 设备名称 -->
 																<view class="facility-field">
 																	<text class="facility-field__label">设备名称</text>
-																	<uni-easyinput 
-																		v-model="item.name"
-																		placeholder="请输入设备名称" 
-																		:clearable="true"
-																		class="facility-field__input"
-																	/>
+																	<uni-easyinput v-model="item.name"
+																		placeholder="请输入设备名称" :clearable="true"
+																		class="facility-field__input" />
 																</view>
 
 																<!-- 数量和备注（横向布局） -->
 																<view class="facility-field-row">
 																	<view class="facility-field facility-field--half">
 																		<text class="facility-field__label">数量</text>
-																		<uni-easyinput 
-																			v-model="item.quantity"
-																			placeholder="数量" 
-																			:clearable="true"
-																			class="facility-field__input"
-																		/>
+																		<uni-easyinput v-model="item.quantity"
+																			placeholder="数量" :clearable="true"
+																			class="facility-field__input" />
 																	</view>
 																	<view class="facility-field facility-field--half">
 																		<text class="facility-field__label">备注</text>
-																		<uni-easyinput 
-																			v-model="item.remark"
-																			placeholder="备注信息" 
-																			:clearable="true"
-																			class="facility-field__input"
-																		/>
+																		<uni-easyinput v-model="item.remark"
+																			placeholder="备注信息" :clearable="true"
+																			class="facility-field__input" />
 																	</view>
 																</view>
 
 																<!-- 图片上传 -->
 																<view class="facility-field">
-																	<text class="facility-field__label">设备图片（最多3张）</text>
-																	<uni-file-picker 
-																		v-model="item.images"
-																		fileMediatype="image" 
-																		mode="grid"
-																		:limit="3" 
+																	<text
+																		class="facility-field__label">设备图片（最多3张）</text>
+																	<uni-file-picker v-model="item.images"
+																		fileMediatype="image" mode="grid" :limit="3"
 																		:auto-upload="false"
-																		class="facility-field__picker"
-																	/>
+																		class="facility-field__picker" />
 																</view>
 															</view>
 															<!-- 卡片头部 -->
 															<view class="facility-card__header">
 																<view class="facility-card__number">
-																	<text class="facility-card__number-text">#{{ index + 1 }}</text>
+																	<text
+																		class="facility-card__number-text">#{{ index + 1 }}</text>
 																</view>
-																<button 
-																	class="facility-card__delete"
-																	@tap="() => removeEquipment(index)"
-																>
+																<button class="facility-card__delete"
+																	@tap="() => removeEquipment(index)">
 																	<uni-icons type="trash" size="16" color="#ef4444" />
 																</button>
 															</view>
 														</view>
 													</view>
 
+													<!-- 空状态 -->
 													<view v-else class="empty-state">
-														<uni-icons type="gear" size="48" color="#cbd5e1" />
-														<text class="empty-text">暂无设备信息</text>
-														<text class="empty-tip">点击新增按钮添加设备，或刷新数据从接口获取</text>
+														<uni-icons :type="equipmentSearchKeyword ? 'search' : 'gear'"
+															size="48" color="#cbd5e1" />
+														<text class="empty-text">
+															{{ equipmentSearchKeyword ? '未找到匹配的设备' : '暂无设备信息' }}
+														</text>
+														<text class="empty-tip">
+															{{ equipmentSearchKeyword ? '试试其他关键词或清空搜索' : '点击新增按钮添加设备，或刷新数据从接口获取' }}
+														</text>
 													</view>
 												</view>
 											</view>
@@ -770,7 +767,7 @@
 											<view class="section-card">
 												<view class="section-header">
 													<uni-icons type="flag" size="20" color="#166534" />
-													<text class="section-title">污染物设施情况</text>
+													<text class="section-title">污染物治理设施情况</text>
 												</view>
 												<view class="section-body">
 													<view class="section-actions">
@@ -782,71 +779,56 @@
 
 													<!-- 设施卡片列表 -->
 													<view v-if="pollutionFacilityList.length" class="facility-list">
-														<view 
-															v-for="(item, index) in pollutionFacilityList"
-															:key="item.id"
-															class="facility-card"
-														>
-															<!-- 卡片头部 -->
-															<view class="facility-card__header">
-																<view class="facility-card__number">
-																	<text class="facility-card__number-text">#{{ index + 1 }}</text>
-																</view>
-																<button 
-																	class="facility-card__delete"
-																	@tap="() => removePollutionFacility(index)"
-																>
-																	<uni-icons type="trash" size="16" color="#ef4444" />
-																</button>
-															</view>
+														<view v-for="(item, index) in pollutionFacilityList"
+															:key="item.id" class="facility-card">
+
 
 															<!-- 卡片内容 -->
 															<view class="facility-card__body">
 																<!-- 设施名称 -->
 																<view class="facility-field">
 																	<text class="facility-field__label">设施名称</text>
-																	<uni-easyinput 
-																		v-model="item.name"
-																		placeholder="请输入设施名称" 
-																		:clearable="true"
-																		class="facility-field__input"
-																	/>
+																	<uni-easyinput v-model="item.name"
+																		placeholder="请输入设施名称" :clearable="true"
+																		class="facility-field__input" />
 																</view>
 
 																<!-- 数量和备注（横向布局） -->
 																<view class="facility-field-row">
 																	<view class="facility-field facility-field--half">
 																		<text class="facility-field__label">数量</text>
-																		<uni-easyinput 
-																			v-model="item.quantity"
-																			placeholder="数量" 
-																			:clearable="true"
-																			class="facility-field__input"
-																		/>
+																		<uni-easyinput v-model="item.quantity"
+																			placeholder="数量" :clearable="true"
+																			class="facility-field__input" />
 																	</view>
 																	<view class="facility-field facility-field--half">
 																		<text class="facility-field__label">备注</text>
-																		<uni-easyinput 
-																			v-model="item.remark"
-																			placeholder="备注信息" 
-																			:clearable="true"
-																			class="facility-field__input"
-																		/>
+																		<uni-easyinput v-model="item.remark"
+																			placeholder="备注信息" :clearable="true"
+																			class="facility-field__input" />
 																	</view>
 																</view>
 
 																<!-- 图片上传 -->
 																<view class="facility-field">
-																	<text class="facility-field__label">设施图片（最多3张）</text>
-																	<uni-file-picker 
-																		v-model="item.images"
-																		fileMediatype="image" 
-																		mode="grid"
-																		:limit="3" 
+																	<text
+																		class="facility-field__label">设施图片（最多3张）</text>
+																	<uni-file-picker v-model="item.images"
+																		fileMediatype="image" mode="grid" :limit="3"
 																		:auto-upload="false"
-																		class="facility-field__picker"
-																	/>
+																		class="facility-field__picker" />
 																</view>
+															</view>
+															<!-- 卡片头部 -->
+															<view class="facility-card__header">
+																<view class="facility-card__number">
+																	<text
+																		class="facility-card__number-text">#{{ index + 1 }}</text>
+																</view>
+																<button class="facility-card__delete"
+																	@tap="() => removePollutionFacility(index)">
+																	<uni-icons type="trash" size="16" color="#ef4444" />
+																</button>
 															</view>
 														</view>
 													</view>
@@ -871,15 +853,11 @@
 												<view class="section-body">
 
 													<view class="section-actions">
-														<!-- <button class="btn btn--primary"
-																@tap="() => { generateSignboard(); showSignboard = true }">
-																<uni-icons type="eye-filled" size="16" color="#ffffff" />
-																<text>排污口信息</text>
-															</button> -->
-														<!-- <button class="btn btn--primary" @tap="generateOutletInfo">
-																<uni-icons type="gear" size="16" color="#ffffff" />
-																<text>生成排污口信息</text>
-															</button> -->
+														<button class="btn btn--primary"
+															@tap="() => { generateSignboard(); showSignboard = true }">
+															<uni-icons type="eye-filled" size="16" color="#ffffff" />
+															<text>排污口信息</text>
+														</button>
 													</view>
 
 													<!-- 排污口标识牌信息列表 -->
@@ -1002,7 +980,8 @@
 											<text>生成验收报告</text>
 										</button>
 										<!-- 生成后可点 -->
-										<button v-if="canDownloadReport" class="btn btn--primary" @tap="downAcceptanceReport">
+										<button v-if="canDownloadReport" class="btn btn--primary"
+											@tap="downAcceptanceReport">
 											<uni-icons type="cloud-download-filled" size="16" color="#ffffff" />
 											<text>下载竣工验收报告</text>
 										</button>
@@ -1573,6 +1552,9 @@
 				extractionOk.value = true
 				console.log(`✅ 已加载项目 ${projectId} 的缓存数据`)
 
+				// 自动提取污染治理设施（静默填充）
+				extractFacilitiesFromPollutants()
+
 				uni.showToast({
 					title: '已加载缓存数据',
 					icon: 'success',
@@ -1746,8 +1728,6 @@
 						if (currentDisplayProgress < maxAllowedProgress) {
 							// 每次增长0.1%，非常缓慢
 							currentDisplayProgress += 0.1
-							console.log(
-								`[缓慢增长] 后端卡在 ${targetProgress}%，前端显示 ${Math.floor(currentDisplayProgress)}%`)
 						}
 					}
 				}
@@ -1870,7 +1850,10 @@
 			uni.setStorageSync(cacheKey, JSON.stringify(baseTable.value))
 			console.log(`✅ 项目 ${selectedProjectId.value} 的数据已缓存`)
 
-			// 9. 标记提取完成
+			// 9. 自动提取污染治理设施到现场踏勘（静默填充）
+			extractFacilitiesFromPollutants()
+
+			// 10. 标记提取完成
 			extractionOk.value = true
 
 		} catch (error) {
@@ -2468,125 +2451,125 @@
 	// 上传提资单文件
 	// 上传提资单文件
 	async function uploadTizidanFile(index) {
-	    // 1. 选择文件
-	    uni.chooseFile({
-	        count: 1, // 只能选择一个文件
-	        extension: ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'],
-	        success: async (chooseRes) => {
-	            const tempFile = chooseRes.tempFiles[0];
-	            console.log('选择的文件:', tempFile);
-	            
-	            // 2. 显示确认弹窗
-	            uni.showModal({
-	                title: '确认提交',
-	                content: `您确定要提交 "${tizidanItems.value[index].text}" 并上传文件 "${tempFile.name}" 吗？`,
-	                success: async (modalRes) => {
-	                    if (modalRes.confirm) {
-	                        // 3. 上传文件
-	                        await uploadAndSubmitFile(index, tempFile);
-	                    }
-	                }
-	            });
-	        },
-	        fail: (err) => {
-	            console.error('选择文件失败:', err);
-	            uni.showToast({
-	                title: '选择文件失败',
-	                icon: 'none'
-	            });
-	        }
-	    });
+		// 1. 选择文件
+		uni.chooseFile({
+			count: 1, // 只能选择一个文件
+			extension: ['.doc', '.docx', '.pdf', '.xls', '.xlsx', '.png', '.jpg', '.jpeg'],
+			success: async (chooseRes) => {
+				const tempFile = chooseRes.tempFiles[0];
+				console.log('选择的文件:', tempFile);
+
+				// 2. 显示确认弹窗
+				uni.showModal({
+					title: '确认提交',
+					content: `您确定要提交 "${tizidanItems.value[index].text}" 并上传文件 "${tempFile.name}" 吗？`,
+					success: async (modalRes) => {
+						if (modalRes.confirm) {
+							// 3. 上传文件
+							await uploadAndSubmitFile(index, tempFile);
+						}
+					}
+				});
+			},
+			fail: (err) => {
+				console.error('选择文件失败:', err);
+				uni.showToast({
+					title: '选择文件失败',
+					icon: 'none'
+				});
+			}
+		});
 	}
-	
+
 	// 上传文件并提交
 	async function uploadAndSubmitFile(index, file) {
-	    uni.showLoading({
-	        title: '上传文件中...',
-	        mask: true
-	    });
-	    
-	    try {
-	        // 1. 上传文件
-	        const uploadRes = await uploadFileToBackend(file, index);
-	        
-	        if (uploadRes.success) {
-	            // 2. 直接更新前端状态，不再调用 submit-item 接口
-	            tizidanItems.value[index].submitted = true;
-	            
-	            // 3. 显示成功提示
-	            uni.showToast({
-	                title: '提交成功',
-	                icon: 'success',
-	                duration: 2000
-	            });
-	            
-	            // 4. 弹出成功窗口
-	            uni.showModal({
-	                title: '提交成功',
-	                content: `文件 "${file.name}" 上传成功！`,
-	                showCancel: false,
-	                confirmText: '确定'
-	            });
-	        } else {
-	            throw new Error(uploadRes.message || '文件上传失败');
-	        }
-	    } catch (error) {
-	        console.error('提交失败:', error);
-	        uni.showToast({
-	            title: '提交失败：' + error.message,
-	            icon: 'none',
-	            duration: 3000
-	        });
-	    } finally {
-	        uni.hideLoading();
-	    }
+		uni.showLoading({
+			title: '上传文件中...',
+			mask: true
+		});
+
+		try {
+			// 1. 上传文件
+			const uploadRes = await uploadFileToBackend(file, index);
+
+			if (uploadRes.success) {
+				// 2. 直接更新前端状态，不再调用 submit-item 接口
+				tizidanItems.value[index].submitted = true;
+
+				// 3. 显示成功提示
+				uni.showToast({
+					title: '提交成功',
+					icon: 'success',
+					duration: 2000
+				});
+
+				// 4. 弹出成功窗口
+				uni.showModal({
+					title: '提交成功',
+					content: `文件 "${file.name}" 上传成功！`,
+					showCancel: false,
+					confirmText: '确定'
+				});
+			} else {
+				throw new Error(uploadRes.message || '文件上传失败');
+			}
+		} catch (error) {
+			console.error('提交失败:', error);
+			uni.showToast({
+				title: '提交失败：' + error.message,
+				icon: 'none',
+				duration: 3000
+			});
+		} finally {
+			uni.hideLoading();
+		}
 	}
-	
-	
+
+
 	// 上传文件到后端
 	function uploadFileToBackend(file, index) {
-	    return new Promise((resolve, reject) => {
-	        uni.uploadFile({
-	            url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/upload_file',
-	            filePath: file.path,
-	            name: 'file',
-	            formData: {
-	                item_index: index,
-	                item_text: tizidanItems.value[index].text,
+		return new Promise((resolve, reject) => {
+			uni.uploadFile({
+				url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/upload_file',
+				filePath: file.path,
+				name: 'file',
+				formData: {
+					item_index: index,
+					item_text: tizidanItems.value[index].text,
 					user_id: user_id,
 					project_id: project_id,
-	            },
-	            success: (uploadRes) => {
-	                console.log('文件上传响应:', uploadRes);
-	                
-	                if (uploadRes.statusCode === 200) {
-	                    try {
-	                        const data = JSON.parse(uploadRes.data);
-	                        resolve(data);
-	                    } catch (e) {
-	                        console.error('解析响应失败:', e);
-	                        reject(new Error('服务器响应格式错误'));
-	                    }
-	                } else {
-	                    reject(new Error(`上传失败，状态码：${uploadRes.statusCode}`));
-	                }
-	            },
-	            fail: (err) => {
-	                console.error('上传请求失败:', err);
-	                reject(new Error('网络请求失败'));
-	            }
-	        });
-	    });
+				},
+				success: (uploadRes) => {
+					console.log('文件上传响应:', uploadRes);
+
+					if (uploadRes.statusCode === 200) {
+						try {
+							const data = JSON.parse(uploadRes.data);
+							resolve(data);
+						} catch (e) {
+							console.error('解析响应失败:', e);
+							reject(new Error('服务器响应格式错误'));
+						}
+					} else {
+						reject(new Error(`上传失败，状态码：${uploadRes.statusCode}`));
+					}
+				},
+				fail: (err) => {
+					console.error('上传请求失败:', err);
+					reject(new Error('网络请求失败'));
+				}
+			});
+		});
 	}
-	
-	
+
+
 	// 提资单数据
 	const tizidanItems = ref([])
 	const downloadUrls = ref({
 		TiZiDan_Doc: '',
 		comparison_list: ''
 	})
-	
+
 	//by wilson 获取user_id和project_id从本地缓存uni.getStorageSync
 	// 获取项目ID
 	const project_id = uni.getStorageSync('acceptance_project_id')
@@ -2630,9 +2613,9 @@
 
 				tizidanItems.value = data.items
 				console.log("test", data.download_urls)
-					
-			
-				
+
+
+
 				const downloadUrlsData = data.download_urls || {}
 				downloadUrls.value = {
 					TiZiDan_Doc: formatDownloadUrl(downloadUrlsData.TiZiDan_Doc),
@@ -2667,102 +2650,103 @@
 
 	// 下载验收报告提资单
 	async function downloadTizidanFile() {
-	    if (!selectedProjectId.value) {
-	        uni.showToast({
-	            title: '请先选择项目',
-	            icon: 'none'
-	        })
-	        return
-	    }
-	
-	
-	    // 显示下载中提示
-	    uni.showLoading({
-	        title: '正在生成文档…',
-	        mask: true
-	    })
-	
-		
-	    try {
-	        // 调用后端下载接口
-	        const url = `http://127.0.0.1:8000/api/v1/completion/tzdDetail/download_tzd_doc?user_id=${user_id}&project_id=${project_id}`
-	        
-	        // #ifdef H5
-	        // H5环境：直接打开链接
-	        window.open(url, '_blank')
-	        // #endif
-	
-	        // #ifdef MP-WEIXIN
-	        // 微信小程序环境：使用uni.downloadFile
-	        const downloadTask = uni.downloadFile({
-	            url: url,
-	            success: (res) => {
-	                if (res.statusCode === 200) {
-	                    const filePath = res.tempFilePath
-	                    uni.saveFile({
-	                        tempFilePath: filePath,
-	                        success: (saveRes) => {
-	                            console.log('文件保存成功:', saveRes.savedFilePath)
-	                            uni.showToast({
-	                                title: '文件已保存',
-	                                icon: 'success'
-	                            })
-	                        },
-	                        fail: (saveErr) => {
-	                            console.error('保存文件失败:', saveErr)
-	                            uni.showToast({
-	                                title: '保存失败',
-	                                icon: 'none'
-	                            })
-	                        }
-	                    })
-	                } else {
-	                    throw new Error(`下载失败，状态码: ${res.statusCode}`)
-	                }
-	            },
-	            fail: (err) => {
-	                throw new Error('下载请求失败: ' + (err.errMsg || '未知错误'))
-	            }
-	        })
-	        // #endif
-	
-	        // #ifdef APP-PLUS
-	        // App环境：使用plus.downloader
-	        const dtask = plus.downloader.createDownload(url, {}, (d, status) => {
-	            if (status == 200) {
-	                console.log('下载成功：' + d.filename)
-	                uni.showToast({
-	                    title: '下载成功',
-	                    icon: 'success'
-	                })
-	            } else {
-	                console.log('下载失败：' + status)
-	                uni.showToast({
-	                    title: '下载失败',
-	                    icon: 'none'
-	                })
-	            }
-	        })
-	        dtask.start()
-	        // #endif
-	
-	        uni.showToast({
-	            title: '开始下载',
-	            icon: 'success'
-	        })
-	
-	    } catch (error) {
-	        console.error('下载失败:', error)
-	        uni.showToast({
-	            title: '下载失败: ' + (error.message || '未知错误'),
-	            icon: 'none',
-	            duration: 3000
-	        })
-	    } finally {
-	        uni.hideLoading()
-	    }
+		if (!selectedProjectId.value) {
+			uni.showToast({
+				title: '请先选择项目',
+				icon: 'none'
+			})
+			return
+		}
+
+
+		// 显示下载中提示
+		uni.showLoading({
+			title: '正在生成文档…',
+			mask: true
+		})
+
+
+		try {
+			// 调用后端下载接口
+			const url =
+				`http://127.0.0.1:8000/api/v1/completion/tzdDetail/download_tzd_doc?user_id=${user_id}&project_id=${project_id}`
+
+			// #ifdef H5
+			// H5环境：直接打开链接
+			window.open(url, '_blank')
+			// #endif
+
+			// #ifdef MP-WEIXIN
+			// 微信小程序环境：使用uni.downloadFile
+			const downloadTask = uni.downloadFile({
+				url: url,
+				success: (res) => {
+					if (res.statusCode === 200) {
+						const filePath = res.tempFilePath
+						uni.saveFile({
+							tempFilePath: filePath,
+							success: (saveRes) => {
+								console.log('文件保存成功:', saveRes.savedFilePath)
+								uni.showToast({
+									title: '文件已保存',
+									icon: 'success'
+								})
+							},
+							fail: (saveErr) => {
+								console.error('保存文件失败:', saveErr)
+								uni.showToast({
+									title: '保存失败',
+									icon: 'none'
+								})
+							}
+						})
+					} else {
+						throw new Error(`下载失败，状态码: ${res.statusCode}`)
+					}
+				},
+				fail: (err) => {
+					throw new Error('下载请求失败: ' + (err.errMsg || '未知错误'))
+				}
+			})
+			// #endif
+
+			// #ifdef APP-PLUS
+			// App环境：使用plus.downloader
+			const dtask = plus.downloader.createDownload(url, {}, (d, status) => {
+				if (status == 200) {
+					console.log('下载成功：' + d.filename)
+					uni.showToast({
+						title: '下载成功',
+						icon: 'success'
+					})
+				} else {
+					console.log('下载失败：' + status)
+					uni.showToast({
+						title: '下载失败',
+						icon: 'none'
+					})
+				}
+			})
+			dtask.start()
+			// #endif
+
+			uni.showToast({
+				title: '开始下载',
+				icon: 'success'
+			})
+
+		} catch (error) {
+			console.error('下载失败:', error)
+			uni.showToast({
+				title: '下载失败: ' + (error.message || '未知错误'),
+				icon: 'none',
+				duration: 3000
+			})
+		} finally {
+			uni.hideLoading()
+		}
 	}
-	
+
 
 	// 添加URL格式化函数，确保URL格式正确
 	function formatDownloadUrl(url) {
@@ -2913,13 +2897,7 @@
 
 	const baseTable = ref([])
 	const datasheet = ref([])
-	const datasheetTypeOptions = [{
-		text: '需再次提资',
-		value: 'requireMore'
-	}, {
-		text: '需业主核对',
-		value: 'ownerConfirm'
-	}]
+	
 
 	// 选择删除模式
 	const selectMode = ref(false)
@@ -3000,7 +2978,8 @@
 			fetchEquipmentData()
 		}
 	}
-	// ========== Tab 0: 主要建设内容 ==========
+	
+	// Tab 0: 主要建设内容
 	const mainContentTable = ref([{
 			id: 'mc_1',
 			label: '项目名称',
@@ -3059,40 +3038,29 @@
 		})
 	}
 
-	function openAddMainContent() {
-		newMainContentLabel.value = ''
-		newMainContentPopup.value?.open()
-	}
-
-	function closeMainContent() {
-		newMainContentPopup.value?.close()
-	}
-
-	function confirmAddMainContent() {
-		if (!newMainContentLabel.value.trim()) {
-			uni.showToast({
-				title: '请输入内容名称',
-				icon: 'none'
-			})
-			return
-		}
-		const newItem = {
-			id: 'mc_' + Date.now(),
-			label: newMainContentLabel.value,
-			value: '',
-			type: 'text'
-		}
-		mainContentTable.value.push(newItem)
-		closeMainContent()
-		uni.showToast({
-			title: '添加成功',
-			icon: 'success'
-		})
-	}
-
-
-	// ========== Tab 1: 设备列表情况 ==========
+	// Tab 1: 设备列表情况
 	const equipmentList = ref([])
+	const equipmentSearchKeyword = ref('') // 设备搜索关键词
+
+	// 过滤后的设备列表（根据搜索关键词）
+	const filteredEquipmentList = computed(() => {
+		if (!equipmentSearchKeyword.value) {
+			return equipmentList.value
+		}
+		const keyword = equipmentSearchKeyword.value.toLowerCase().trim()
+		return equipmentList.value.filter(equipment => {
+			const name = (equipment.name || '').toLowerCase()
+			const quantity = (equipment.quantity || '').toLowerCase()
+			const remark = (equipment.remark || '').toLowerCase()
+			return name.includes(keyword) || quantity.includes(keyword) || remark.includes(keyword)
+		})
+	})
+
+	// 搜索输入处理
+	function onEquipmentSearchInput(e) {
+		// 实时搜索，无需额外处理
+		console.log('搜索设备关键词:', equipmentSearchKeyword.value)
+	}
 
 	// 解析设备数据
 	function parseEquipmentData(apiData) {
@@ -3243,6 +3211,7 @@
 		}
 	}
 
+	// 增加设备记录
 	function addEquipment() {
 		const newEquipment = {
 			id: 'eq_' + Date.now(),
@@ -3258,6 +3227,7 @@
 		})
 	}
 
+	// 删除设备记录
 	function removeEquipment(index) {
 		uni.showModal({
 			title: '确认删除',
@@ -3274,23 +3244,141 @@
 		})
 	}
 
-	// ========== Tab 2: 污染物设施情况 ==========
-	const pollutionFacilityList = ref([{
-			id: 'pf_1',
-			name: '废水处理站',
-			quantity: '1',
-			remark: '处理能力100t/d',
-			images: []
-		},
-		{
-			id: 'pf_2',
-			name: '危废暂存间',
-			quantity: '1',
-			remark: '面积50㎡',
-			images: []
-		}
-	])
+	// Tab 2: 污染物设施情况
+	const pollutionFacilityList = ref([])
 
+	/**
+	 * 从污染物信息中智能提取治理设施
+	 * 在提取项目基本信息成功后自动调用，静默填充到现场踏勘的污染物设施列表
+	 */
+	function extractFacilitiesFromPollutants() {
+		try {
+			// 1. 获取污染物数据
+			const emissionData = baseTable.value.find(x => x.id === 'pollutants_emission')?.value
+			if (!emissionData || typeof emissionData !== 'object') {
+				console.log('未找到污染物信息，跳过设施提取')
+				return
+			}
+
+			// 2. 收集所有治理设施
+			const facilitiesSet = new Set() // 使用 Set 自动去重
+			const facilitiesMap = new Map() // 存储设施详细信息 {name: {types: [], count: 0}}
+
+			// 辅助函数：智能分割设施名称
+			function splitFacilities(text) {
+				if (!text || typeof text !== 'string') return []
+
+				// 移除常见的描述性词汇
+				const cleaned = text
+					.replace(/采用|通过|设置|建设|配备|安装|使用/g, '')
+					.trim()
+
+				// 按常见分隔符分割
+				const parts = cleaned.split(/[、，,；;]/)
+
+				return parts
+					.map(p => p.trim())
+					.filter(p => p && p.length > 0 && p.length < 50) // 过滤空值和过长的描述
+			}
+
+			// 辅助函数：提取核心设施名称（去除数量、规格等描述）
+			function extractCoreName(text) {
+				// 移除括号内容和数量描述
+				return text
+					.replace(/\(.*?\)/g, '') // 移除括号
+					.replace(/（.*?）/g, '') // 移除中文括号
+					.replace(/\d+.*?(台|套|个|座|间|m³|m²|立方|平方).*/g, '') // 移除数量单位
+					.replace(/\d+.*?吨.*/g, '') // 移除吨位描述
+					.trim()
+			}
+
+			// 3. 遍历所有污染物类型
+			const pollutantTypes = ['水污染物', '大气污染物', '噪声', '固体废物', '危险废物']
+
+			pollutantTypes.forEach(type => {
+				const pollutants = emissionData[type]
+				if (!pollutants) return
+
+				// 处理数组格式
+				if (Array.isArray(pollutants)) {
+					pollutants.forEach(item => {
+						const measure = item['污染治理措施'] || item['治理措施'] || ''
+						const facilities = splitFacilities(measure)
+
+						facilities.forEach(facility => {
+							const coreName = extractCoreName(facility)
+							if (coreName && coreName.length >= 2) { // 至少2个字符
+								if (!facilitiesMap.has(coreName)) {
+									facilitiesMap.set(coreName, {
+										types: new Set(),
+										originalText: facility
+									})
+								}
+								facilitiesMap.get(coreName).types.add(type)
+							}
+						})
+					})
+				}
+				// 处理对象格式（如危险废物）
+				else if (typeof pollutants === 'object') {
+					const measure = pollutants['污染治理措施'] || pollutants['治理措施'] || ''
+					const facilities = splitFacilities(measure)
+
+					facilities.forEach(facility => {
+						const coreName = extractCoreName(facility)
+						if (coreName && coreName.length >= 2) {
+							if (!facilitiesMap.has(coreName)) {
+								facilitiesMap.set(coreName, {
+									types: new Set(),
+									originalText: facility
+								})
+							}
+							facilitiesMap.get(coreName).types.add(type)
+						}
+					})
+				}
+			})
+
+			// 4. 智能去重：检查现有设施，避免重复添加
+			const existingNames = pollutionFacilityList.value.map(f => f.name.toLowerCase())
+
+			// 辅助函数：模糊匹配（判断两个设施名是否相似）
+			function isSimilar(name1, name2) {
+				const n1 = name1.toLowerCase()
+				const n2 = name2.toLowerCase()
+				// 包含关系视为相似
+				return n1.includes(n2) || n2.includes(n1)
+			}
+
+			// 5. 转换为设施列表格式并添加
+			let addedCount = 0
+			facilitiesMap.forEach((info, name) => {
+				// 检查是否已存在相似设施
+				const isDuplicate = existingNames.some(existing => isSimilar(existing, name))
+
+				if (!isDuplicate) {
+					// 生成备注：说明用于处理哪些污染物
+					const typesArray = Array.from(info.types)
+					const remark = typesArray.length > 0 ?
+						`用于处理${typesArray.join('、')}` :
+						''
+
+					pollutionFacilityList.value.push({
+						id: 'pf_extracted_' + Date.now() + '_' + Math.random(),
+						name: name,
+						quantity: '1', // 默认数量为1
+						remark: remark,
+						images: []
+					})
+					addedCount++
+				}
+			})
+		} catch (error) {
+			console.error('提取污染治理设施失败:', error)
+		}
+	}
+
+	// 增加设施记录
 	function addPollutionFacility() {
 		const newFacility = {
 			id: 'pf_' + Date.now(),
@@ -3306,6 +3394,8 @@
 		})
 	}
 
+
+	// 删除设施记录
 	function removePollutionFacility(index) {
 		uni.showModal({
 			title: '确认删除',
@@ -3313,142 +3403,6 @@
 			success: (res) => {
 				if (res.confirm) {
 					pollutionFacilityList.value.splice(index, 1)
-					uni.showToast({
-						title: '删除成功',
-						icon: 'success'
-					})
-				}
-			}
-		})
-	}
-
-
-	// ========== Tab 3: 排污口情况 ==========
-	const outletSignboard = ref({
-		sections: []
-	})
-
-	function generateOutletInfo() {
-		// 模拟生成排污口信息（参考验收页面的标识牌结构）
-		outletSignboard.value = {
-			sections: [{
-					block: '废水排放口',
-					items: [{
-							title: '排放口名称',
-							content: 'WS-001'
-						},
-						{
-							title: '排放口编号',
-							content: '生产废水排放口'
-						},
-						{
-							title: '数量',
-							content: '1'
-						},
-						{
-							title: '位置',
-							content: '市政污水管网'
-						},
-					]
-				},
-				{
-					block: '废气排放口',
-					items: [{
-							title: '排放口编号',
-							content: 'FQ-001'
-						},
-						{
-							title: '排放口名称',
-							content: '锅炉废气排放口'
-						},
-						{
-							title: '排放高度',
-							content: '15米'
-						}
-					]
-				},
-				{
-					block: '噪声',
-					items: [{
-							title: '监测点位',
-							content: '厂界东侧'
-						},
-						{
-							title: '主要噪声源',
-							content: '生产设备'
-						},
-						{
-							title: '执行标准',
-							content: '2类标准'
-						}
-					]
-				},
-				{
-					block: '危险废物',
-					items: [{
-							title: '危废名称',
-							content: '废机油'
-						},
-						{
-							title: '危废代码',
-							content: 'HW08'
-						},
-						{
-							title: '暂存位置',
-							content: '危废暂存间'
-						}
-					]
-				}
-			]
-		}
-		uni.showToast({
-			title: '排污口信息已生成',
-			icon: 'success'
-		})
-	}
-
-	function addOutletItem(sectionIndex) {
-		const section = outletSignboard.value.sections[sectionIndex]
-		if (section) {
-			section.items.push({
-				title: '',
-				content: ''
-			}, {
-				title: '',
-				content: ''
-			}, {
-				title: '',
-				content: ''
-			}, {
-				title: '',
-				content: ''
-			}, {
-				title: '',
-				content: ''
-			}, )
-		}
-	}
-
-	function groupOutletItems(items, blockName) {
-		if (!items || items.length === 0) return []
-		// 危险废物不分组，其他每3个一组
-		if (blockName === '危险废物') {
-			return [items]
-		}
-		const groups = []
-		for (let i = 0; i < items.length; i += 3) {
-			groups.push(items.slice(i, i + 3))
-		}
-		return groups
-	}
-
-	function removeOutletGroup(section, groupIndex) {
-		uni.showModal({
-			title: '确认删除',
-			content: '确定要删除这组信息吗？',
-			success: (res) => {
-				if (res.confirm) {
-					section.items.splice(groupIndex * 3, 3)
 					uni.showToast({
 						title: '删除成功',
 						icon: 'success'
@@ -3470,7 +3424,7 @@
 
 		fieldworkComparison.value = comparison
 		uni.showToast({
-			title: `已生成比对清单`,
+			title: `功能开发中`,
 			icon: 'success'
 		})
 	}
@@ -3589,7 +3543,6 @@
 			})
 		}
 	}
-
 </script>
 
 <style lang="scss" scoped>
@@ -4929,7 +4882,7 @@
 		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
 		transition: background-color 0.3s;
 	}
-	
+
 	.tizidan-submit-btn_update {
 		background-color: burlywood;
 		color: #ffffff;
@@ -4940,7 +4893,7 @@
 		box-shadow: 0 2rpx 6rpx rgba(52, 152, 219, 0.3);
 		transition: background-color 0.3s;
 	}
-	
+
 	.tizidan-submit-btn:active {
 		background-color: #2980b9;
 	}
@@ -5739,6 +5692,26 @@
 			padding: 60rpx 80rpx;
 			/* 进一步增大底部内边距 */
 		}
+	}
+
+	/* ========== 搜索框样式 ========== */
+	.search-box {
+		margin-bottom: 24rpx;
+		padding: 20rpx;
+		background: #f8faf9;
+		border-radius: 12rpx;
+	}
+
+	.search-input {
+		width: 100%;
+	}
+
+	.search-result-text {
+		display: block;
+		margin-top: 12rpx;
+		font-size: 24rpx;
+		color: #166534;
+		text-align: center;
 	}
 
 	/* ========== 设施/设备卡片样式 ========== */

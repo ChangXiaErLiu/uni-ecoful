@@ -477,7 +477,6 @@ async function generateReport(options = {}) {
             task_result,
             error_message
           } = statusResult;
-          common_vendor.index.__f__("log", "at api/acceptance.js:728", `[${status}] ${progress}% - ${current_step}`);
           if (onProgress && typeof onProgress === "function") {
             onProgress(progress, current_step, status);
           }

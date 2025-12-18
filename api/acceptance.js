@@ -725,7 +725,7 @@ export async function generateReport(options = {}) {
 						error_message
 					} = statusResult
 
-					console.log(`[${status}] ${progress}% - ${current_step}`)
+					// console.log(`[${status}] ${progress}% - ${current_step}`)
 
 					// 调用进度回调
 					if (onProgress && typeof onProgress === 'function') {
