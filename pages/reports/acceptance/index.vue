@@ -2577,6 +2577,9 @@
 	const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null
 	// 获取user_id 
 	const user_id = userInfo?.id || userInfo?.user_id
+	console.log("test wilson userid",user_id)
+	console.log("test project_id",project_id)
+	
 	// 获取提资单数据 在 fetchTizidanData 函数中修改下载URL的赋值逻辑
 	async function fetchTizidanData() {
 
@@ -2584,6 +2587,7 @@
 			uni.showLoading({
 				title: '加载中...'
 			})
+			
 			const response = await new Promise((resolve, reject) => {
 				uni.request({
 					url: 'http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet',
