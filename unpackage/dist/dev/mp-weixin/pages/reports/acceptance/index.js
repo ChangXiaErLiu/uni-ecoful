@@ -25,6 +25,7 @@ const TaskProgressModal = () => "../../../components/message-pop-up/TaskProgress
 const FieldSurveyContainer = () => "../../../components/field-survey/FieldSurveyContainer.js";
 const MAX_POLLING_COUNT = 100;
 const POLLING_INTERVAL = 3e3;
+const eco_baseUrl = "http://127.0.0.1:8000";
 const _sfc_main = {
   __name: "index",
   setup(__props) {
@@ -119,7 +120,7 @@ const _sfc_main = {
           folder_name: project.folder_name
         }));
       } catch (e) {
-        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:900", "⚠️ 保存项目选择失败:", e);
+        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1236", "⚠️ 保存项目选择失败:", e);
       }
       closeProjectPicker();
       stopPolling();
@@ -133,7 +134,7 @@ const _sfc_main = {
       });
     }
     function onSearchInput(e) {
-      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:929", "搜索关键词:", projectSearchKeyword.value);
+      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1265", "搜索关键词:", projectSearchKeyword.value);
     }
     function hasProcessingFiles() {
       return projectFiles.value.some(
@@ -145,7 +146,7 @@ const _sfc_main = {
         return;
       }
       if (isPolling.value) {
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:951", "⚠️ 已在轮询中，跳过");
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1287", "⚠️ 已在轮询中，跳过");
         return;
       }
       isPolling.value = true;
@@ -156,7 +157,7 @@ const _sfc_main = {
       pollingTimer.value = setInterval(async () => {
         pollingCount.value++;
         if (pollingCount.value > MAX_POLLING_COUNT) {
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:970", "⏰ 达到最大轮询次数，停止轮询");
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1306", "⏰ 达到最大轮询次数，停止轮询");
           stopPolling();
           common_vendor.index.showToast({
             title: "文件处理超时，请手动刷新",
@@ -168,7 +169,7 @@ const _sfc_main = {
         try {
           await loadProjectFiles(projectId, true);
           if (!hasProcessingFiles()) {
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:986", "✅ 所有文件处理完成，停止轮询");
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1322", "✅ 所有文件处理完成，停止轮询");
             stopPolling();
             common_vendor.index.showToast({
               title: "文件处理完成",
@@ -181,7 +182,7 @@ const _sfc_main = {
             );
           }
         } catch (error) {
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1003", "❌ 轮询文件状态失败:", error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1339", "❌ 轮询文件状态失败:", error);
         }
       }, POLLING_INTERVAL);
     }
@@ -201,7 +202,7 @@ const _sfc_main = {
         const response = await getProjects();
         projectList.value = response || [];
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1032", "加载项目列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1368", "加载项目列表失败:", error);
         common_vendor.index.showToast({
           title: "加载项目列表失败",
           icon: "none"
@@ -237,7 +238,7 @@ const _sfc_main = {
           }
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1081", "加载项目文件失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1417", "加载项目文件失败:", error);
         if (!silent) {
           common_vendor.index.hideLoading();
           common_vendor.index.showToast({
@@ -317,7 +318,7 @@ const _sfc_main = {
         try {
           baseTable.value = JSON.parse(cachedData);
           extractionOk.value = true;
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1173", `✅ 已加载项目 ${projectId} 的缓存数据`);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1509", `✅ 已加载项目 ${projectId} 的缓存数据`);
           fieldSurveyData.extractFacilitiesFromBaseTable(projectId, baseTable.value);
           common_vendor.index.showToast({
             title: "已加载缓存数据",
@@ -325,14 +326,14 @@ const _sfc_main = {
             duration: 1500
           });
         } catch (error) {
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1184", "解析缓存数据失败:", error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1520", "解析缓存数据失败:", error);
           baseTable.value = [];
           extractionOk.value = false;
         }
       } else {
         baseTable.value = [];
         extractionOk.value = false;
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1192", `ℹ️ 项目 ${projectId} 暂无缓存数据`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1528", `ℹ️ 项目 ${projectId} 暂无缓存数据`);
       }
     }
     function clearProjectCache() {
@@ -361,7 +362,7 @@ const _sfc_main = {
             selectedProjectId.value = null;
             selectedProject.value = null;
             projectFiles.value = [];
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1232", `🗑️ 已清除项目缓存和选择`);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1568", `🗑️ 已清除项目缓存和选择`);
             common_vendor.index.showToast({
               title: "缓存已清除",
               icon: "success"
@@ -377,30 +378,30 @@ const _sfc_main = {
         if (savedProjectId) {
           const project = projectList.value.find((p) => p.id === savedProjectId);
           if (project) {
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1255", "🔄 恢复上次选择的项目:", project.name);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1591", "🔄 恢复上次选择的项目:", project.name);
             selectedProjectId.value = project.id;
             selectedProject.value = project;
             await loadProjectFiles(project.id);
             startPollingFileStatus(project.id);
             loadProjectCache(project.id);
           } else {
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1270", "⚠️ 上次选择的项目已不存在，清除缓存");
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1606", "⚠️ 上次选择的项目已不存在，清除缓存");
             common_vendor.index.removeStorageSync("acceptance_project_id");
             common_vendor.index.removeStorageSync("acceptance_project_info");
           }
         }
       } catch (e) {
-        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1276", "⚠️ 恢复项目选择失败:", e);
+        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1612", "⚠️ 恢复项目选择失败:", e);
       }
     });
     common_vendor.onUnmounted(() => {
       stopPolling();
-      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1283", "📄 页面卸载，清理轮询定时器");
+      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1619", "📄 页面卸载，清理轮询定时器");
     });
     common_vendor.watch(selectedProjectId, (newId, oldId) => {
       if (oldId && newId !== oldId) {
         stopPolling();
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1290", "🔄 切换项目，停止旧项目的轮询");
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1626", "🔄 切换项目，停止旧项目的轮询");
       }
     });
     const extracting = common_vendor.ref(false);
@@ -418,7 +419,7 @@ const _sfc_main = {
       if (progressChanged) {
         lastUpdateTime = Date.now();
         lastTargetProgress = newProgress;
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1321", `[进度真实更新] ${newProgress}% - ${statusText}`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1657", `[进度真实更新] ${newProgress}% - ${statusText}`);
       }
       if (!smoothProgressTimer) {
         smoothProgressTimer = setInterval(() => {
@@ -530,13 +531,13 @@ const _sfc_main = {
         baseTable.value = api_acceptance.transformExtractResult(result.result);
         const cacheKey = `project_base_info_${selectedProjectId.value}`;
         common_vendor.index.setStorageSync(cacheKey, JSON.stringify(baseTable.value));
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1471", `✅ 项目 ${selectedProjectId.value} 的数据已缓存`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1807", `✅ 项目 ${selectedProjectId.value} 的数据已缓存`);
         fieldSurveyData.extractFacilitiesFromPollutants(baseTable.value);
         extractionOk.value = true;
       } catch (error) {
         clearProgressTimer();
         (_b = taskProgressModal.value) == null ? void 0 : _b.close();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1485", "[Extract] 提取失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1821", "[Extract] 提取失败:", error);
         if (error.message.includes("超时") || error.message.includes("timeout")) {
           common_vendor.index.showModal({
             title: "提取超时了！",
@@ -978,26 +979,209 @@ const _sfc_main = {
         })
       });
     }
-    async function uploadTizidanFile(index) {
-      common_vendor.index.chooseFile({
-        count: 1,
-        // 只能选择一个文件
-        extension: [".doc", ".docx", ".pdf", ".xls", ".xlsx", ".png", ".jpg", ".jpeg"],
-        success: async (chooseRes) => {
-          const tempFile = chooseRes.tempFiles[0];
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2080", "选择的文件:", tempFile);
-          common_vendor.index.showModal({
-            title: "确认提交",
-            content: `您确定要提交 "${tizidanItems.value[index].text}" 并上传文件 "${tempFile.name}" 吗？`,
-            success: async (modalRes) => {
-              if (modalRes.confirm) {
-                await uploadAndSubmitFile(index, tempFile);
-              }
+    const project_id = common_vendor.index.getStorageSync("acceptance_project_id");
+    const userInfoStr = common_vendor.index.getStorageSync("userInfo");
+    const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
+    const user_id = (userInfo == null ? void 0 : userInfo.id) || (userInfo == null ? void 0 : userInfo.user_id);
+    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2414", "test userid", user_id);
+    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2415", "test project_id", project_id);
+    const tizidanItems = common_vendor.ref([]);
+    common_vendor.ref({});
+    async function toggleRequired(item) {
+      var _a;
+      if (!item || !item.record_id) {
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2441", "切换复选框失败：item或record_id不存在");
+        return;
+      }
+      try {
+        const newRequired = !item.required;
+        item.required = newRequired;
+        common_vendor.index.showLoading({
+          title: "保存中...",
+          mask: true
+        });
+        const response = await new Promise((resolve, reject) => {
+          common_vendor.index.request({
+            url: eco_baseUrl + "/api/v1/completion/tzdDetail/update_require",
+            method: "POST",
+            header: {
+              "Content-Type": "application/json"
+            },
+            data: {
+              record_id: item.record_id,
+              is_require: newRequired ? 1 : 0,
+              user_id,
+              project_id
+            },
+            success: (res) => {
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2471", "更新is_require成功:", res);
+              resolve(res);
+            },
+            fail: (err) => {
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2475", "更新is_require失败:", err);
+              reject(err);
             }
+          });
+        });
+        if (response.statusCode === 200 && response.data.success) {
+          common_vendor.index.hideLoading();
+          common_vendor.index.showToast({
+            title: newRequired ? "已标记为需要" : "已标记为不需要",
+            icon: "success",
+            duration: 1500
+          });
+        } else {
+          throw new Error(((_a = response.data) == null ? void 0 : _a.message) || "更新失败");
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2495", "切换复选框失败:", error);
+        common_vendor.index.hideLoading();
+        item.required = !item.required;
+        common_vendor.index.showToast({
+          title: `保存失败: ${error.message}`,
+          icon: "none",
+          duration: 2e3
+        });
+      }
+    }
+    function getItemsByLevel1(level1Name) {
+      return tizidanItems.value.filter((item) => item.level1_name === level1Name);
+    }
+    function hasItemsByLevel1(level1Name) {
+      return tizidanItems.value.some((item) => item.level1_name === level1Name);
+    }
+    function getSectionNumber(level1Name) {
+      const level1Names = [
+        "项目历史以来环评报告及批复",
+        "项目相关环保验收资料",
+        "（房地产项目提供）房地产相关证件",
+        "污染治理设施设计方案",
+        "厂区总平面图及各层平面图（CAD版本）",
+        "厂区排水设计图（CAD版本）",
+        "排污许可证",
+        "排水许可证",
+        "危废处置协议及相应处置资质",
+        "其他需要提供的资料"
+      ];
+      return level1Names.indexOf(level1Name) + 1;
+    }
+    function getItemNumber(item) {
+      const level1Name = item.level1_name;
+      const level2Name = item.level2_name || "";
+      if (level1Name === "项目历史以来环评报告及批复") {
+        if (level2Name.includes("环评报告"))
+          return "1-1";
+        if (level2Name.includes("批复"))
+          return "1-2";
+      } else if (level1Name === "项目相关环保验收资料") {
+        return "2";
+      } else if (level1Name === "（房地产项目提供）房地产相关证件") {
+        if (level2Name.includes("施工证"))
+          return "3-1";
+        if (level2Name.includes("规划许可证"))
+          return "3-2";
+        if (level2Name.includes("规划验收合格证"))
+          return "3-3";
+      } else {
+        return getSectionNumber(level1Name);
+      }
+      return getSectionNumber(level1Name);
+    }
+    function getItemTitle(item) {
+      if (item.level2_name && item.level2_name.trim()) {
+        return item.level2_name;
+      }
+      return item.level1_name;
+    }
+    function getItemFiles(item) {
+      const level1Name = item.level1_name;
+      const level2Name = item.level2_name || "";
+      if (level1Name === "项目历史以来环评报告及批复") {
+        if (level2Name.includes("环评报告")) {
+          return item.files1_1 || [];
+        }
+        if (level2Name.includes("批复")) {
+          return item.files1_2 || [];
+        }
+      } else if (level1Name === "（房地产项目提供）房地产相关证件") {
+        if (level2Name.includes("施工证")) {
+          return item.files3_1 || [];
+        }
+        if (level2Name.includes("规划许可证")) {
+          return item.files3_2 || [];
+        }
+        if (level2Name.includes("规划验收合格证")) {
+          return item.files3_3 || [];
+        }
+      }
+      return item.files || [];
+    }
+    function getFileKey(item) {
+      const level1Name = item.level1_name;
+      const level2Name = item.level2_name || "";
+      if (level1Name === "项目历史以来环评报告及批复") {
+        if (level2Name.includes("环评报告"))
+          return "1_1";
+        if (level2Name.includes("批复"))
+          return "1_2";
+      } else if (level1Name === "（房地产项目提供）房地产相关证件") {
+        if (level2Name.includes("施工证"))
+          return "3_1";
+        if (level2Name.includes("规划许可证"))
+          return "3_2";
+        if (level2Name.includes("规划验收合格证"))
+          return "3_3";
+      }
+      return null;
+    }
+    function getSubmittedStatus(item) {
+      const level1Name = item.level1_name;
+      const level2Name = item.level2_name || "";
+      if (level1Name === "项目历史以来环评报告及批复") {
+        if (level2Name.includes("环评报告")) {
+          return item.submitted1_1 || false;
+        }
+        if (level2Name.includes("批复")) {
+          return item.submitted1_2 || false;
+        }
+      } else if (level1Name === "（房地产项目提供）房地产相关证件") {
+        if (level2Name.includes("施工证")) {
+          return item.submitted3_1 || false;
+        }
+        if (level2Name.includes("规划许可证")) {
+          return item.submitted3_2 || false;
+        }
+        if (level2Name.includes("规划验收合格证")) {
+          return item.submitted3_3 || false;
+        }
+      }
+      return item.submitted || false;
+    }
+    async function uploadTizidanFile(recordId, subType = null) {
+      if (!recordId) {
+        common_vendor.index.showToast({
+          title: "记录ID不存在",
+          icon: "none"
+        });
+        return;
+      }
+      common_vendor.index.chooseFile({
+        count: 9,
+        extension: [".doc", ".docx", ".pdf", ".xls", ".xlsx", ".png", ".jpg", ".jpeg", ".zip", ".rar", ".dwg", ".dxf"],
+        success: async (chooseRes) => {
+          const tempFiles = chooseRes.tempFiles;
+          for (let i = 0; i < tempFiles.length; i++) {
+            await uploadSingleFile(recordId, subType, tempFiles[i]);
+          }
+          await fetchTizidanData();
+          common_vendor.index.showToast({
+            title: `已成功上传${tempFiles.length}个文件`,
+            icon: "success",
+            duration: 3e3
           });
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2095", "选择文件失败:", err);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2775", "选择文件失败:", err);
           common_vendor.index.showToast({
             title: "选择文件失败",
             icon: "none"
@@ -1005,84 +1189,73 @@ const _sfc_main = {
         }
       });
     }
-    async function uploadAndSubmitFile(index, file) {
-      common_vendor.index.showLoading({
-        title: "上传文件中...",
-        mask: true
-      });
-      try {
-        const uploadRes = await uploadFileToBackend(file, index);
-        if (uploadRes.success) {
-          tizidanItems.value[index].submitted = true;
-          common_vendor.index.showToast({
-            title: "提交成功",
-            icon: "success",
-            duration: 2e3
-          });
-          common_vendor.index.showModal({
-            title: "提交成功",
-            content: `文件 "${file.name}" 上传成功！`,
-            showCancel: false,
-            confirmText: "确定"
-          });
-        } else {
-          throw new Error(uploadRes.message || "文件上传失败");
-        }
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2137", "提交失败:", error);
+    async function deleteTizidanFile(recordId, subType, fileIndex) {
+      const item = tizidanItems.value.find((item2) => item2.record_id === recordId);
+      if (!item) {
         common_vendor.index.showToast({
-          title: "提交失败：" + error.message,
-          icon: "none",
-          duration: 3e3
+          title: "记录不存在",
+          icon: "none"
         });
-      } finally {
-        common_vendor.index.hideLoading();
+        return;
       }
-    }
-    function uploadFileToBackend(file, index) {
-      return new Promise((resolve, reject) => {
-        common_vendor.index.uploadFile({
-          url: "http://127.0.0.1:8000/api/v1/completion/tzdDetail/upload_file",
-          filePath: file.path,
-          name: "file",
-          formData: {
-            item_index: index,
-            item_text: tizidanItems.value[index].text,
-            user_id,
-            project_id
-          },
-          success: (uploadRes) => {
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2163", "文件上传响应:", uploadRes);
-            if (uploadRes.statusCode === 200) {
-              try {
-                const data = JSON.parse(uploadRes.data);
-                resolve(data);
-              } catch (e) {
-                common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2170", "解析响应失败:", e);
-                reject(new Error("服务器响应格式错误"));
-              }
-            } else {
-              reject(new Error(`上传失败，状态码：${uploadRes.statusCode}`));
-            }
-          },
-          fail: (err) => {
-            common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2178", "上传请求失败:", err);
-            reject(new Error("网络请求失败"));
-          }
+      const files = getItemFiles(item);
+      if (fileIndex >= files.length) {
+        common_vendor.index.showToast({
+          title: "文件不存在",
+          icon: "none"
         });
+        return;
+      }
+      const fileName = files[fileIndex].name;
+      common_vendor.index.showModal({
+        title: "确认删除",
+        content: `确定要删除文件 "${fileName}" 吗？删除后不可恢复。`,
+        success: async (res) => {
+          var _a;
+          if (res.confirm) {
+            common_vendor.index.showLoading({
+              title: "删除中..."
+            });
+            try {
+              const response = await new Promise((resolve, reject) => {
+                common_vendor.index.request({
+                  url: eco_baseUrl + "/api/v1/completion/tzdDetail/delete_file_by_id",
+                  method: "POST",
+                  header: {
+                    "Content-Type": "application/json"
+                  },
+                  data: {
+                    record_id: recordId,
+                    file_name: fileName,
+                    user_id,
+                    project_id
+                  },
+                  success: (res2) => resolve(res2),
+                  fail: (err) => reject(err)
+                });
+              });
+              if (response.statusCode === 200 && response.data.success) {
+                await fetchTizidanData();
+                common_vendor.index.showToast({
+                  title: "文件删除成功",
+                  icon: "success"
+                });
+              } else {
+                throw new Error(((_a = response.data) == null ? void 0 : _a.message) || "删除失败");
+              }
+            } catch (error) {
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2849", "删除文件失败:", error);
+              common_vendor.index.showToast({
+                title: `删除失败: ${error.message}`,
+                icon: "none"
+              });
+            } finally {
+              common_vendor.index.hideLoading();
+            }
+          }
+        }
       });
     }
-    const tizidanItems = common_vendor.ref([]);
-    const downloadUrls = common_vendor.ref({
-      TiZiDan_Doc: "",
-      comparison_list: ""
-    });
-    const project_id = common_vendor.index.getStorageSync("acceptance_project_id");
-    const userInfoStr = common_vendor.index.getStorageSync("userInfo");
-    const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-    const user_id = (userInfo == null ? void 0 : userInfo.id) || (userInfo == null ? void 0 : userInfo.user_id);
-    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2200", "test wilson userid", user_id);
-    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2201", "test project_id", project_id);
     async function fetchTizidanData() {
       try {
         common_vendor.index.showLoading({
@@ -1090,19 +1263,18 @@ const _sfc_main = {
         });
         const response = await new Promise((resolve, reject) => {
           common_vendor.index.request({
-            url: "http://127.0.0.1:8000/api/v1/completion/tzdDetail/datasheet",
+            url: eco_baseUrl + "/api/v1/completion/tzdDetail/datasheet",
             method: "GET",
-            timeout: 1e3,
             data: {
               user_id,
               project_id
             },
             success: (res) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2221", "请求成功:", res);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2878", "请求成功:", res);
               resolve(res);
             },
             fail: (err) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2225", "请求失败:", err);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2882", "请求失败:", err);
               reject(err);
             }
           });
@@ -1113,13 +1285,7 @@ const _sfc_main = {
             throw new Error("数据格式不正确: items 不存在或不是数组");
           }
           tizidanItems.value = data.items;
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2239", "test", data.download_urls);
-          const downloadUrlsData = data.download_urls || {};
-          downloadUrls.value = {
-            TiZiDan_Doc: formatDownloadUrl(downloadUrlsData.TiZiDan_Doc),
-            comparison_list: formatDownloadUrl(downloadUrlsData.comparison_list)
-          };
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2249", "下载URL设置:", downloadUrls.value);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2898", "提资单数据加载完成:", tizidanItems.value);
           common_vendor.index.showToast({
             title: "数据加载成功",
             icon: "success"
@@ -1128,21 +1294,149 @@ const _sfc_main = {
           throw new Error(`请求失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2259", "获取提资单数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2908", "获取提资单数据失败:", error);
         common_vendor.index.showToast({
           title: "加载失败，请重新刷新！",
           icon: "none",
           duration: 3e3
         });
         tizidanItems.value = [];
-        downloadUrls.value = {
-          TiZiDan_Doc: "",
-          comparison_list: ""
-        };
       } finally {
         common_vendor.index.hideLoading();
       }
     }
+    async function uploadSingleFile(recordId, subType, file) {
+      common_vendor.index.showLoading({
+        title: "上传文件中...",
+        mask: true
+      });
+      try {
+        const response = await new Promise((resolve, reject) => {
+          common_vendor.index.uploadFile({
+            url: eco_baseUrl + "/api/v1/completion/tzdDetail/upload_file_by_id",
+            filePath: file.path,
+            name: "file",
+            formData: {
+              record_id: recordId,
+              user_id,
+              project_id
+            },
+            success: (uploadRes) => {
+              if (uploadRes.statusCode === 200) {
+                try {
+                  const data = JSON.parse(uploadRes.data);
+                  resolve(data);
+                } catch (e) {
+                  reject(new Error("解析响应失败"));
+                }
+              } else {
+                reject(new Error(`上传失败，状态码：${uploadRes.statusCode}`));
+              }
+            },
+            fail: (err) => {
+              reject(new Error("网络请求失败"));
+            }
+          });
+        });
+        if (!response.success) {
+          throw new Error(response.message || "文件上传失败");
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2963", `文件上传失败:`, error);
+        common_vendor.index.showToast({
+          title: `文件上传失败: ${error.message}`,
+          icon: "none",
+          duration: 3e3
+        });
+      } finally {
+        common_vendor.index.hideLoading();
+      }
+    }
+    async function submitOtherMaterials(recordId) {
+      const itemIndex = tizidanItems.value.findIndex((item2) => item2.record_id === recordId);
+      if (itemIndex === -1) {
+        common_vendor.index.showToast({
+          title: "项目不存在",
+          icon: "none"
+        });
+        return;
+      }
+      const item = tizidanItems.value[itemIndex];
+      const memoContent = item.customText || "";
+      if (!memoContent.trim()) {
+        common_vendor.index.showToast({
+          title: "请输入其他需要提供的资料",
+          icon: "none"
+        });
+        return;
+      }
+      common_vendor.index.showLoading({
+        title: "提交中...",
+        mask: true
+      });
+      try {
+        const response = await new Promise((resolve, reject) => {
+          common_vendor.index.request({
+            url: eco_baseUrl + "/api/v1/completion/tzdDetail/update_memo",
+            method: "POST",
+            header: {
+              "Content-Type": "application/json"
+            },
+            data: {
+              record_id: recordId,
+              memo: memoContent,
+              user_id,
+              project_id
+            },
+            success: (res) => resolve(res),
+            fail: (err) => reject(err)
+          });
+        });
+        if (response.statusCode === 200) {
+          const data = response.data;
+          if (data.success) {
+            item.submitted = true;
+            item.memo = memoContent;
+            common_vendor.index.showToast({
+              title: "提交成功",
+              icon: "success",
+              duration: 2e3
+            });
+            setTimeout(() => {
+              fetchTizidanData();
+            }, 1e3);
+          } else {
+            throw new Error(data.message || "提交失败");
+          }
+        } else if (response.statusCode === 422) {
+          const errorData = response.data || {};
+          let errorMsg = "提交失败: 数据格式错误";
+          if (errorData.detail) {
+            if (Array.isArray(errorData.detail)) {
+              errorMsg = errorData.detail.map((d) => d.msg).join("; ");
+            } else if (typeof errorData.detail === "string") {
+              errorMsg = errorData.detail;
+            }
+          }
+          throw new Error(errorMsg);
+        } else {
+          throw new Error(`服务器错误: ${response.statusCode}`);
+        }
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3060", "提交失败:", error);
+        common_vendor.index.showToast({
+          title: `提交失败: ${error.message}`,
+          icon: "none",
+          duration: 3e3
+        });
+      } finally {
+        common_vendor.index.hideLoading();
+      }
+    }
+    common_vendor.ref({
+      TiZiDan_Doc: "",
+      comparison_list: ""
+    });
     async function downloadTizidanFile() {
       if (!selectedProjectId.value) {
         common_vendor.index.showToast({
@@ -1156,7 +1450,7 @@ const _sfc_main = {
         mask: true
       });
       try {
-        const url = `http://127.0.0.1:8000/api/v1/completion/tzdDetail/download_tzd_doc?user_id=${user_id}&project_id=${project_id}`;
+        const url = eco_baseUrl + `/api/v1/completion/tzdDetail/download_tzd_doc?user_id=${user_id}&project_id=${project_id}`;
         const downloadTask = common_vendor.index.downloadFile({
           url,
           success: (res) => {
@@ -1165,14 +1459,14 @@ const _sfc_main = {
               common_vendor.index.saveFile({
                 tempFilePath: filePath,
                 success: (saveRes) => {
-                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2313", "文件保存成功:", saveRes.savedFilePath);
+                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:3132", "文件保存成功:", saveRes.savedFilePath);
                   common_vendor.index.showToast({
                     title: "文件已保存",
                     icon: "success"
                   });
                 },
                 fail: (saveErr) => {
-                  common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2320", "保存文件失败:", saveErr);
+                  common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3139", "保存文件失败:", saveErr);
                   common_vendor.index.showToast({
                     title: "保存失败",
                     icon: "none"
@@ -1192,7 +1486,7 @@ const _sfc_main = {
           icon: "success"
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2363", "下载失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3182", "下载失败:", error);
         common_vendor.index.showToast({
           title: "下载失败: " + (error.message || "未知错误"),
           icon: "none",
@@ -1201,17 +1495,6 @@ const _sfc_main = {
       } finally {
         common_vendor.index.hideLoading();
       }
-    }
-    function formatDownloadUrl(url) {
-      if (!url)
-        return "";
-      if (url.startsWith("/")) {
-        return `http://127.0.0.1:8000${url}`;
-      }
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        return url;
-      }
-      return url;
     }
     common_vendor.watch(currentStep, (newVal) => {
       if (newVal === 2) {
@@ -1333,7 +1616,7 @@ ${head}${tail}`;
       } catch (e) {
         clearProgressTimer();
         (_c = taskProgressModal.value) == null ? void 0 : _c.close();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2661", "生成报告失败", e, (_d = e.response) == null ? void 0 : _d.data);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3480", "生成报告失败", e, (_d = e.response) == null ? void 0 : _d.data);
         let msg = e.message || "请稍后重试";
         if (Array.isArray((_f = (_e = e.response) == null ? void 0 : _e.data) == null ? void 0 : _f.detail)) {
           msg = e.response.data.detail.map((d) => d.msg).join("；");
@@ -1730,56 +2013,367 @@ ${head}${tail}`;
         })
       } : {}, {
         ai: currentStep.value === 1,
-        aj: tizidanItems.value.length === 0
+        aj: common_vendor.p({
+          type: "list",
+          size: "20",
+          color: "#166534"
+        }),
+        ak: tizidanItems.value.length === 0
       }, tizidanItems.value.length === 0 ? {
-        ak: common_vendor.p({
+        al: common_vendor.p({
           type: "refresh",
           size: "48",
           color: "#cbd5e1"
         }),
-        al: common_vendor.p({
+        am: common_vendor.p({
           type: "refresh",
           size: "16",
           color: "#ffffff"
         }),
-        am: common_vendor.o(fetchTizidanData)
-      } : {
-        an: common_vendor.f(tizidanItems.value, (item, index, i0) => {
+        an: common_vendor.o(fetchTizidanData)
+      } : common_vendor.e({
+        ao: common_vendor.f(getItemsByLevel1("项目历史以来环评报告及批复"), (item, k0, i0) => {
           return common_vendor.e({
-            a: common_vendor.t(index + 1),
-            b: common_vendor.t(item.text),
-            c: common_vendor.t(item.submitted ? "已提交" : "未提交"),
-            d: common_vendor.n(item.submitted ? "tizidan-submitted" : "tizidan-unsubmitted"),
-            e: !item.submitted
-          }, !item.submitted ? {
-            f: common_vendor.o(($event) => uploadTizidanFile(index), index)
+            a: common_vendor.t(getItemNumber(item)),
+            b: common_vendor.t(getItemTitle(item)),
+            c: item.required,
+            d: common_vendor.o(() => toggleRequired(item), item.record_id),
+            e: item.required
+          }, item.required ? common_vendor.e({
+            f: getItemFiles(item).length > 0
+          }, getItemFiles(item).length > 0 ? {
+            g: "41308e16-32-" + i0 + ",41308e16-0",
+            h: common_vendor.p({
+              type: "paperclip",
+              size: "14",
+              color: "#166534"
+            }),
+            i: common_vendor.t(getItemFiles(item).length)
           } : {}, {
-            g: item.submitted
-          }, item.submitted ? {
-            h: common_vendor.o(($event) => uploadTizidanFile(index), index)
+            j: "41308e16-33-" + i0 + ",41308e16-0",
+            k: common_vendor.p({
+              type: "cloud-upload",
+              size: "14",
+              color: "#ffffff"
+            }),
+            l: common_vendor.t(item.submitted ? "重新上传" : "上传"),
+            m: common_vendor.o(($event) => uploadTizidanFile(item.record_id, getFileKey(item)), item.record_id),
+            n: getItemFiles(item).length > 0
+          }, getItemFiles(item).length > 0 ? {
+            o: common_vendor.f(getItemFiles(item), (file, fileIndex, i1) => {
+              return {
+                a: "41308e16-34-" + i0 + "-" + i1 + ",41308e16-0",
+                b: common_vendor.t(file.name),
+                c: common_vendor.t(formatFileSize(file.size)),
+                d: "41308e16-35-" + i0 + "-" + i1 + ",41308e16-0",
+                e: common_vendor.o(($event) => deleteTizidanFile(item.record_id, getFileKey(item), fileIndex), fileIndex),
+                f: fileIndex
+              };
+            }),
+            p: common_vendor.p({
+              type: "paperclip",
+              size: "16",
+              color: "#166534"
+            }),
+            q: common_vendor.p({
+              type: "trash",
+              size: "16",
+              color: "#dc2626"
+            })
+          } : {}) : {
+            r: "41308e16-36-" + i0 + ",41308e16-0",
+            s: common_vendor.p({
+              type: "minus-circle",
+              size: "18",
+              color: "#9ca3af"
+            })
+          }, {
+            t: item.record_id
+          });
+        }),
+        ap: common_vendor.f(getItemsByLevel1("项目相关环保验收资料"), (item, k0, i0) => {
+          return common_vendor.e({
+            a: common_vendor.t(getItemNumber(item)),
+            b: common_vendor.t(getItemTitle(item)),
+            c: item.required,
+            d: common_vendor.o(() => toggleRequired(item), item.record_id),
+            e: item.required
+          }, item.required ? common_vendor.e({
+            f: item.files && item.files.length > 0
+          }, item.files && item.files.length > 0 ? {
+            g: "41308e16-37-" + i0 + ",41308e16-0",
+            h: common_vendor.p({
+              type: "paperclip",
+              size: "14",
+              color: "#166534"
+            }),
+            i: common_vendor.t(item.files.length)
           } : {}, {
-            i: index
+            j: "41308e16-38-" + i0 + ",41308e16-0",
+            k: common_vendor.p({
+              type: "cloud-upload",
+              size: "14",
+              color: "#ffffff"
+            }),
+            l: common_vendor.t(item.submitted ? "重新上传" : "上传"),
+            m: common_vendor.o(($event) => uploadTizidanFile(item.record_id, null), item.record_id),
+            n: item.files && item.files.length > 0
+          }, item.files && item.files.length > 0 ? {
+            o: common_vendor.f(item.files, (file, fileIndex, i1) => {
+              return {
+                a: "41308e16-39-" + i0 + "-" + i1 + ",41308e16-0",
+                b: common_vendor.t(file.name),
+                c: common_vendor.t(formatFileSize(file.size)),
+                d: "41308e16-40-" + i0 + "-" + i1 + ",41308e16-0",
+                e: common_vendor.o(($event) => deleteTizidanFile(item.record_id, null, fileIndex), fileIndex),
+                f: fileIndex
+              };
+            }),
+            p: common_vendor.p({
+              type: "paperclip",
+              size: "16",
+              color: "#166534"
+            }),
+            q: common_vendor.p({
+              type: "trash",
+              size: "16",
+              color: "#dc2626"
+            })
+          } : {}) : {
+            r: "41308e16-41-" + i0 + ",41308e16-0",
+            s: common_vendor.p({
+              type: "minus-circle",
+              size: "18",
+              color: "#9ca3af"
+            })
+          }, {
+            t: item.record_id
+          });
+        }),
+        aq: common_vendor.f(getItemsByLevel1("（房地产项目提供）房地产相关证件"), (item, k0, i0) => {
+          return common_vendor.e({
+            a: common_vendor.t(getItemNumber(item)),
+            b: common_vendor.t(getItemTitle(item)),
+            c: item.required,
+            d: common_vendor.o(() => toggleRequired(item), item.record_id),
+            e: item.required
+          }, item.required ? common_vendor.e({
+            f: getItemFiles(item).length > 0
+          }, getItemFiles(item).length > 0 ? {
+            g: "41308e16-42-" + i0 + ",41308e16-0",
+            h: common_vendor.p({
+              type: "paperclip",
+              size: "14",
+              color: "#166534"
+            }),
+            i: common_vendor.t(getItemFiles(item).length)
+          } : {}, {
+            j: "41308e16-43-" + i0 + ",41308e16-0",
+            k: common_vendor.p({
+              type: "cloud-upload",
+              size: "14",
+              color: "#ffffff"
+            }),
+            l: common_vendor.t(getSubmittedStatus(item) ? "重新上传" : "上传"),
+            m: common_vendor.o(($event) => uploadTizidanFile(item.record_id, getFileKey(item)), item.record_id),
+            n: getItemFiles(item).length > 0
+          }, getItemFiles(item).length > 0 ? {
+            o: common_vendor.f(getItemFiles(item), (file, fileIndex, i1) => {
+              return {
+                a: "41308e16-44-" + i0 + "-" + i1 + ",41308e16-0",
+                b: common_vendor.t(file.name),
+                c: common_vendor.t(formatFileSize(file.size)),
+                d: "41308e16-45-" + i0 + "-" + i1 + ",41308e16-0",
+                e: common_vendor.o(($event) => deleteTizidanFile(item.record_id, getFileKey(item), fileIndex), fileIndex),
+                f: fileIndex
+              };
+            }),
+            p: common_vendor.p({
+              type: "paperclip",
+              size: "16",
+              color: "#166534"
+            }),
+            q: common_vendor.p({
+              type: "trash",
+              size: "16",
+              color: "#dc2626"
+            })
+          } : {}) : {
+            r: "41308e16-46-" + i0 + ",41308e16-0",
+            s: common_vendor.p({
+              type: "minus-circle",
+              size: "18",
+              color: "#9ca3af"
+            })
+          }, {
+            t: item.record_id
+          });
+        }),
+        ar: common_vendor.f(["污染治理设施设计方案", "厂区总平面图及各层平面图（CAD版本）", "厂区排水设计图（CAD版本）", "排污许可证", "排水许可证", "危废处置协议及相应处置资质"], (level1Name, k0, i0) => {
+          return common_vendor.e({
+            a: hasItemsByLevel1(level1Name)
+          }, hasItemsByLevel1(level1Name) ? {
+            b: common_vendor.t(getSectionNumber(level1Name)),
+            c: common_vendor.t(level1Name),
+            d: common_vendor.f(getItemsByLevel1(level1Name), (item, k1, i1) => {
+              return common_vendor.e({
+                a: common_vendor.t(getItemNumber(item)),
+                b: common_vendor.t(getItemTitle(item)),
+                c: item.required,
+                d: common_vendor.o(() => toggleRequired(item), item.record_id),
+                e: item.required
+              }, item.required ? common_vendor.e({
+                f: item.files && item.files.length > 0
+              }, item.files && item.files.length > 0 ? {
+                g: "41308e16-47-" + i0 + "-" + i1 + ",41308e16-0",
+                h: common_vendor.p({
+                  type: "paperclip",
+                  size: "14",
+                  color: "#166534"
+                }),
+                i: common_vendor.t(item.files.length)
+              } : {}, {
+                j: "41308e16-48-" + i0 + "-" + i1 + ",41308e16-0",
+                k: common_vendor.p({
+                  type: "cloud-upload",
+                  size: "14",
+                  color: "#ffffff"
+                }),
+                l: common_vendor.t(item.submitted ? "重新上传" : "上传"),
+                m: common_vendor.o(($event) => uploadTizidanFile(item.record_id, null), item.record_id),
+                n: item.files && item.files.length > 0
+              }, item.files && item.files.length > 0 ? {
+                o: common_vendor.f(item.files, (file, fileIndex, i2) => {
+                  return {
+                    a: "41308e16-49-" + i0 + "-" + i1 + "-" + i2 + ",41308e16-0",
+                    b: common_vendor.t(file.name),
+                    c: common_vendor.t(formatFileSize(file.size)),
+                    d: "41308e16-50-" + i0 + "-" + i1 + "-" + i2 + ",41308e16-0",
+                    e: common_vendor.o(($event) => deleteTizidanFile(item.record_id, null, fileIndex), fileIndex),
+                    f: fileIndex
+                  };
+                }),
+                p: common_vendor.p({
+                  type: "paperclip",
+                  size: "16",
+                  color: "#166534"
+                }),
+                q: common_vendor.p({
+                  type: "trash",
+                  size: "16",
+                  color: "#dc2626"
+                })
+              } : {}) : {
+                r: "41308e16-51-" + i0 + "-" + i1 + ",41308e16-0",
+                s: common_vendor.p({
+                  type: "minus-circle",
+                  size: "18",
+                  color: "#9ca3af"
+                })
+              }, {
+                t: item.record_id
+              });
+            })
+          } : {}, {
+            e: level1Name
+          });
+        }),
+        as: hasItemsByLevel1("其他需要提供的资料")
+      }, hasItemsByLevel1("其他需要提供的资料") ? {
+        at: common_vendor.f(getItemsByLevel1("其他需要提供的资料"), (item, k0, i0) => {
+          return common_vendor.e({
+            a: common_vendor.t(getItemNumber(item)),
+            b: common_vendor.t(getItemTitle(item)),
+            c: item.required,
+            d: common_vendor.o(() => toggleRequired(item), item.record_id),
+            e: item.required
+          }, item.required ? common_vendor.e({
+            f: "41308e16-52-" + i0 + ",41308e16-0",
+            g: common_vendor.o(($event) => item.customText = $event, item.record_id),
+            h: common_vendor.p({
+              placeholder: "请输入其他需要提供的资料（以防万一以上资料不满足特殊项目要求）",
+              type: "textarea",
+              maxlength: 500,
+              clearable: true,
+              autoHeight: true,
+              modelValue: item.customText
+            }),
+            i: common_vendor.o(($event) => submitOtherMaterials(item.record_id), item.record_id),
+            j: item.files && item.files.length > 0
+          }, item.files && item.files.length > 0 ? {
+            k: "41308e16-53-" + i0 + ",41308e16-0",
+            l: common_vendor.p({
+              type: "paperclip",
+              size: "14",
+              color: "#166534"
+            }),
+            m: common_vendor.t(item.files.length)
+          } : {}, {
+            n: "41308e16-54-" + i0 + ",41308e16-0",
+            o: common_vendor.p({
+              type: "cloud-upload",
+              size: "14",
+              color: "#ffffff"
+            }),
+            p: common_vendor.t(item.submitted ? "重新上传" : "上传"),
+            q: common_vendor.o(($event) => uploadTizidanFile(item.record_id, null), item.record_id),
+            r: item.files && item.files.length > 0
+          }, item.files && item.files.length > 0 ? {
+            s: common_vendor.f(item.files, (file, fileIndex, i1) => {
+              return {
+                a: "41308e16-55-" + i0 + "-" + i1 + ",41308e16-0",
+                b: common_vendor.t(file.name),
+                c: common_vendor.t(formatFileSize(file.size)),
+                d: "41308e16-56-" + i0 + "-" + i1 + ",41308e16-0",
+                e: common_vendor.o(($event) => deleteTizidanFile(item.record_id, null, fileIndex), fileIndex),
+                f: fileIndex
+              };
+            }),
+            t: common_vendor.p({
+              type: "paperclip",
+              size: "16",
+              color: "#166534"
+            }),
+            v: common_vendor.p({
+              type: "trash",
+              size: "16",
+              color: "#dc2626"
+            })
+          } : {}) : {
+            w: "41308e16-57-" + i0 + ",41308e16-0",
+            x: common_vendor.p({
+              type: "minus-circle",
+              size: "18",
+              color: "#9ca3af"
+            })
+          }, {
+            y: item.record_id
           });
         })
-      }, {
-        ao: common_vendor.o(downloadTizidanFile),
-        ap: !selectedProjectId.value,
-        aq: currentStep.value === 2,
-        ar: common_vendor.o(generateSignboard),
-        as: common_vendor.p({
+      } : {}), {
+        av: common_vendor.p({
+          type: "download-filled",
+          size: "16",
+          color: "#ffffff"
+        }),
+        aw: common_vendor.o(downloadTizidanFile),
+        ax: !selectedProjectId.value,
+        ay: currentStep.value === 2,
+        az: common_vendor.o(generateSignboard),
+        aA: common_vendor.p({
           userId: common_vendor.unref(user_id),
           projectId: common_vendor.unref(project_id),
           signboard,
           baseTable: baseTable.value,
           datasheet: datasheet.value
         }),
-        at: currentStep.value === 3,
-        av: common_vendor.p({
+        aB: currentStep.value === 3,
+        aC: common_vendor.p({
           type: "calendar",
           size: "20",
           color: "#166534"
         }),
-        aw: common_vendor.f(reportTypes, (type, k0, i0) => {
+        aD: common_vendor.f(reportTypes, (type, k0, i0) => {
           return {
             a: type.value,
             b: reportType.value === type.value,
@@ -1787,103 +2381,103 @@ ${head}${tail}`;
             d: type.value
           };
         }),
-        ax: common_vendor.o(onReportTypeChange),
-        ay: reportType.value === "withData"
+        aE: common_vendor.o(onReportTypeChange),
+        aF: reportType.value === "withData"
       }, reportType.value === "withData" ? {
-        az: common_vendor.o(($event) => testReportFiles.value = $event),
-        aA: common_vendor.p({
+        aG: common_vendor.o(($event) => testReportFiles.value = $event),
+        aH: common_vendor.p({
           fileMediatype: "all",
           ["auto-upload"]: false,
           limit: 3,
           modelValue: testReportFiles.value
         })
       } : {}, {
-        aB: common_vendor.p({
+        aI: common_vendor.p({
           type: "refresh-filled",
           size: "16",
           color: "#ffffff"
         }),
-        aC: common_vendor.o(generateAcceptanceReport),
-        aD: canDownloadReport.value
+        aJ: common_vendor.o(generateAcceptanceReport),
+        aK: canDownloadReport.value
       }, canDownloadReport.value ? {
-        aE: common_vendor.p({
+        aL: common_vendor.p({
           type: "cloud-download-filled",
           size: "16",
           color: "#ffffff"
         }),
-        aF: common_vendor.o(downAcceptanceReport)
+        aM: common_vendor.o(downAcceptanceReport)
       } : {}, {
-        aG: reportGenerated.value
+        aN: reportGenerated.value
       }, reportGenerated.value ? common_vendor.e({
-        aH: common_vendor.p({
+        aO: common_vendor.p({
           type: "checkmarkempty",
           size: "18",
           color: "#166534"
         }),
-        aI: common_vendor.t(previewTitle.value),
-        aJ: reportType.value === "withData"
+        aP: common_vendor.t(previewTitle.value),
+        aQ: reportType.value === "withData"
       }, reportType.value === "withData" ? {} : {}) : {}, {
-        aK: currentStep.value === 4,
-        aL: common_vendor.p({
+        aR: currentStep.value === 4,
+        aS: common_vendor.p({
           type: "left",
           size: "16",
           color: "#5b6b7b"
         }),
-        aM: currentStep.value === 0,
-        aN: common_vendor.o(prevStep),
-        aO: common_vendor.p({
+        aT: currentStep.value === 0,
+        aU: common_vendor.o(prevStep),
+        aV: common_vendor.p({
           type: "right",
           size: "16",
           color: "#ffffff"
         }),
-        aP: currentStep.value === stepNames.length - 1,
-        aQ: common_vendor.o(nextStep),
-        aR: common_vendor.p({
+        aW: currentStep.value === stepNames.length - 1,
+        aX: common_vendor.o(nextStep),
+        aY: common_vendor.p({
           current: "pages/reports/acceptance/index"
         }),
-        aS: common_vendor.o(($event) => newBaseInfoLabel.value = $event),
-        aT: common_vendor.p({
+        aZ: common_vendor.o(($event) => newBaseInfoLabel.value = $event),
+        ba: common_vendor.p({
           placeholder: "如：项目名称/单位名称",
           modelValue: newBaseInfoLabel.value
         }),
-        aU: common_vendor.o(closeBaseInfo),
-        aV: common_vendor.o(confirmAddBaseInfo),
-        aW: common_vendor.sr(newBaseInfoPopup, "41308e16-39", {
+        bb: common_vendor.o(closeBaseInfo),
+        bc: common_vendor.o(confirmAddBaseInfo),
+        bd: common_vendor.sr(newBaseInfoPopup, "41308e16-67", {
           "k": "newBaseInfoPopup"
         }),
-        aX: common_vendor.p({
+        be: common_vendor.p({
           type: "center"
         }),
-        aY: common_vendor.sr(taskProgressModal, "41308e16-41", {
+        bf: common_vendor.sr(taskProgressModal, "41308e16-69", {
           "k": "taskProgressModal"
         }),
-        aZ: common_vendor.p({
+        bg: common_vendor.p({
           title: taskProgressTitle.value,
           progress: taskProgress.value,
           statusText: taskStatusText.value,
           state: taskState.value,
           cancelable: false
         }),
-        ba: common_vendor.p({
+        bh: common_vendor.p({
           type: "close",
           size: "20",
           color: "#6b7280"
         }),
-        bb: common_vendor.o(closeProjectPicker),
-        bc: common_vendor.o(onSearchInput),
-        bd: common_vendor.o(($event) => projectSearchKeyword.value = $event),
-        be: common_vendor.p({
+        bi: common_vendor.o(closeProjectPicker),
+        bj: common_vendor.o(onSearchInput),
+        bk: common_vendor.o(($event) => projectSearchKeyword.value = $event),
+        bl: common_vendor.p({
           placeholder: "搜索项目名称...",
           prefixIcon: "search",
           clearable: true,
           modelValue: projectSearchKeyword.value
         }),
-        bf: common_vendor.t(filteredProjects.value.length),
-        bg: projectSearchKeyword.value
+        bm: common_vendor.t(filteredProjects.value.length),
+        bn: projectSearchKeyword.value
       }, projectSearchKeyword.value ? {} : {}, {
-        bh: common_vendor.f(filteredProjects.value, (project, k0, i0) => {
+        bo: common_vendor.f(filteredProjects.value, (project, k0, i0) => {
           return common_vendor.e({
-            a: "41308e16-45-" + i0 + ",41308e16-42",
+            a: "41308e16-73-" + i0 + ",41308e16-70",
             b: common_vendor.p({
               type: "folder",
               size: "22",
@@ -1896,7 +2490,7 @@ ${head}${tail}`;
           } : {}, {
             f: project.folder_name
           }, project.folder_name ? {
-            g: "41308e16-46-" + i0 + ",41308e16-42",
+            g: "41308e16-74-" + i0 + ",41308e16-70",
             h: common_vendor.p({
               type: "calendar",
               size: "14",
@@ -1906,14 +2500,14 @@ ${head}${tail}`;
           } : {}, {
             j: selectedProjectId.value === project.id
           }, selectedProjectId.value === project.id ? {
-            k: "41308e16-47-" + i0 + ",41308e16-42",
+            k: "41308e16-75-" + i0 + ",41308e16-70",
             l: common_vendor.p({
               type: "checkmarkempty",
               size: "18",
               color: "#ffffff"
             })
           } : {
-            m: "41308e16-48-" + i0 + ",41308e16-42",
+            m: "41308e16-76-" + i0 + ",41308e16-70",
             n: common_vendor.p({
               type: "right",
               size: "16",
@@ -1925,20 +2519,20 @@ ${head}${tail}`;
             q: common_vendor.o(($event) => selectProject(project), project.id)
           });
         }),
-        bi: filteredProjects.value.length === 0
+        bp: filteredProjects.value.length === 0
       }, filteredProjects.value.length === 0 ? common_vendor.e({
-        bj: common_vendor.p({
+        bq: common_vendor.p({
           type: "search",
           size: "48",
           color: "#cbd5e1"
         }),
-        bk: common_vendor.t(projectSearchKeyword.value ? "未找到匹配的项目" : "暂无项目"),
-        bl: projectSearchKeyword.value
+        br: common_vendor.t(projectSearchKeyword.value ? "未找到匹配的项目" : "暂无项目"),
+        bs: projectSearchKeyword.value
       }, projectSearchKeyword.value ? {} : {}) : {}, {
-        bm: common_vendor.sr(projectPickerPopup, "41308e16-42", {
+        bt: common_vendor.sr(projectPickerPopup, "41308e16-70", {
           "k": "projectPickerPopup"
         }),
-        bn: common_vendor.p({
+        bv: common_vendor.p({
           type: "center",
           ["mask-click"]: true
         })
