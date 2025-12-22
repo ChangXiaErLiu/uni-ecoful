@@ -14,18 +14,6 @@
 	// 2. 把 userInfo 读进内存
 	userStore.initUserInfo()
 
-	// 应用生命周期中记录关键节点，后续可接入埋点
-	// onLaunch(() => {
-	//   console.log('应用启动')
-	// })
-
-	// onShow(() => {
-	//   console.log('应用进入前台')
-	// })
-
-	// onHide(() => {
-	//   console.log('应用进入后台')
-	// })
 </script>
 
 <style lang="scss">

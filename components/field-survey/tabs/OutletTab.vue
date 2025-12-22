@@ -2,58 +2,190 @@
 	<view class="outlet-tab">
 		<view class="section-card">
 			<view class="section-header">
-				<uni-icons type="water" size="20" color="#166534" />
-				<text class="section-title">排污口情况</text>
+				<view class="header-left">
+					<uni-icons type="map" size="20" color="#166534" />
+					<text class="section-title">排污口情况</text>
+				</view>
+				<text class="record-count">共 {{ filteredTotalCount }} 个排污口</text>
 			</view>
+
 			<view class="section-body">
-				<view class="section-actions">
-					<button class="btn btn--primary" @tap="handleShowSignboard">
-						<uni-icons type="eye-filled" size="16" color="#ffffff" />
-						<text>排污口信息</text>
+				<!-- 操作栏 -->
+				<view class="action-bar">
+					<button class="btn btn-extract" @tap="handleExtractOutlets">
+						<uni-icons type="download" size="18" color="#ffffff" />
+						<text>从项目信息提取</text>
 					</button>
 				</view>
 
-				<!-- 排污口标识牌信息列表 -->
-				<view v-if="showSignboard && signboard" class="data-table">
-					<view class="table-body">
-						<template v-for="(sec, si) in signboard.sections" :key="'s'+si">
-							<view class="table-row table-row--simple">
-								<text class="table-td table-td--section">{{ sec.block }}</text>
-								<!-- 只有噪声才可以新增 -->
-								<button v-if="sec.block == '噪声'" class="pw-ico icon-btn" @tap="() => handleAddSignItem(si)">
-									<uni-icons type="plus" size="16" color="#166534" />
-									<text>新增</text>
+				<!-- 搜索栏 -->
+				<view v-if="totalOutletCount > 0" class="search-bar">
+					<uni-easyinput v-model="searchKeyword" placeholder="搜索排污口编号或名称..." prefixIcon="search"
+						:clearable="true" @input="onSearchInput" class="search-input" />
+					<text v-if="searchKeyword" class="search-result">
+						找到 {{ filteredTotalCount }} 个排污口
+					</text>
+				</view>
+				<!-- 废水排污口 -->
+				<view class="outlet-category">
+					<view class="category-header">
+						<view class="category-title">
+							<uni-icons type="map" size="18" color="#0ea5e9" />
+							<text class="category-name">废水排污口</text>
+							<text class="category-count">{{ filteredWastewaterOutlets.length }}</text>
+						</view>
+						<button class="btn-add-outlet" @tap="handleAddOutlet('wastewater')">
+							<uni-icons type="plus" size="16" color="#0ea5e9" />
+							<text>新增</text>
+						</button>
+					</view>
+
+					<view v-if="filteredWastewaterOutlets.length" class="outlet-list">
+						<view v-for="(outlet, index) in filteredWastewaterOutlets" :key="outlet.id" class="outlet-card">
+							<view class="outlet-card-header">
+								<view class="outlet-number">
+									<uni-icons type="flag" size="16" color="#0ea5e9" />
+									<text>{{ outlet.code }}</text>
+								</view>
+								<button class="btn-delete-outlet" @tap="handleRemoveOutlet('wastewater', index)">
+									<uni-icons type="trash" size="16" color="#ef4444" />
 								</button>
 							</view>
-							<view class="form-grid form-grid--base">
-								<!-- 按组渲染，每组 3 条，除了危废以外 -->
-								<template v-for="(group, gi) in groupItems(sec.items, sec.block)" :key="'g'+si+'-'+gi">
-									<!-- 普通 3 条 -->
-									<view class="form-item" v-for="(it, ii) in group" :key="'r'+si+'-'+gi+'-'+ii">
-										<view class="form-item__row">
-											<uni-easyinput v-model="it.title" placeholder="内容标题" />
-											<uni-easyinput v-model="it.content" placeholder="请输入具体的值" />
-										</view>
-									</view>
 
-									<!-- 删除按钮：只有「非危险废物」才显示 -->
-									<view v-if="sec.block !== '危险废物'" class="form-item" style="margin-bottom:12px;">
-										<view class="form-item__row" style="justify-content:flex-end;">
-											<button class="icon-btn icon-btn--danger" @tap="() => handleRemoveGroup(sec, gi)">
-												<uni-icons type="trash" size="16" color="#d92d20" />
-											</button>
-										</view>
-									</view>
-								</template>
+							<view class="outlet-card-body">
+								<view class="outlet-field">
+									<text class="field-label">排污口编号</text>
+									<uni-easyinput v-model="outlet.code" placeholder="如：DW001" :clearable="true"
+										class="field-input" />
+								</view>
+
+								<view class="outlet-field">
+									<text class="field-label">排污口名称</text>
+									<uni-easyinput v-model="outlet.name" placeholder="请输入排污口名称" :clearable="true"
+										class="field-input" />
+								</view>
+
+								<view class="outlet-field">
+									<text class="field-label">现场照片</text>
+									<uni-file-picker v-model="outlet.images" fileMediatype="image" mode="grid" :limit="5"
+										:auto-upload="false" class="field-picker" />
+								</view>
 							</view>
-						</template>
+						</view>
+					</view>
+
+					<view v-else class="empty-category">
+						<uni-icons type="water" size="32" color="#e2e8f0" />
+						<text class="empty-text">暂无废水排污口</text>
 					</view>
 				</view>
 
-				<view v-else class="empty-state">
-					<uni-icons type="water" size="48" color="#cbd5e1" />
-					<text class="empty-text">排污口信息</text>
-					<text class="empty-tip">点击生成按钮获取排污口信息</text>
+				<!-- 废气排污口 -->
+				<view class="outlet-category">
+					<view class="category-header">
+						<view class="category-title">
+							<uni-icons type="cloud" size="18" color="#8b5cf6" />
+							<text class="category-name">废气排污口</text>
+							<text class="category-count">{{ filteredExhaustOutlets.length }}</text>
+						</view>
+						<button class="btn-add-outlet" @tap="handleAddOutlet('exhaust')">
+							<uni-icons type="plus" size="16" color="#8b5cf6" />
+							<text>新增</text>
+						</button>
+					</view>
+
+					<view v-if="filteredExhaustOutlets.length" class="outlet-list">
+						<view v-for="(outlet, index) in filteredExhaustOutlets" :key="outlet.id" class="outlet-card">
+							<view class="outlet-card-header">
+								<view class="outlet-number">
+									<uni-icons type="flag" size="16" color="#8b5cf6" />
+									<text>{{ outlet.code }}</text>
+								</view>
+								<button class="btn-delete-outlet" @tap="handleRemoveOutlet('exhaust', index)">
+									<uni-icons type="trash" size="16" color="#ef4444" />
+								</button>
+							</view>
+
+							<view class="outlet-card-body">
+								<view class="outlet-field">
+									<text class="field-label">排污口编号</text>
+									<uni-easyinput v-model="outlet.code" placeholder="如：DA001" :clearable="true"
+										class="field-input" />
+								</view>
+
+								<view class="outlet-field">
+									<text class="field-label">排污口名称</text>
+									<uni-easyinput v-model="outlet.name" placeholder="请输入排污口名称" :clearable="true"
+										class="field-input" />
+								</view>
+
+								<view class="outlet-field">
+									<text class="field-label">现场照片</text>
+									<uni-file-picker v-model="outlet.images" fileMediatype="image" mode="grid" :limit="5"
+										:auto-upload="false" class="field-picker" />
+								</view>
+							</view>
+						</view>
+					</view>
+
+					<view v-else class="empty-category">
+						<uni-icons type="cloud" size="32" color="#e2e8f0" />
+						<text class="empty-text">暂无废气排污口</text>
+					</view>
+				</view>
+
+				<!-- 噪声排污口 -->
+				<view class="outlet-category">
+					<view class="category-header">
+						<view class="category-title">
+							<uni-icons type="sound" size="18" color="#f59e0b" />
+							<text class="category-name">噪声排污口</text>
+							<text class="category-count">{{ filteredNoiseOutlets.length }}</text>
+						</view>
+						<button class="btn-add-outlet" @tap="handleAddOutlet('noise')">
+							<uni-icons type="plus" size="16" color="#f59e0b" />
+							<text>新增</text>
+						</button>
+					</view>
+
+					<view v-if="filteredNoiseOutlets.length" class="outlet-list">
+						<view v-for="(outlet, index) in filteredNoiseOutlets" :key="outlet.id" class="outlet-card">
+							<view class="outlet-card-header">
+								<view class="outlet-number">
+									<uni-icons type="flag" size="16" color="#f59e0b" />
+									<text>{{ outlet.code }}</text>
+								</view>
+								<button class="btn-delete-outlet" @tap="handleRemoveOutlet('noise', index)">
+									<uni-icons type="trash" size="16" color="#ef4444" />
+								</button>
+							</view>
+
+							<view class="outlet-card-body">
+								<view class="outlet-field">
+									<text class="field-label">排污口编号</text>
+									<uni-easyinput v-model="outlet.code" placeholder="如：ZS-01" :clearable="true"
+										class="field-input" />
+								</view>
+
+								<view class="outlet-field">
+									<text class="field-label">排污口名称</text>
+									<uni-easyinput v-model="outlet.name" placeholder="请输入排污口名称" :clearable="true"
+										class="field-input" />
+								</view>
+
+								<view class="outlet-field">
+									<text class="field-label">现场照片</text>
+									<uni-file-picker v-model="outlet.images" fileMediatype="image" mode="grid" :limit="5"
+										:auto-upload="false" class="field-picker" />
+								</view>
+							</view>
+						</view>
+					</view>
+
+					<view v-else class="empty-category">
+						<uni-icons type="sound" size="32" color="#e2e8f0" />
+						<text class="empty-text">暂无噪声排污口</text>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -61,124 +193,423 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+	import {
+		ref,
+		computed,
+		onMounted
+	} from 'vue'
+	import {
+		useFieldSurveyData
+	} from '@/composables/useFieldSurveyData.js'
 
-const props = defineProps({
-	// 从父组件接收signboard数据
-	signboard: {
-		type: Object,
-		required: true
-	},
-	// 从父组件接收baseTable用于查找基本信息
-	baseTable: {
-		type: Array,
-		default: () => []
+	// 组件props
+	const props = defineProps({
+		projectId: {
+			type: [String, Number],
+			required: true
+		},
+		baseTable: {
+			type: Array,
+			default: () => []
+		}
+	})
+
+	const {
+		wastewaterOutlets,
+		exhaustOutlets,
+		noiseOutlets,
+		loadOutletList,
+		extractOutletsFromBaseTable,
+		addOutlet,
+		removeOutlet
+	} = useFieldSurveyData()
+
+	// 组件挂载时加载数据
+	onMounted(() => {
+		loadOutletList(props.projectId)
+	})
+
+	// 搜索关键词
+	const searchKeyword = ref('')
+
+	// 搜索输入处理
+	function onSearchInput() {
+		console.log('搜索排污口关键词:', searchKeyword.value)
 	}
-})
 
-const emit = defineEmits(['update:signboard'])
-
-const showSignboard = ref(false)
-
-// 显示标识牌
-function handleShowSignboard() {
-	showSignboard.value = true
-	emit('generate-signboard')
-}
-
-// 添加一组排污标识牌（只允许噪声新增）
-function handleAddSignItem(sectionIdx) {
-	const sec = props.signboard.sections[sectionIdx]
-	const block = sec.block
-
-	// 只允许噪声新增
-	if (block !== '噪声') {
-		uni.showToast({
-			title: '只有噪声可以手动新增',
-			icon: 'none'
+	// 过滤排污口的通用函数
+	function filterOutlets(outlets) {
+		if (!searchKeyword.value) {
+			return outlets
+		}
+		const keyword = searchKeyword.value.toLowerCase().trim()
+		return outlets.filter(outlet => {
+			const code = (outlet.code || '').toLowerCase()
+			const name = (outlet.name || '').toLowerCase()
+			return code.includes(keyword) || name.includes(keyword)
 		})
-		return
 	}
 
-	// 从baseTable中提取单位名称
-	const unitName = findBaseValue('建设单位名称') || findBaseValue('单位名称') || ''
-
-	// 计算下一个排放口编号
-	let maxNum = 0
-	for (let i = 0; i < sec.items.length; i += 3) {
-		const codeItem = sec.items[i + 1]
-		if (codeItem && codeItem.title === '排放口编号') {
-			const code = codeItem.content || ''
-			const match = code.match(/\d+/)
-			if (match) {
-				const num = parseInt(match[0], 10)
-				if (num > maxNum) maxNum = num
-			}
-		}
-	}
-
-	// 生成新编号
-	let code = ''
-	if (block === '废水') code = `DW${String(maxNum + 1).padStart(3,'0')}`
-	else if (block === '废气') code = `DA${String(maxNum + 1).padStart(3,'0')}`
-	else if (block === '噪声') code = `ZS-${String(maxNum + 1).padStart(2,'0')}`
-
-	// 组装一组
-	const group = [
-		{ title: '单位名称', content: unitName },
-		{ title: '排放口编号', content: code },
-		{ title: '污染因子', content: '设备噪声' }
-	]
-
-	// 追加到当前块
-	sec.items.push(...group)
-
-	uni.showToast({
-		title: '已添加新排污口',
-		icon: 'success'
+	// 过滤后的废水排污口
+	const filteredWastewaterOutlets = computed(() => {
+		return filterOutlets(wastewaterOutlets.value)
 	})
-}
 
-// 按块决定是否 3 条一组
-function groupItems(items, block) {
-	if (block === '危险废物') return [items]
-	const groups = []
-	for (let i = 0; i < items.length; i += 3) {
-		groups.push(items.slice(i, i + 3))
-	}
-	return groups
-}
-
-// 删除指定组标识牌信息
-function handleRemoveGroup(section, groupIndex) {
-	const start = groupIndex * 3
-	const codeItem = section.items.slice(start, start + 3)
-		.find(it => it.title === '排放口编号')
-	const code = codeItem?.content || '未知编号'
-
-	uni.showModal({
-		title: '永久删除',
-		content: `确定删除排污口  ${code}  所有信息吗？`,
-		confirmText: '确定',
-		cancelText: '取消',
-		success: (res) => {
-			if (res.confirm) {
-				section.items.splice(start, 3)
-			}
-		}
+	// 过滤后的废气排污口
+	const filteredExhaustOutlets = computed(() => {
+		return filterOutlets(exhaustOutlets.value)
 	})
-}
 
-// 从baseTable中提取基本信息
-function findBaseValue(label) {
-	const r = props.baseTable.find(x => x.label === label)
-	return r ? (r.value || '') : ''
-}
+	// 过滤后的噪声排污口
+	const filteredNoiseOutlets = computed(() => {
+		return filterOutlets(noiseOutlets.value)
+	})
+
+	// 计算总排污口数量
+	const totalOutletCount = computed(() => {
+		return wastewaterOutlets.value.length + exhaustOutlets.value.length + noiseOutlets.value.length
+	})
+
+	// 计算过滤后的总数量
+	const filteredTotalCount = computed(() => {
+		return filteredWastewaterOutlets.value.length + filteredExhaustOutlets.value.length + filteredNoiseOutlets.value.length
+	})
+
+	// 处理新增排污口
+	function handleAddOutlet(type) {
+		addOutlet(type, props.projectId)
+	}
+
+	// 处理删除排污口
+	function handleRemoveOutlet(type, index) {
+		removeOutlet(type, index, props.projectId)
+	}
+
+	// 处理从项目信息提取排污口
+	function handleExtractOutlets() {
+		if (!props.baseTable || props.baseTable.length === 0) {
+			uni.showToast({
+				title: '请先提取项目基本信息',
+				icon: 'none',
+				duration: 2000
+			})
+			return
+		}
+		extractOutletsFromBaseTable(props.projectId, props.baseTable)
+	}
 </script>
 
 <style scoped>
-/* 样式继承自主页面 */
-.outlet-tab {
-	width: 100%;
-}
+	/* 基础样式 */
+	.outlet-tab {
+		width: 100%;
+		min-height: 100vh;
+		background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+		padding: 10rpx 0 0 0;
+		box-sizing: border-box;
+	}
+
+	.section-card {
+		background: #ffffff;
+		border-radius: 20rpx;
+		box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+		overflow: hidden;
+		border: 1rpx solid #e2e8f0;
+	}
+
+	/* 头部样式 */
+	.section-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 28rpx 32rpx;
+		background: linear-gradient(to right, #f0fdf4, #dcfce7);
+		border-bottom: 1rpx solid #bbf7d0;
+	}
+
+	.header-left {
+		display: flex;
+		align-items: center;
+		gap: 12rpx;
+	}
+
+	.section-title {
+		font-size: 32rpx;
+		font-weight: 600;
+		color: #166534;
+		letter-spacing: 0.5rpx;
+	}
+
+	.record-count {
+		font-size: 26rpx;
+		color: #4ade80;
+		background: rgba(34, 197, 94, 0.1);
+		padding: 8rpx 16rpx;
+		border-radius: 20rpx;
+	}
+
+	/* 主体内容 */
+	.section-body {
+		padding: 32rpx;
+		display: flex;
+		flex-direction: column;
+		gap: 32rpx;
+	}
+
+	/* 操作栏 */
+	.action-bar {
+		display: flex;
+		gap: 16rpx;
+	}
+
+	.btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8rpx;
+		padding: 20rpx 32rpx;
+		border-radius: 12rpx;
+		font-size: 28rpx;
+		font-weight: 500;
+		border: none;
+		transition: all 0.3s ease;
+	}
+
+	.btn:active {
+		transform: translateY(2rpx);
+	}
+
+	.btn-extract {
+		background: #10b981;
+		color: white;
+		flex: 1;
+	}
+
+	/* 搜索栏 */
+	.search-bar {
+		position: relative;
+	}
+
+	.search-input {
+		background: #f8fafc;
+		border-radius: 12rpx;
+		border: 1rpx solid #e2e8f0;
+	}
+
+	.search-result {
+		position: absolute;
+		right: 16rpx;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 24rpx;
+		color: #64748b;
+		background: rgba(100, 116, 139, 0.1);
+		padding: 4rpx 12rpx;
+		border-radius: 8rpx;
+	}
+
+	/* 分类样式 */
+	.outlet-category {
+		background: #f8fafc;
+		border-radius: 16rpx;
+		padding: 24rpx;
+		border: 1rpx solid #e2e8f0;
+	}
+
+	.category-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 24rpx;
+	}
+
+	.category-title {
+		display: flex;
+		align-items: center;
+		gap: 12rpx;
+	}
+
+	.category-name {
+		font-size: 30rpx;
+		font-weight: 600;
+		color: #334155;
+	}
+
+	.category-count {
+		font-size: 24rpx;
+		color: #64748b;
+		background: rgba(100, 116, 139, 0.1);
+		padding: 4rpx 12rpx;
+		border-radius: 12rpx;
+	}
+
+	.btn-add-outlet {
+		display: flex;
+		align-items: center;
+		gap: 6rpx;
+		padding: 12rpx 20rpx;
+		background: #ffffff;
+		border: 1rpx solid currentColor;
+		border-radius: 12rpx;
+		font-size: 26rpx;
+		font-weight: 500;
+		transition: all 0.3s ease;
+	}
+
+	.btn-add-outlet:active {
+		transform: scale(0.95);
+	}
+
+	/* 排污口列表 */
+	.outlet-list {
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
+	}
+
+	/* 排污口卡片 */
+	.outlet-card {
+		background: #ffffff;
+		border-radius: 12rpx;
+		border: 1rpx solid #e2e8f0;
+		overflow: hidden;
+		transition: all 0.3s ease;
+	}
+
+	.outlet-card:hover {
+		box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+	}
+
+	.outlet-card-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20rpx 24rpx;
+		background: linear-gradient(to right, #f8fafc, #f1f5f9);
+		border-bottom: 1rpx solid #e2e8f0;
+	}
+
+	.outlet-number {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		font-size: 28rpx;
+		font-weight: 600;
+		color: #334155;
+	}
+
+	.btn-delete-outlet {
+		display: flex;
+		align-items: center;
+		padding: 8rpx 16rpx;
+		background: rgba(239, 68, 68, 0.1);
+		border: 1rpx solid #fecaca;
+		border-radius: 8rpx;
+		transition: all 0.3s ease;
+	}
+
+	.btn-delete-outlet:active {
+		transform: scale(0.95);
+	}
+
+	.outlet-card-body {
+		padding: 24rpx;
+		display: flex;
+		flex-direction: column;
+		gap: 20rpx;
+	}
+
+	/* 字段样式 */
+	.outlet-field {
+		display: flex;
+		flex-direction: column;
+		gap: 12rpx;
+	}
+
+	.field-label {
+		font-size: 26rpx;
+		font-weight: 500;
+		color: #475569;
+	}
+
+	.field-input {
+		background: #f8fafc;
+		border-radius: 8rpx;
+		border: 1rpx solid #e2e8f0;
+	}
+
+	.field-input :deep(.uni-easyinput__content) {
+		background: transparent;
+	}
+
+	.field-picker :deep(.uni-file-picker__container) {
+		min-height: auto !important;
+	}
+
+	.field-picker :deep(.file-picker__box) {
+		width: 120rpx !important;
+		height: 120rpx !important;
+	}
+
+	.field-picker :deep(.is-add) {
+		width: 120rpx !important;
+		height: 120rpx !important;
+	}
+
+	.field-picker :deep(.file-picker__item) {
+		width: 120rpx !important;
+		height: 120rpx !important;
+		margin: 0 8rpx 8rpx 0 !important;
+	}
+
+	.field-picker :deep(.file-image) {
+		width: 120rpx !important;
+		height: 120rpx !important;
+	}
+
+	.field-picker :deep(.icon-del-box) {
+		width: 32rpx !important;
+		height: 32rpx !important;
+		right: -8rpx !important;
+		top: -8rpx !important;
+	}
+
+	/* 空状态 */
+	.empty-category {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 60rpx 32rpx;
+		gap: 12rpx;
+	}
+
+	.empty-text {
+		font-size: 26rpx;
+		color: #94a3b8;
+	}
+
+	/* PC端适配 */
+	@media (min-width: 768px) {
+		.section-body {
+			padding: 40rpx;
+		}
+
+		.outlet-list {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 24rpx;
+		}
+
+		.outlet-card {
+			height: 100%;
+		}
+	}
+
+	/* 大屏PC适配 */
+	@media (min-width: 1200px) {
+		.outlet-list {
+			grid-template-columns: repeat(3, 1fr);
+		}
+	}
 </style>

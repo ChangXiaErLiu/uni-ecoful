@@ -23,7 +23,14 @@ export {
 from './acceptance.js'
 
 // 项目管理相关
-export  * from './project'
+export * from './project'
+
+// 现场踏勘相关
+export {
+	fetchConstructionData,
+	fetchEquipmentData
+} from './fieldSurvey.js'
+// 注意：fetchFacilityData 已废弃，治理设施数据现在从项目基本信息（baseTable）中提取
 
 let piniaInstance = null
 

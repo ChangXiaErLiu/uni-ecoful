@@ -1,0 +1,10 @@
+{
+  "component": true,
+  "usingComponents": {
+    "uni-icons": "../../uni_modules/uni-icons/components/uni-icons/uni-icons",
+    "main-content-tab": "./tabs/MainContentTab",
+    "equipment-tab": "./tabs/EquipmentTab",
+    "facility-tab": "./tabs/FacilityTab",
+    "outlet-tab": "./tabs/OutletTab"
+  }
+}

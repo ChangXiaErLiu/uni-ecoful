@@ -1172,8 +1172,8 @@
 				extractionOk.value = true
 				console.log(`✅ 已加载项目 ${projectId} 的缓存数据`)
 
-				// 自动提取污染治理设施（静默填充）
-				fieldSurveyData.extractFacilitiesFromPollutants(baseTable.value)
+				// 自动提取污染治理设施到现场踏勘（从baseTable提取并保存）
+				fieldSurveyData.extractFacilitiesFromBaseTable(projectId, baseTable.value)
 
 				uni.showToast({
 					title: '已加载缓存数据',
