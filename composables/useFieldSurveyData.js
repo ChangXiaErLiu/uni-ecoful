@@ -4,7 +4,7 @@ import { fetchConstructionData as apiFetchConstructionData, fetchEquipmentData a
 /**
  * 现场踏勘数据管理 Composable
  * 管理现场踏勘模块的所有状态和业务逻辑
- * 注意：网络请求已移至 /api/fieldSurvey.js
+ * 注意：网络请求在 /api/fieldSurvey.js
  */
 
 // 创建单例状态（确保所有组件共享同一份数据）

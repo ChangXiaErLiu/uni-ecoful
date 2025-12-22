@@ -34,14 +34,12 @@ const _sfc_main = {
       loadOutletList,
       extractOutletsFromBaseTable,
       addOutlet,
-      removeOutlet
+      removeOutlet,
+      updateOutletData
     } = composables_useFieldSurveyData.useFieldSurveyData();
-    common_vendor.onMounted(() => {
-      loadOutletList(props.projectId);
-    });
     const searchKeyword = common_vendor.ref("");
     function onSearchInput() {
-      common_vendor.index.__f__("log", "at components/field-survey/tabs/OutletTab.vue:237", "搜索排污口关键词:", searchKeyword.value);
+      common_vendor.index.__f__("log", "at components/field-survey/tabs/OutletTab.vue:301", "搜索排污口关键词:", searchKeyword.value);
     }
     function filterOutlets(outlets) {
       if (!searchKeyword.value) {
@@ -51,18 +49,13 @@ const _sfc_main = {
       return outlets.filter((outlet) => {
         const code = (outlet.code || "").toLowerCase();
         const name = (outlet.name || "").toLowerCase();
-        return code.includes(keyword) || name.includes(keyword);
+        const remark = (outlet.remark || "").toLowerCase();
+        return code.includes(keyword) || name.includes(keyword) || remark.includes(keyword);
       });
     }
-    const filteredWastewaterOutlets = common_vendor.computed(() => {
-      return filterOutlets(wastewaterOutlets.value);
-    });
-    const filteredExhaustOutlets = common_vendor.computed(() => {
-      return filterOutlets(exhaustOutlets.value);
-    });
-    const filteredNoiseOutlets = common_vendor.computed(() => {
-      return filterOutlets(noiseOutlets.value);
-    });
+    const filteredWastewaterOutlets = common_vendor.computed(() => filterOutlets(wastewaterOutlets.value));
+    const filteredExhaustOutlets = common_vendor.computed(() => filterOutlets(exhaustOutlets.value));
+    const filteredNoiseOutlets = common_vendor.computed(() => filterOutlets(noiseOutlets.value));
     const totalOutletCount = common_vendor.computed(() => {
       return wastewaterOutlets.value.length + exhaustOutlets.value.length + noiseOutlets.value.length;
     });
@@ -86,223 +79,248 @@ const _sfc_main = {
       }
       extractOutletsFromBaseTable(props.projectId, props.baseTable);
     }
+    common_vendor.onMounted(() => {
+      loadOutletList(props.projectId);
+    });
+    common_vendor.watch(
+      () => props.baseTable,
+      (newBaseTable) => {
+        if (newBaseTable && newBaseTable.length > 0 && props.projectId) {
+          const hasEmissionData = newBaseTable.some((item) => item.id === "pollutants_emission");
+          if (hasEmissionData && totalOutletCount.value === 0) {
+            common_vendor.index.__f__("log", "at components/field-survey/tabs/OutletTab.vue:369", "检测到项目信息更新，自动提取排污口");
+            extractOutletsFromBaseTable(props.projectId, newBaseTable);
+          }
+        }
+      },
+      { deep: true, immediate: false }
+    );
+    common_vendor.watch(
+      [wastewaterOutlets, exhaustOutlets, noiseOutlets],
+      () => {
+        if (props.projectId) {
+          updateOutletData(props.projectId);
+        }
+      },
+      { deep: true }
+    );
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: common_vendor.p({
-          type: "map",
+          type: "map-pin-ellipse",
           size: "20",
           color: "#166534"
         }),
-        b: common_vendor.t(filteredTotalCount.value),
-        c: common_vendor.p({
-          type: "download",
-          size: "18",
-          color: "#ffffff"
-        }),
-        d: common_vendor.o(handleExtractOutlets),
-        e: totalOutletCount.value > 0
-      }, totalOutletCount.value > 0 ? common_vendor.e({
-        f: common_vendor.o(onSearchInput),
-        g: common_vendor.o(($event) => searchKeyword.value = $event),
-        h: common_vendor.p({
+        b: common_vendor.t(totalOutletCount.value),
+        c: common_vendor.o(onSearchInput),
+        d: common_vendor.o(($event) => searchKeyword.value = $event),
+        e: common_vendor.p({
           placeholder: "搜索排污口编号或名称...",
           prefixIcon: "search",
           clearable: true,
           modelValue: searchKeyword.value
         }),
-        i: searchKeyword.value
+        f: searchKeyword.value
       }, searchKeyword.value ? {
-        j: common_vendor.t(filteredTotalCount.value)
-      } : {}) : {}, {
-        k: common_vendor.p({
-          type: "map",
+        g: common_vendor.t(filteredTotalCount.value)
+      } : {}, {
+        h: common_vendor.p({
+          type: "refresh",
           size: "18",
-          color: "#0ea5e9"
+          color: "#ffffff"
         }),
-        l: common_vendor.t(filteredWastewaterOutlets.value.length),
-        m: common_vendor.p({
+        i: common_vendor.o(handleExtractOutlets),
+        j: common_vendor.t(filteredWastewaterOutlets.value.length),
+        k: common_vendor.p({
           type: "plus",
           size: "16",
-          color: "#0ea5e9"
+          color: "#ffffff"
         }),
-        n: common_vendor.o(($event) => handleAddOutlet("wastewater")),
-        o: filteredWastewaterOutlets.value.length
+        l: common_vendor.o(($event) => handleAddOutlet("wastewater")),
+        m: filteredWastewaterOutlets.value.length
       }, filteredWastewaterOutlets.value.length ? {
-        p: common_vendor.f(filteredWastewaterOutlets.value, (outlet, index, i0) => {
+        n: common_vendor.f(filteredWastewaterOutlets.value, (outlet, index, i0) => {
           return {
-            a: "d74124e6-5-" + i0,
-            b: common_vendor.t(outlet.code),
-            c: "d74124e6-6-" + i0,
-            d: common_vendor.o(($event) => handleRemoveOutlet("wastewater", index), outlet.id),
-            e: "d74124e6-7-" + i0,
-            f: common_vendor.o(($event) => outlet.code = $event, outlet.id),
-            g: common_vendor.p({
+            a: common_vendor.t(index + 1),
+            b: "d74124e6-4-" + i0,
+            c: common_vendor.o(($event) => outlet.code = $event, outlet.id),
+            d: common_vendor.p({
               placeholder: "如：DW001",
               clearable: true,
               modelValue: outlet.code
             }),
-            h: "d74124e6-8-" + i0,
-            i: common_vendor.o(($event) => outlet.name = $event, outlet.id),
-            j: common_vendor.p({
-              placeholder: "请输入排污口名称",
+            e: "d74124e6-5-" + i0,
+            f: common_vendor.o(($event) => outlet.name = $event, outlet.id),
+            g: common_vendor.p({
+              placeholder: "请输入名称",
               clearable: true,
               modelValue: outlet.name
             }),
-            k: "d74124e6-9-" + i0,
+            h: "d74124e6-6-" + i0,
+            i: common_vendor.o(($event) => outlet.remark = $event, outlet.id),
+            j: common_vendor.p({
+              placeholder: "备注信息",
+              clearable: true,
+              modelValue: outlet.remark
+            }),
+            k: "d74124e6-7-" + i0,
             l: common_vendor.o(($event) => outlet.images = $event, outlet.id),
             m: common_vendor.p({
               fileMediatype: "image",
               mode: "grid",
-              limit: 5,
+              limit: 2,
               ["auto-upload"]: false,
               modelValue: outlet.images
             }),
-            n: outlet.id
+            n: "d74124e6-8-" + i0,
+            o: common_vendor.o(($event) => handleRemoveOutlet("wastewater", index), outlet.id),
+            p: outlet.id
           };
         }),
-        q: common_vendor.p({
-          type: "flag",
-          size: "16",
-          color: "#0ea5e9"
-        }),
-        r: common_vendor.p({
+        o: common_vendor.p({
           type: "trash",
-          size: "16",
+          size: "18",
           color: "#ef4444"
         })
       } : {
-        s: common_vendor.p({
-          type: "water",
-          size: "32",
+        p: common_vendor.p({
+          type: "clear",
+          size: "48",
           color: "#e2e8f0"
         })
       }, {
-        t: common_vendor.p({
-          type: "cloud",
-          size: "18",
-          color: "#8b5cf6"
-        }),
-        v: common_vendor.t(filteredExhaustOutlets.value.length),
-        w: common_vendor.p({
+        q: common_vendor.t(filteredExhaustOutlets.value.length),
+        r: common_vendor.p({
           type: "plus",
           size: "16",
-          color: "#8b5cf6"
+          color: "#ffffff"
         }),
-        x: common_vendor.o(($event) => handleAddOutlet("exhaust")),
-        y: filteredExhaustOutlets.value.length
+        s: common_vendor.o(($event) => handleAddOutlet("exhaust")),
+        t: filteredExhaustOutlets.value.length
       }, filteredExhaustOutlets.value.length ? {
-        z: common_vendor.f(filteredExhaustOutlets.value, (outlet, index, i0) => {
+        v: common_vendor.f(filteredExhaustOutlets.value, (outlet, index, i0) => {
           return {
-            a: "d74124e6-13-" + i0,
-            b: common_vendor.t(outlet.code),
-            c: "d74124e6-14-" + i0,
-            d: common_vendor.o(($event) => handleRemoveOutlet("exhaust", index), outlet.id),
-            e: "d74124e6-15-" + i0,
-            f: common_vendor.o(($event) => outlet.code = $event, outlet.id),
-            g: common_vendor.p({
+            a: common_vendor.t(index + 1),
+            b: "d74124e6-11-" + i0,
+            c: common_vendor.o(($event) => outlet.code = $event, outlet.id),
+            d: common_vendor.p({
               placeholder: "如：DA001",
               clearable: true,
               modelValue: outlet.code
             }),
-            h: "d74124e6-16-" + i0,
-            i: common_vendor.o(($event) => outlet.name = $event, outlet.id),
-            j: common_vendor.p({
-              placeholder: "请输入排污口名称",
+            e: "d74124e6-12-" + i0,
+            f: common_vendor.o(($event) => outlet.name = $event, outlet.id),
+            g: common_vendor.p({
+              placeholder: "请输入名称",
               clearable: true,
               modelValue: outlet.name
             }),
-            k: "d74124e6-17-" + i0,
+            h: "d74124e6-13-" + i0,
+            i: common_vendor.o(($event) => outlet.remark = $event, outlet.id),
+            j: common_vendor.p({
+              placeholder: "备注信息",
+              clearable: true,
+              modelValue: outlet.remark
+            }),
+            k: "d74124e6-14-" + i0,
             l: common_vendor.o(($event) => outlet.images = $event, outlet.id),
             m: common_vendor.p({
               fileMediatype: "image",
               mode: "grid",
-              limit: 5,
+              limit: 2,
               ["auto-upload"]: false,
               modelValue: outlet.images
             }),
-            n: outlet.id
+            n: "d74124e6-15-" + i0,
+            o: common_vendor.o(($event) => handleRemoveOutlet("exhaust", index), outlet.id),
+            p: outlet.id
           };
         }),
-        A: common_vendor.p({
-          type: "flag",
-          size: "16",
-          color: "#8b5cf6"
-        }),
-        B: common_vendor.p({
+        w: common_vendor.p({
           type: "trash",
-          size: "16",
+          size: "18",
           color: "#ef4444"
         })
       } : {
-        C: common_vendor.p({
-          type: "cloud",
-          size: "32",
+        x: common_vendor.p({
+          type: "clear",
+          size: "48",
           color: "#e2e8f0"
         })
       }, {
-        D: common_vendor.p({
-          type: "sound",
-          size: "18",
-          color: "#f59e0b"
-        }),
-        E: common_vendor.t(filteredNoiseOutlets.value.length),
-        F: common_vendor.p({
+        y: common_vendor.t(filteredNoiseOutlets.value.length),
+        z: common_vendor.p({
           type: "plus",
           size: "16",
-          color: "#f59e0b"
+          color: "#ffffff"
         }),
-        G: common_vendor.o(($event) => handleAddOutlet("noise")),
-        H: filteredNoiseOutlets.value.length
+        A: common_vendor.o(($event) => handleAddOutlet("noise")),
+        B: filteredNoiseOutlets.value.length
       }, filteredNoiseOutlets.value.length ? {
-        I: common_vendor.f(filteredNoiseOutlets.value, (outlet, index, i0) => {
+        C: common_vendor.f(filteredNoiseOutlets.value, (outlet, index, i0) => {
           return {
-            a: "d74124e6-21-" + i0,
-            b: common_vendor.t(outlet.code),
-            c: "d74124e6-22-" + i0,
-            d: common_vendor.o(($event) => handleRemoveOutlet("noise", index), outlet.id),
-            e: "d74124e6-23-" + i0,
-            f: common_vendor.o(($event) => outlet.code = $event, outlet.id),
-            g: common_vendor.p({
+            a: common_vendor.t(index + 1),
+            b: "d74124e6-18-" + i0,
+            c: common_vendor.o(($event) => outlet.code = $event, outlet.id),
+            d: common_vendor.p({
               placeholder: "如：ZS-01",
               clearable: true,
               modelValue: outlet.code
             }),
-            h: "d74124e6-24-" + i0,
-            i: common_vendor.o(($event) => outlet.name = $event, outlet.id),
-            j: common_vendor.p({
-              placeholder: "请输入排污口名称",
+            e: "d74124e6-19-" + i0,
+            f: common_vendor.o(($event) => outlet.name = $event, outlet.id),
+            g: common_vendor.p({
+              placeholder: "请输入名称",
               clearable: true,
               modelValue: outlet.name
             }),
-            k: "d74124e6-25-" + i0,
+            h: "d74124e6-20-" + i0,
+            i: common_vendor.o(($event) => outlet.remark = $event, outlet.id),
+            j: common_vendor.p({
+              placeholder: "备注信息",
+              clearable: true,
+              modelValue: outlet.remark
+            }),
+            k: "d74124e6-21-" + i0,
             l: common_vendor.o(($event) => outlet.images = $event, outlet.id),
             m: common_vendor.p({
               fileMediatype: "image",
               mode: "grid",
-              limit: 5,
+              limit: 2,
               ["auto-upload"]: false,
               modelValue: outlet.images
             }),
-            n: outlet.id
+            n: "d74124e6-22-" + i0,
+            o: common_vendor.o(($event) => handleRemoveOutlet("noise", index), outlet.id),
+            p: outlet.id
           };
         }),
-        J: common_vendor.p({
-          type: "flag",
-          size: "16",
-          color: "#f59e0b"
-        }),
-        K: common_vendor.p({
+        D: common_vendor.p({
           type: "trash",
-          size: "16",
+          size: "18",
           color: "#ef4444"
         })
       } : {
-        L: common_vendor.p({
-          type: "sound",
-          size: "32",
+        E: common_vendor.p({
+          type: "clear",
+          size: "48",
           color: "#e2e8f0"
         })
-      });
+      }, {
+        F: totalOutletCount.value === 0 && !searchKeyword.value
+      }, totalOutletCount.value === 0 && !searchKeyword.value ? {
+        G: common_vendor.p({
+          type: "map-pin-ellipse",
+          size: "64",
+          color: "#e2e8f0"
+        }),
+        H: common_vendor.p({
+          type: "refresh",
+          size: "16",
+          color: "#ffffff"
+        }),
+        I: common_vendor.o(handleExtractOutlets)
+      } : {});
     };
   }
 };
