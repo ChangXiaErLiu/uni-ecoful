@@ -84,6 +84,11 @@
 								<uni-icons type="cloud-upload" size="16" color="#ffffff" />
 								<text>上传项目文件</text>
 							</button>
+							<button class="projects__button projects__button--primary" @tap="quickAction('viewReports')"
+								:disabled="!activeProject">
+								<uni-icons type="arrow-right" size="16" color="#ffffff" />
+								<text>竣工验收</text>
+							</button>
 						</view>
 					</view>
 
@@ -358,6 +363,17 @@
 		notes: '',
 		member_ids: []
 	})
+	
+	// 去竣工页面
+	function quickAction(action) {
+	  switch (action) {
+	   
+	    case 'viewReports':
+	      uni.navigateTo({ url: '/pages/reports/acceptance/index' })
+	      break
+	    
+	  }
+	}
 
 	// 文件上传相关
 	const selectedFile = ref(null)
@@ -379,18 +395,18 @@
 	const filteredProjects = computed(() => {
 		return projects.value.filter(project => !project.is_deleted)
 	})
-	
+
 	// 项目总数
-	const  projectTotal = ref("")
-	
+	const projectTotal = ref("")
+
 	// 初始化加载数据
 	const loadProjects = async () => {
 		try {
 			const response = await getProjects()
 			projects.value = response
-			
+
 			const total = response.length
-			uni.setStorageSync('project_total_count', total) 
+			uni.setStorageSync('project_total_count', total)
 			projectTotal.value = total // 获取项目总数
 			// console.log('项目列表加载成功，共', total, '个项目')
 

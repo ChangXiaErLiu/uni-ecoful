@@ -25,7 +25,7 @@ const TaskProgressModal = () => "../../../components/message-pop-up/TaskProgress
 const FieldSurveyContainer = () => "../../../components/field-survey/FieldSurveyContainer.js";
 const MAX_POLLING_COUNT = 100;
 const POLLING_INTERVAL = 3e3;
-const eco_baseUrl = "http://127.0.0.1:8000";
+const eco_baseUrl = "http://172.16.1.61:8000";
 const _sfc_main = {
   __name: "index",
   setup(__props) {
@@ -120,7 +120,7 @@ const _sfc_main = {
           folder_name: project.folder_name
         }));
       } catch (e) {
-        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1236", "⚠️ 保存项目选择失败:", e);
+        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1302", "⚠️ 保存项目选择失败:", e);
       }
       closeProjectPicker();
       stopPolling();
@@ -134,7 +134,7 @@ const _sfc_main = {
       });
     }
     function onSearchInput(e) {
-      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1265", "搜索关键词:", projectSearchKeyword.value);
+      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1331", "搜索关键词:", projectSearchKeyword.value);
     }
     function hasProcessingFiles() {
       return projectFiles.value.some(
@@ -146,7 +146,7 @@ const _sfc_main = {
         return;
       }
       if (isPolling.value) {
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1287", "⚠️ 已在轮询中，跳过");
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1353", "⚠️ 已在轮询中，跳过");
         return;
       }
       isPolling.value = true;
@@ -157,7 +157,7 @@ const _sfc_main = {
       pollingTimer.value = setInterval(async () => {
         pollingCount.value++;
         if (pollingCount.value > MAX_POLLING_COUNT) {
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1306", "⏰ 达到最大轮询次数，停止轮询");
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1372", "⏰ 达到最大轮询次数，停止轮询");
           stopPolling();
           common_vendor.index.showToast({
             title: "文件处理超时，请手动刷新",
@@ -169,7 +169,7 @@ const _sfc_main = {
         try {
           await loadProjectFiles(projectId, true);
           if (!hasProcessingFiles()) {
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1322", "✅ 所有文件处理完成，停止轮询");
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1388", "✅ 所有文件处理完成，停止轮询");
             stopPolling();
             common_vendor.index.showToast({
               title: "文件处理完成",
@@ -182,7 +182,7 @@ const _sfc_main = {
             );
           }
         } catch (error) {
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1339", "❌ 轮询文件状态失败:", error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1405", "❌ 轮询文件状态失败:", error);
         }
       }, POLLING_INTERVAL);
     }
@@ -202,7 +202,7 @@ const _sfc_main = {
         const response = await getProjects();
         projectList.value = response || [];
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1368", "加载项目列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1434", "加载项目列表失败:", error);
         common_vendor.index.showToast({
           title: "加载项目列表失败",
           icon: "none"
@@ -238,7 +238,7 @@ const _sfc_main = {
           }
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1417", "加载项目文件失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1483", "加载项目文件失败:", error);
         if (!silent) {
           common_vendor.index.hideLoading();
           common_vendor.index.showToast({
@@ -318,7 +318,7 @@ const _sfc_main = {
         try {
           baseTable.value = JSON.parse(cachedData);
           extractionOk.value = true;
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1509", `✅ 已加载项目 ${projectId} 的缓存数据`);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1575", `✅ 已加载项目 ${projectId} 的缓存数据`);
           fieldSurveyData.extractFacilitiesFromBaseTable(projectId, baseTable.value);
           common_vendor.index.showToast({
             title: "已加载缓存数据",
@@ -326,14 +326,14 @@ const _sfc_main = {
             duration: 1500
           });
         } catch (error) {
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1520", "解析缓存数据失败:", error);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1586", "解析缓存数据失败:", error);
           baseTable.value = [];
           extractionOk.value = false;
         }
       } else {
         baseTable.value = [];
         extractionOk.value = false;
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1528", `ℹ️ 项目 ${projectId} 暂无缓存数据`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1594", `ℹ️ 项目 ${projectId} 暂无缓存数据`);
       }
     }
     function clearProjectCache() {
@@ -362,7 +362,7 @@ const _sfc_main = {
             selectedProjectId.value = null;
             selectedProject.value = null;
             projectFiles.value = [];
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1568", `🗑️ 已清除项目缓存和选择`);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1634", `🗑️ 已清除项目缓存和选择`);
             common_vendor.index.showToast({
               title: "缓存已清除",
               icon: "success"
@@ -378,30 +378,30 @@ const _sfc_main = {
         if (savedProjectId) {
           const project = projectList.value.find((p) => p.id === savedProjectId);
           if (project) {
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1591", "🔄 恢复上次选择的项目:", project.name);
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1657", "🔄 恢复上次选择的项目:", project.name);
             selectedProjectId.value = project.id;
             selectedProject.value = project;
             await loadProjectFiles(project.id);
             startPollingFileStatus(project.id);
             loadProjectCache(project.id);
           } else {
-            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1606", "⚠️ 上次选择的项目已不存在，清除缓存");
+            common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1672", "⚠️ 上次选择的项目已不存在，清除缓存");
             common_vendor.index.removeStorageSync("acceptance_project_id");
             common_vendor.index.removeStorageSync("acceptance_project_info");
           }
         }
       } catch (e) {
-        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1612", "⚠️ 恢复项目选择失败:", e);
+        common_vendor.index.__f__("warn", "at pages/reports/acceptance/index.vue:1678", "⚠️ 恢复项目选择失败:", e);
       }
     });
     common_vendor.onUnmounted(() => {
       stopPolling();
-      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1619", "📄 页面卸载，清理轮询定时器");
+      common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1685", "📄 页面卸载，清理轮询定时器");
     });
     common_vendor.watch(selectedProjectId, (newId, oldId) => {
       if (oldId && newId !== oldId) {
         stopPolling();
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1626", "🔄 切换项目，停止旧项目的轮询");
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1692", "🔄 切换项目，停止旧项目的轮询");
       }
     });
     const extracting = common_vendor.ref(false);
@@ -419,7 +419,7 @@ const _sfc_main = {
       if (progressChanged) {
         lastUpdateTime = Date.now();
         lastTargetProgress = newProgress;
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1657", `[进度真实更新] ${newProgress}% - ${statusText}`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1723", `[进度真实更新] ${newProgress}% - ${statusText}`);
       }
       if (!smoothProgressTimer) {
         smoothProgressTimer = setInterval(() => {
@@ -531,13 +531,13 @@ const _sfc_main = {
         baseTable.value = api_acceptance.transformExtractResult(result.result);
         const cacheKey = `project_base_info_${selectedProjectId.value}`;
         common_vendor.index.setStorageSync(cacheKey, JSON.stringify(baseTable.value));
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1807", `✅ 项目 ${selectedProjectId.value} 的数据已缓存`);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1873", `✅ 项目 ${selectedProjectId.value} 的数据已缓存`);
         fieldSurveyData.extractFacilitiesFromPollutants(baseTable.value);
         extractionOk.value = true;
       } catch (error) {
         clearProgressTimer();
         (_b = taskProgressModal.value) == null ? void 0 : _b.close();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1821", "[Extract] 提取失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1887", "[Extract] 提取失败:", error);
         if (error.message.includes("超时") || error.message.includes("timeout")) {
           common_vendor.index.showModal({
             title: "提取超时了！",
@@ -721,36 +721,69 @@ const _sfc_main = {
           content: "设备噪声"
         });
       });
+      const HAZ_MAP = {
+        // 只要和原始字段里出现过的英文括号写法完全一致，都要写进去
+        "T（毒性）": "毒性",
+        "T": "毒性",
+        "毒性": "毒性",
+        "In（感染性）": "感染性",
+        "In": "感染性",
+        "感染性": "感染性",
+        "C（腐蚀性）": "腐蚀性",
+        "C": "腐蚀性",
+        "腐蚀性": "腐蚀性",
+        "I（易燃性）": "易燃性",
+        "I": "易燃性",
+        "易燃性": "易燃性",
+        "R（反应性）": "反应性",
+        "R": "反应性",
+        "反应性": "反应性"
+      };
       function extractHazardCodes(str) {
         if (!str)
           return "";
-        const matches = str.match(/HW\d+/g);
-        if (!matches)
-          return "";
-        return [...new Set(matches)].join("、");
+        const set = new Set((str.match(/HW\d+/g) || []).map((s) => s.trim()));
+        return [...set].join("、");
       }
       function extractHazardProperties(str) {
         if (!str)
           return "";
-        const matches = str.match(/（([^）]+)）/g);
-        if (!matches)
-          return "";
-        const properties = matches.map((m) => m.replace(/[（）]/g, ""));
-        return [...new Set(properties)].join("、");
+        const set = /* @__PURE__ */ new Set();
+        const norm = str.replace(/[、,，]/g, "/");
+        norm.split("/").forEach((s) => {
+          const key = s.trim();
+          if (HAZ_MAP[key])
+            set.add(HAZ_MAP[key]);
+        });
+        const order = ["毒性", "腐蚀性", "易燃性", "反应性", "感染性"];
+        return order.filter((ch) => set.has(ch)).join("、");
       }
-      const hazardousWaste = emissionData["危险废物"] || {};
+      const hwList = emissionData["危险废物"] || [];
+      function collectUnique(arr, key, extractor) {
+        const set = /* @__PURE__ */ new Set();
+        arr.forEach((it) => {
+          const raw = it[key] || "";
+          const cleaned = extractor ? extractor(raw) : raw.trim();
+          if (cleaned)
+            set.add(cleaned);
+        });
+        return [...set];
+      }
+      const categories = collectUnique(hwList, "危险废物类别", extractHazardCodes);
+      const wasteNames = collectUnique(hwList, "废物名称", (s) => s.trim());
+      const hazards = collectUnique(hwList, "危险特性", extractHazardProperties);
       const WFItems = [
         {
           title: "主要成分",
-          content: extractHazardCodes(hazardousWaste["危险废物类别"]) || "HW49"
+          content: categories.join("、") || "HW49"
         },
         {
           title: "化学名称",
-          content: hazardousWaste["废物名称"] || "实验室废弃物、实验室废水污泥、医疗废物、废活性炭"
+          content: wasteNames.join("、") || "实验室废弃物、实验室废水污泥、医疗废物、废活性炭"
         },
         {
           title: "危险情况",
-          content: extractHazardProperties(hazardousWaste["危险特性"]) || "毒性、腐蚀性"
+          content: hazards.join("、") || "毒性、腐蚀性"
         },
         {
           title: "安全措施",
@@ -983,14 +1016,14 @@ const _sfc_main = {
     const userInfoStr = common_vendor.index.getStorageSync("userInfo");
     const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
     const user_id = (userInfo == null ? void 0 : userInfo.id) || (userInfo == null ? void 0 : userInfo.user_id);
-    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2414", "test userid", user_id);
-    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2415", "test project_id", project_id);
+    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2532", "test userid", user_id);
+    common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2533", "test project_id", project_id);
     const tizidanItems = common_vendor.ref([]);
     common_vendor.ref({});
     async function toggleRequired(item) {
       var _a;
       if (!item || !item.record_id) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2441", "切换复选框失败：item或record_id不存在");
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2559", "切换复选框失败：item或record_id不存在");
         return;
       }
       try {
@@ -1014,11 +1047,11 @@ const _sfc_main = {
               project_id
             },
             success: (res) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2471", "更新is_require成功:", res);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2589", "更新is_require成功:", res);
               resolve(res);
             },
             fail: (err) => {
-              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2475", "更新is_require失败:", err);
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2593", "更新is_require失败:", err);
               reject(err);
             }
           });
@@ -1034,7 +1067,7 @@ const _sfc_main = {
           throw new Error(((_a = response.data) == null ? void 0 : _a.message) || "更新失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2495", "切换复选框失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2613", "切换复选框失败:", error);
         common_vendor.index.hideLoading();
         item.required = !item.required;
         common_vendor.index.showToast({
@@ -1167,7 +1200,20 @@ const _sfc_main = {
       }
       common_vendor.index.chooseFile({
         count: 9,
-        extension: [".doc", ".docx", ".pdf", ".xls", ".xlsx", ".png", ".jpg", ".jpeg", ".zip", ".rar", ".dwg", ".dxf"],
+        extension: [
+          ".doc",
+          ".docx",
+          ".pdf",
+          ".xls",
+          ".xlsx",
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".zip",
+          ".rar",
+          ".dwg",
+          ".dxf"
+        ],
         success: async (chooseRes) => {
           const tempFiles = chooseRes.tempFiles;
           for (let i = 0; i < tempFiles.length; i++) {
@@ -1181,7 +1227,7 @@ const _sfc_main = {
           });
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2775", "选择文件失败:", err);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2895", "选择文件失败:", err);
           common_vendor.index.showToast({
             title: "选择文件失败",
             icon: "none"
@@ -1244,7 +1290,7 @@ const _sfc_main = {
                 throw new Error(((_a = response.data) == null ? void 0 : _a.message) || "删除失败");
               }
             } catch (error) {
-              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2849", "删除文件失败:", error);
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2970", "删除文件失败:", error);
               common_vendor.index.showToast({
                 title: `删除失败: ${error.message}`,
                 icon: "none"
@@ -1270,11 +1316,11 @@ const _sfc_main = {
               project_id
             },
             success: (res) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2878", "请求成功:", res);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2999", "请求成功:", res);
               resolve(res);
             },
             fail: (err) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2882", "请求失败:", err);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:3003", "请求失败:", err);
               reject(err);
             }
           });
@@ -1285,7 +1331,7 @@ const _sfc_main = {
             throw new Error("数据格式不正确: items 不存在或不是数组");
           }
           tizidanItems.value = data.items;
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:2898", "提资单数据加载完成:", tizidanItems.value);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:3019", "提资单数据加载完成:", tizidanItems.value);
           common_vendor.index.showToast({
             title: "数据加载成功",
             icon: "success"
@@ -1294,7 +1340,7 @@ const _sfc_main = {
           throw new Error(`请求失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2908", "获取提资单数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3029", "获取提资单数据失败:", error);
         common_vendor.index.showToast({
           title: "加载失败，请重新刷新！",
           icon: "none",
@@ -1342,7 +1388,7 @@ const _sfc_main = {
           throw new Error(response.message || "文件上传失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:2963", `文件上传失败:`, error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3084", `文件上传失败:`, error);
         common_vendor.index.showToast({
           title: `文件上传失败: ${error.message}`,
           icon: "none",
@@ -1423,7 +1469,7 @@ const _sfc_main = {
           throw new Error(`服务器错误: ${response.statusCode}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3060", "提交失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3181", "提交失败:", error);
         common_vendor.index.showToast({
           title: `提交失败: ${error.message}`,
           icon: "none",
@@ -1459,14 +1505,14 @@ const _sfc_main = {
               common_vendor.index.saveFile({
                 tempFilePath: filePath,
                 success: (saveRes) => {
-                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:3132", "文件保存成功:", saveRes.savedFilePath);
+                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:3254", "文件保存成功:", saveRes.savedFilePath);
                   common_vendor.index.showToast({
                     title: "文件已保存",
                     icon: "success"
                   });
                 },
                 fail: (saveErr) => {
-                  common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3139", "保存文件失败:", saveErr);
+                  common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3261", "保存文件失败:", saveErr);
                   common_vendor.index.showToast({
                     title: "保存失败",
                     icon: "none"
@@ -1486,7 +1532,7 @@ const _sfc_main = {
           icon: "success"
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3182", "下载失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3304", "下载失败:", error);
         common_vendor.index.showToast({
           title: "下载失败: " + (error.message || "未知错误"),
           icon: "none",
@@ -1616,7 +1662,7 @@ ${head}${tail}`;
       } catch (e) {
         clearProgressTimer();
         (_c = taskProgressModal.value) == null ? void 0 : _c.close();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3480", "生成报告失败", e, (_d = e.response) == null ? void 0 : _d.data);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:3602", "生成报告失败", e, (_d = e.response) == null ? void 0 : _d.data);
         let msg = e.message || "请稍后重试";
         if (Array.isArray((_f = (_e = e.response) == null ? void 0 : _e.data) == null ? void 0 : _f.detail)) {
           msg = e.response.data.detail.map((d) => d.msg).join("；");

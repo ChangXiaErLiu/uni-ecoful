@@ -36,6 +36,13 @@ const _sfc_main = {
       notes: "",
       member_ids: []
     });
+    function quickAction(action) {
+      switch (action) {
+        case "viewReports":
+          common_vendor.index.navigateTo({ url: "/pages/reports/acceptance/index" });
+          break;
+      }
+    }
     const selectedFile = common_vendor.ref(null);
     const uploadProgress = common_vendor.ref(0);
     const isDragging = common_vendor.ref(false);
@@ -63,7 +70,7 @@ const _sfc_main = {
           await switchProject(response[0].id);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:402", "加载项目列表失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:418", "加载项目列表失败:", error);
         common_vendor.index.showToast({
           title: "加载项目列表失败",
           icon: "error"
@@ -76,7 +83,7 @@ const _sfc_main = {
         activeProject.value = response;
         await loadProjectDocuments(projectId);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:419", "加载项目详情失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:435", "加载项目详情失败:", error);
         common_vendor.index.showToast({
           title: "加载项目详情失败",
           icon: "error"
@@ -91,7 +98,7 @@ const _sfc_main = {
           activeProject.value.documents = documents.value;
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:439", "加载项目文档失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:455", "加载项目文档失败:", error);
       }
     };
     const switchProject = async (projectId) => {
@@ -131,7 +138,7 @@ const _sfc_main = {
         await loadProjects();
         await switchProject(response.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:496", "创建项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:512", "创建项目失败:", error);
         common_vendor.index.showToast({
           title: "创建项目失败",
           icon: "error"
@@ -155,7 +162,7 @@ const _sfc_main = {
         });
         showEditProjectModal.value = true;
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:525", "编辑项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:541", "编辑项目失败:", error);
         common_vendor.index.showToast({
           title: "编辑项目失败",
           icon: "error"
@@ -185,7 +192,7 @@ const _sfc_main = {
         await loadProjects();
         await loadProjectDetail(editProjectForm.id);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:564", "更新项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:580", "更新项目失败:", error);
         common_vendor.index.showToast({
           title: "更新项目失败",
           icon: "error"
@@ -217,7 +224,7 @@ const _sfc_main = {
           }
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/project/index.vue:605", "删除项目失败:", error);
+        common_vendor.index.__f__("error", "at pages/project/index.vue:621", "删除项目失败:", error);
         common_vendor.index.showToast({
           title: "删除项目失败",
           icon: "error"
@@ -270,7 +277,7 @@ const _sfc_main = {
           handleSelectedFiles(files);
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/project/index.vue:686", "选择文件失败:", err);
+          common_vendor.index.__f__("error", "at pages/project/index.vue:702", "选择文件失败:", err);
         }
       });
     };
@@ -315,7 +322,7 @@ const _sfc_main = {
         });
       }
       selectedFiles.value = uniqueFiles;
-      common_vendor.index.__f__("log", "at pages/project/index.vue:761", "已选择文件:", selectedFiles.value.length, "个");
+      common_vendor.index.__f__("log", "at pages/project/index.vue:777", "已选择文件:", selectedFiles.value.length, "个");
     };
     const removeFile = (index) => {
       selectedFiles.value.splice(index, 1);
@@ -421,7 +428,7 @@ const _sfc_main = {
               const successCount = status.success_count || 0;
               const failedCount = status.failed_count || 0;
               const total = status.total || 0;
-              common_vendor.index.__f__("log", "at pages/project/index.vue:925", "成功数量:", successCount, "失败数量:", failedCount, "总数:", total);
+              common_vendor.index.__f__("log", "at pages/project/index.vue:941", "成功数量:", successCount, "失败数量:", failedCount, "总数:", total);
               let content = "";
               if (failedCount === 0) {
                 content = `全部上传成功！共 ${successCount} 个文件`;
@@ -458,7 +465,7 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
             }, 1e3);
           }
         } catch (e) {
-          common_vendor.index.__f__("error", "at pages/project/index.vue:960", "轮询任务状态失败:", e);
+          common_vendor.index.__f__("error", "at pages/project/index.vue:976", "轮询任务状态失败:", e);
           stopPollingTaskStatus();
           batchUploading.value = false;
           showUploadProgress.value = false;
@@ -517,7 +524,7 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
             });
           },
           fail: (err) => {
-            common_vendor.index.__f__("log", "at pages/project/index.vue:1058", "打开文档失败:", err);
+            common_vendor.index.__f__("log", "at pages/project/index.vue:1074", "打开文档失败:", err);
             common_vendor.index.showModal({
               title: "提示",
               content: "文件已下载，但当前文件类型不支持预览。文件已保存到微信文件中。",
@@ -654,156 +661,163 @@ ${status.failed_files.slice(0, 3).join("\n")}`;
         }),
         l: common_vendor.o(uploadFile),
         m: !activeProject.value,
-        n: activeProject.value
+        n: common_vendor.p({
+          type: "arrow-right",
+          size: "16",
+          color: "#ffffff"
+        }),
+        o: common_vendor.o(($event) => quickAction("viewReports")),
+        p: !activeProject.value,
+        q: activeProject.value
       }, activeProject.value ? common_vendor.e({
-        o: common_vendor.p({
+        r: common_vendor.p({
           type: "document",
           size: "18",
           color: "#8b5cf6"
         }),
-        p: common_vendor.t(((_a = activeProject.value.documents) == null ? void 0 : _a.length) || 0),
-        q: activeProject.value.documents && activeProject.value.documents.length > 0
+        s: common_vendor.t(((_a = activeProject.value.documents) == null ? void 0 : _a.length) || 0),
+        t: activeProject.value.documents && activeProject.value.documents.length > 0
       }, activeProject.value.documents && activeProject.value.documents.length > 0 ? {
-        r: common_vendor.f(activeProject.value.documents, (document, k0, i0) => {
+        v: common_vendor.f(activeProject.value.documents, (document, k0, i0) => {
           return {
             a: getDocumentIcon(document.file_extension),
             b: common_vendor.t(document.filename),
             c: common_vendor.t(fmtSize(document.size_bytes)),
             d: common_vendor.t(document.updated_at.slice(0, 10)),
-            e: "47879d53-10-" + i0 + ",47879d53-0",
+            e: "47879d53-11-" + i0 + ",47879d53-0",
             f: common_vendor.o(() => downloadDocument(document), document.id),
-            g: "47879d53-11-" + i0 + ",47879d53-0",
+            g: "47879d53-12-" + i0 + ",47879d53-0",
             h: common_vendor.o(() => deleteDocument(document.document_id), document.id),
             i: document.id
           };
         }),
-        s: common_vendor.p({
+        w: common_vendor.p({
           type: "download",
           size: "16",
           color: "#64748b"
         }),
-        t: common_vendor.p({
+        x: common_vendor.p({
           type: "trash",
           size: "16",
           color: "#ef4444"
         })
       } : {
-        v: common_vendor.p({
+        y: common_vendor.p({
           type: "document",
           size: "32",
           color: "#cbd5e1"
         })
       }) : {
-        w: common_vendor.p({
+        z: common_vendor.p({
           type: "folder",
           size: "60",
           color: "#cbd5e1"
         })
       }, {
-        x: showAddProjectModal.value
+        A: showAddProjectModal.value
       }, showAddProjectModal.value ? {
-        y: common_vendor.o(closeAddProjectModal),
-        z: common_vendor.p({
+        B: common_vendor.o(closeAddProjectModal),
+        C: common_vendor.p({
           type: "close",
           size: "30",
           color: "#64748b"
         }),
-        A: newProjectForm.name,
-        B: common_vendor.o(($event) => newProjectForm.name = $event.detail.value),
-        C: newProjectForm.description,
-        D: common_vendor.o(($event) => newProjectForm.description = $event.detail.value),
-        E: newProjectForm.notes,
-        F: common_vendor.o(($event) => newProjectForm.notes = $event.detail.value),
-        G: newProjectForm.name,
-        H: common_vendor.o(($event) => newProjectForm.name = $event.detail.value),
-        I: common_vendor.o(closeAddProjectModal),
-        J: common_vendor.o(confirmAddProject)
+        D: newProjectForm.name,
+        E: common_vendor.o(($event) => newProjectForm.name = $event.detail.value),
+        F: newProjectForm.description,
+        G: common_vendor.o(($event) => newProjectForm.description = $event.detail.value),
+        H: newProjectForm.notes,
+        I: common_vendor.o(($event) => newProjectForm.notes = $event.detail.value),
+        J: newProjectForm.name,
+        K: common_vendor.o(($event) => newProjectForm.name = $event.detail.value),
+        L: common_vendor.o(closeAddProjectModal),
+        M: common_vendor.o(confirmAddProject)
       } : {}, {
-        K: showEditProjectModal.value
+        N: showEditProjectModal.value
       }, showEditProjectModal.value ? {
-        L: common_vendor.o(closeEditProjectModal),
-        M: common_vendor.p({
+        O: common_vendor.o(closeEditProjectModal),
+        P: common_vendor.p({
           type: "close",
           size: "30",
           color: "#64748b"
         }),
-        N: editProjectForm.name,
-        O: common_vendor.o(($event) => editProjectForm.name = $event.detail.value),
-        P: editProjectForm.description,
-        Q: common_vendor.o(($event) => editProjectForm.description = $event.detail.value),
-        R: editProjectForm.notes,
-        S: common_vendor.o(($event) => editProjectForm.notes = $event.detail.value),
-        T: common_vendor.o(closeEditProjectModal),
-        U: common_vendor.o(confirmEditProject)
+        Q: editProjectForm.name,
+        R: common_vendor.o(($event) => editProjectForm.name = $event.detail.value),
+        S: editProjectForm.description,
+        T: common_vendor.o(($event) => editProjectForm.description = $event.detail.value),
+        U: editProjectForm.notes,
+        V: common_vendor.o(($event) => editProjectForm.notes = $event.detail.value),
+        W: common_vendor.o(closeEditProjectModal),
+        X: common_vendor.o(confirmEditProject)
       } : {}, {
-        V: showUploadModal.value
+        Y: showUploadModal.value
       }, showUploadModal.value ? common_vendor.e({
-        W: common_vendor.o(closeUploadModal),
-        X: common_vendor.p({
+        Z: common_vendor.o(closeUploadModal),
+        aa: common_vendor.p({
           type: "close",
           size: "30",
           color: "#64748b"
         }),
-        Y: common_vendor.p({
+        ab: common_vendor.p({
           type: "cloud-upload",
           size: "48",
           color: "#3b82f6"
         }),
-        Z: common_vendor.o(chooseFiles),
-        aa: selectedFiles.value.length > 0
+        ac: common_vendor.o(chooseFiles),
+        ad: selectedFiles.value.length > 0
       }, selectedFiles.value.length > 0 ? {
-        ab: common_vendor.t(selectedFiles.value.length),
-        ac: common_vendor.t(fmtSize(selectedFiles.value.reduce((sum, f) => sum + f.size, 0))),
-        ad: common_vendor.p({
+        ae: common_vendor.t(selectedFiles.value.length),
+        af: common_vendor.t(fmtSize(selectedFiles.value.reduce((sum, f) => sum + f.size, 0))),
+        ag: common_vendor.p({
           type: "trash",
           size: "14",
           color: "#ef4444"
         }),
-        ae: common_vendor.o(clearAllFiles),
-        af: common_vendor.f(selectedFiles.value, (file, index, i0) => {
+        ah: common_vendor.o(clearAllFiles),
+        ai: common_vendor.f(selectedFiles.value, (file, index, i0) => {
           return {
-            a: "47879d53-19-" + i0 + ",47879d53-0",
+            a: "47879d53-20-" + i0 + ",47879d53-0",
             b: common_vendor.t(file.name),
             c: common_vendor.t(fmtSize(file.size)),
-            d: "47879d53-20-" + i0 + ",47879d53-0",
+            d: "47879d53-21-" + i0 + ",47879d53-0",
             e: common_vendor.o(($event) => removeFile(index), index),
             f: index
           };
         }),
-        ag: common_vendor.p({
+        aj: common_vendor.p({
           type: "document",
           size: "16",
           color: "#3b82f6"
         }),
-        ah: common_vendor.p({
+        ak: common_vendor.p({
           type: "close",
           size: "14",
           color: "#94a3b8"
         })
       } : {}, {
-        ai: common_vendor.o(closeUploadModal),
-        aj: common_vendor.t(selectedFiles.value.length > 0 ? `（${selectedFiles.value.length}个文件）` : ""),
-        ak: common_vendor.o(confirmUpload),
-        al: selectedFiles.value.length === 0
+        al: common_vendor.o(closeUploadModal),
+        am: common_vendor.t(selectedFiles.value.length > 0 ? `（${selectedFiles.value.length}个文件）` : ""),
+        an: common_vendor.o(confirmUpload),
+        ao: selectedFiles.value.length === 0
       }) : {}, {
-        am: showUploadProgress.value
+        ap: showUploadProgress.value
       }, showUploadProgress.value ? common_vendor.e({
-        an: !batchUploading.value
+        aq: !batchUploading.value
       }, !batchUploading.value ? {
-        ao: common_vendor.o(closeUploadProgress),
-        ap: common_vendor.p({
+        ar: common_vendor.o(closeUploadProgress),
+        as: common_vendor.p({
           type: "close",
           size: "20",
           color: "#64748b"
         })
       } : {}, {
-        aq: common_vendor.t(batchMessage.value),
-        ar: common_vendor.t(batchCurrent.value),
-        as: common_vendor.t(batchTotal.value),
-        at: batchProgress.value + "%",
-        av: common_vendor.t(batchProgress.value)
+        at: common_vendor.t(batchMessage.value),
+        av: common_vendor.t(batchCurrent.value),
+        aw: common_vendor.t(batchTotal.value),
+        ax: batchProgress.value + "%",
+        ay: common_vendor.t(batchProgress.value)
       }) : {}, {
-        aw: common_vendor.p({
+        az: common_vendor.p({
           current: "pages/projects/index"
         })
       });
