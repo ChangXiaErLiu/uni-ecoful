@@ -492,6 +492,7 @@
 					</view>
 
 
+<<<<<<< HEAD
 
 					<!-- 步骤2: 提资单比对 -->
 					<view v-show="currentStep === 2" class="content-section">
@@ -959,6 +960,447 @@
 					</view>
 
 
+=======
+					   
+					     <!-- 步骤2: 提资单比对 -->
+					     <view v-show="currentStep === 2" class="content-section">
+					       <view class="section-card">
+					         <view class="section-header">
+					           <uni-icons type="list" size="20" color="#166534" />
+					           <text class="section-title">提资单比对</text>
+					         </view>
+					         
+					         <view class="section-body">
+					           <!-- 环保资料提交管理系统界面 -->
+					           <view class="tizidan-container">
+					             <!-- 顶部描述 -->
+					             <view class="tizidan-header">
+					               <text class="tizidan-title">环保资料提交管理系统</text>
+					               <text class="tizidan-subtitle">请按要求提交相关环保资料</text>
+					             </view>
+					   
+					             <!-- 加载失败提示 -->
+					             <view v-if="tizidanItems.length === 0" class="empty-state">
+					               <uni-icons type="refresh" size="48" color="#cbd5e1" />
+					               <text class="empty-text">加载失败，请重新刷新！</text>
+					               <button class="btn btn--primary" @tap="fetchTizidanData">
+					                 <uni-icons type="refresh" size="16" color="#ffffff" />
+					                 <text>重新加载</text>
+					               </button>
+					             </view>
+					   
+					             <!-- 正常内容 -->
+					             <view v-else class="tizidan-content">
+					               <!-- 将提资单项分组显示 -->
+					               
+					               <!-- 1、项目历史以来环评报告及批复 -->
+					               <view class="tizidan-section">
+					                 <view class="tizidan-section-header">
+					                   <text class="tizidan-section-number">1.</text>
+					                   <text class="tizidan-section-title">项目历史以来环评报告及批复</text>
+					                 </view>
+					                 
+					                 <!-- 找到这个组的所有项目 -->
+					                 <template v-for="item in getItemsByLevel1('项目历史以来环评报告及批复')" :key="item.record_id">
+					                   <view class="tizidan-item-card">
+					                     <view class="tizidan-item-header">
+					                       <view class="tizidan-item-left">
+					                         <text class="tizidan-item-number">{{ getItemNumber(item) }}</text>
+					                         <view class="tizidan-item-content">
+					                           <text class="tizidan-item-title">{{ getItemTitle(item) }}</text>
+					                         </view>
+					                       </view>
+					                       
+					                       <!-- 复选框：本项目是否需要 -->
+					                       <view class="tizidan-checkbox-group">
+					                         <checkbox-group @change="() => toggleRequired(item)">
+					                           <label class="checkbox-label">
+					                             <checkbox :checked="item.required" color="#166534" style="transform:scale(0.9)" />
+					                             <text class="checkbox-text">本项目是否需要</text>
+					                           </label>
+					                         </checkbox-group>
+					                       </view>
+					                     </view>
+					                     
+					                     <!-- 当项目需要时显示内容 -->
+					                     <view v-if="item.required" class="tizidan-item-body">
+					                       <view class="tizidan-item-actions">
+					                         <view class="tizidan-file-count" v-if="getItemFiles(item).length > 0">
+					                           <uni-icons type="paperclip" size="14" color="#166534" />
+					                           <text class="file-count-text">{{ getItemFiles(item).length }}个文件</text>
+					                         </view>
+					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, getFileKey(item))">
+					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
+					                           <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                         </button>
+					                       </view>
+					                       
+					                       <!-- 已上传文件列表 -->
+					                       <view v-if="getItemFiles(item).length > 0" class="tizidan-file-list">
+					                         <view v-for="(file, fileIndex) in getItemFiles(item)" :key="fileIndex" class="tizidan-file-item">
+					                           <view class="tizidan-file-info">
+					                             <uni-icons type="paperclip" size="16" color="#166534" />
+					                             <text class="tizidan-file-name">{{ file.name }}</text>
+					                             <text class="tizidan-file-size">{{ formatFileSize(file.size) }}</text>
+					                           </view>
+					                           <button class="btn btn--icon" @click="deleteTizidanFile(item.record_id, getFileKey(item), fileIndex)">
+					                             <uni-icons type="trash" size="16" color="#dc2626" />
+					                           </button>
+					                         </view>
+					                       </view>
+					                     </view>
+					                     
+					                     <!-- 当项目不需要时显示禁用状态 -->
+					                     <view v-else class="tizidan-item-disabled">
+					                       <uni-icons type="minus-circle" size="18" color="#9ca3af" />
+					                       <text class="disabled-text">此项目无需提交</text>
+					                     </view>
+					                   </view>
+					                 </template>
+					               </view>
+					   
+					               <!-- 2、项目相关环保验收资料 -->
+					               <view class="tizidan-section">
+					                 <view class="tizidan-section-header">
+					                   <text class="tizidan-section-number">2.</text>
+					                   <text class="tizidan-section-title">项目相关环保验收资料</text>
+					                 </view>
+					                 
+					                 <!-- 找到这个组的所有项目 -->
+					                 <template v-for="item in getItemsByLevel1('项目相关环保验收资料')" :key="item.record_id">
+					                   <view class="tizidan-item-card">
+					                     <view class="tizidan-item-header">
+					                       <view class="tizidan-item-left">
+					                         <text class="tizidan-item-number">{{ getItemNumber(item) }}</text>
+					                         <view class="tizidan-item-content">
+					                           <text class="tizidan-item-title">{{ getItemTitle(item) }}</text>
+					                         </view>
+					                       </view>
+					                       
+					                       <!-- 复选框：本项目是否需要 -->
+					                       <view class="tizidan-checkbox-group">
+					                         <checkbox-group @change="() => toggleRequired(item)">
+					                           <label class="checkbox-label">
+					                             <checkbox :checked="item.required" color="#166534" style="transform:scale(0.9)" />
+					                             <text class="checkbox-text">本项目是否需要</text>
+					                           </label>
+					                         </checkbox-group>
+					                       </view>
+					                     </view>
+					                     
+					                     <!-- 当项目需要时显示内容 -->
+					                     <view v-if="item.required" class="tizidan-item-body">
+					                       <view class="tizidan-item-actions">
+					                         <view class="tizidan-file-count" v-if="item.files && item.files.length > 0">
+					                           <uni-icons type="paperclip" size="14" color="#166534" />
+					                           <text class="file-count-text">{{ item.files.length }}个文件</text>
+					                         </view>
+					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, null)">
+					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
+					                           <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                         </button>
+					                       </view>
+					                       
+					                       <!-- 已上传文件列表 -->
+					                       <view v-if="item.files && item.files.length > 0" class="tizidan-file-list">
+					                         <view v-for="(file, fileIndex) in item.files" :key="fileIndex" class="tizidan-file-item">
+					                           <view class="tizidan-file-info">
+					                             <uni-icons type="paperclip" size="16" color="#166534" />
+					                             <text class="tizidan-file-name">{{ file.name }}</text>
+					                             <text class="tizidan-file-size">{{ formatFileSize(file.size) }}</text>
+					                           </view>
+					                           <button class="btn btn--icon" @click="deleteTizidanFile(item.record_id, null, fileIndex)">
+					                             <uni-icons type="trash" size="16" color="#dc2626" />
+					                           </button>
+					                         </view>
+					                       </view>
+					                     </view>
+					                     
+					                     <!-- 当项目不需要时显示禁用状态 -->
+					                     <view v-else class="tizidan-item-disabled">
+					                       <uni-icons type="minus-circle" size="18" color="#9ca3af" />
+					                       <text class="disabled-text">此项目无需提交</text>
+					                     </view>
+					                   </view>
+					                 </template>
+					               </view>
+					   
+					               <!-- 3、（房地产项目提供）房地产相关证件 -->
+					               <view class="tizidan-section">
+					                 <view class="tizidan-section-header">
+					                   <text class="tizidan-section-number">3.</text>
+					                   <text class="tizidan-section-title">（房地产项目提供）房地产相关证件</text>
+					                 </view>
+					                 
+					                 <!-- 找到这个组的所有项目 -->
+					                 <template v-for="item in getItemsByLevel1('（房地产项目提供）房地产相关证件')" :key="item.record_id">
+					                   <view class="tizidan-item-card">
+					                     <view class="tizidan-item-header">
+					                       <view class="tizidan-item-left">
+					                         <text class="tizidan-item-number">{{ getItemNumber(item) }}</text>
+					                         <view class="tizidan-item-content">
+					                           <text class="tizidan-item-title">{{ getItemTitle(item) }}</text>
+					                         </view>
+					                       </view>
+					                       
+					                       <!-- 复选框：本项目是否需要 -->
+					                       <view class="tizidan-checkbox-group">
+					                         <checkbox-group @change="() => toggleRequired(item)">
+					                           <label class="checkbox-label">
+					                             <checkbox :checked="item.required" color="#166534" style="transform:scale(0.9)" />
+					                             <text class="checkbox-text">本项目是否需要</text>
+					                           </label>
+					                         </checkbox-group>
+					                       </view>
+					                     </view>
+					                     
+					                     <!-- 当项目需要时显示内容 -->
+					                     <view v-if="item.required" class="tizidan-item-body">
+					                       <view class="tizidan-item-actions">
+					                         <view class="tizidan-file-count" v-if="getItemFiles(item).length > 0">
+					                           <uni-icons type="paperclip" size="14" color="#166534" />
+					                           <text class="file-count-text">{{ getItemFiles(item).length }}个文件</text>
+					                         </view>
+					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, getFileKey(item))">
+					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
+					                           <text>{{ getSubmittedStatus(item) ? '重新上传' : '上传' }}</text>
+					                         </button>
+					                       </view>
+					                       
+					                       <!-- 已上传文件列表 -->
+					                       <view v-if="getItemFiles(item).length > 0" class="tizidan-file-list">
+					                         <view v-for="(file, fileIndex) in getItemFiles(item)" :key="fileIndex" class="tizidan-file-item">
+					                           <view class="tizidan-file-info">
+					                             <uni-icons type="paperclip" size="16" color="#166534" />
+					                             <text class="tizidan-file-name">{{ file.name }}</text>
+					                             <text class="tizidan-file-size">{{ formatFileSize(file.size) }}</text>
+					                           </view>
+					                           <button class="btn btn--icon" @click="deleteTizidanFile(item.record_id, getFileKey(item), fileIndex)">
+					                             <uni-icons type="trash" size="16" color="#dc2626" />
+					                           </button>
+					                         </view>
+					                       </view>
+					                     </view>
+					                     
+					                     <!-- 当项目不需要时显示禁用状态 -->
+					                     <view v-else class="tizidan-item-disabled">
+					                       <uni-icons type="minus-circle" size="18" color="#9ca3af" />
+					                       <text class="disabled-text">此项目无需提交</text>
+					                     </view>
+					                   </view>
+					                 </template>
+					               </view>
+					   
+					               <!-- 4-9项 - 统一布局的普通项 -->
+					               <template v-for="level1Name in ['污染治理设施设计方案', '厂区总平面图及各层平面图（CAD版本）', 
+					                          '厂区排水设计图（CAD版本）', '排污许可证', '排水许可证', '危废处置协议及相应处置资质']" 
+					                         :key="level1Name">
+					                 <view v-if="hasItemsByLevel1(level1Name)" class="tizidan-section">
+					                   <view class="tizidan-section-header">
+					                     <text class="tizidan-section-number">{{ getSectionNumber(level1Name) }}.</text>
+					                     <text class="tizidan-section-title">{{ level1Name }}</text>
+					                   </view>
+					                   
+					                   <!-- 找到这个组的所有项目 -->
+					                   <template v-for="item in getItemsByLevel1(level1Name)" :key="item.record_id">
+					                     <view class="tizidan-item-card">
+					                       <view class="tizidan-item-header">
+					                         <view class="tizidan-item-left">
+					                           <text class="tizidan-item-number">{{ getItemNumber(item) }}</text>
+					                           <view class="tizidan-item-content">
+					                             <text class="tizidan-item-title">{{ getItemTitle(item) }}</text>
+					                           </view>
+					                         </view>
+					                         
+					                         <!-- 复选框：本项目是否需要 -->
+					                         <view class="tizidan-checkbox-group">
+					                           <checkbox-group @change="() => toggleRequired(item)">
+					                             <label class="checkbox-label">
+					                               <checkbox :checked="item.required" color="#166534" style="transform:scale(0.9)" />
+					                               <text class="checkbox-text">本项目是否需要</text>
+					                             </label>
+					                           </checkbox-group>
+					                         </view>
+					                       </view>
+					                       
+					                       <!-- 当项目需要时显示内容 -->
+					                       <view v-if="item.required" class="tizidan-item-body">
+					                         <view class="tizidan-item-actions">
+					                           <view class="tizidan-file-count" v-if="item.files && item.files.length > 0">
+					                             <uni-icons type="paperclip" size="14" color="#166534" />
+					                             <text class="file-count-text">{{ item.files.length }}个文件</text>
+					                           </view>
+					                           <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, null)">
+					                             <uni-icons type="cloud-upload" size="14" color="#ffffff" />
+					                             <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                           </button>
+					                         </view>
+					                         
+					                         <!-- 已上传文件列表 -->
+					                         <view v-if="item.files && item.files.length > 0" class="tizidan-file-list">
+					                           <view v-for="(file, fileIndex) in item.files" :key="fileIndex" class="tizidan-file-item">
+					                             <view class="tizidan-file-info">
+					                               <uni-icons type="paperclip" size="16" color="#166534" />
+					                               <text class="tizidan-file-name">{{ file.name }}</text>
+					                               <text class="tizidan-file-size">{{ formatFileSize(file.size) }}</text>
+					                             </view>
+					                             <button class="btn btn--icon" @click="deleteTizidanFile(item.record_id, null, fileIndex)">
+					                               <uni-icons type="trash" size="16" color="#dc2626" />
+					                             </button>
+					                           </view>
+					                         </view>
+					                       </view>
+					                       
+					                       <!-- 当项目不需要时显示禁用状态 -->
+					                       <view v-else class="tizidan-item-disabled">
+					                         <uni-icons type="minus-circle" size="18" color="#9ca3af" />
+					                         <text class="disabled-text">此项目无需提交</text>
+					                       </view>
+					                     </view>
+					                   </template>
+					                 </view>
+					               </template>
+					   
+					               <!-- 10、其他需要提供的资料 -->
+					               <view v-if="hasItemsByLevel1('其他需要提供的资料')" class="tizidan-section">
+					                 <view class="tizidan-section-header">
+					                   <text class="tizidan-section-number">10.</text>
+					                   <text class="tizidan-section-title">其他需要提供的资料</text>
+					                 </view>
+					                 
+					                 <!-- 找到这个组的所有项目 -->
+					                 <template v-for="item in getItemsByLevel1('其他需要提供的资料')" :key="item.record_id">
+					                   <view class="tizidan-item-card">
+					                     <view class="tizidan-item-header">
+					                       <view class="tizidan-item-left">
+					                         <text class="tizidan-item-number">{{ getItemNumber(item) }}</text>
+					                         <view class="tizidan-item-content">
+					                           <text class="tizidan-item-title">{{ getItemTitle(item) }}</text>
+					                         </view>
+					                       </view>
+					                       
+					                       <!-- 复选框：本项目是否需要 -->
+					                       <view class="tizidan-checkbox-group">
+					                         <checkbox-group @change="() => toggleRequired(item)">
+					                           <label class="checkbox-label">
+					                             <checkbox :checked="item.required" color="#166534" style="transform:scale(0.9)" />
+					                             <text class="checkbox-text">本项目是否需要</text>
+					                           </label>
+					                         </checkbox-group>
+					                       </view>
+					                     </view>
+					                     
+					                     <view v-if="item.required" class="tizidan-item-body">
+					                       <!-- 输入框 -->
+					                       <view class="tizidan-other-input">
+					                         <uni-easyinput 
+					                           v-model="item.customText" 
+					                           placeholder="请输入其他需要提供的资料（以防万一以上资料不满足特殊项目要求）" 
+					                           type="textarea"
+					                           :maxlength="500"
+					                           :clearable="true"
+					                           :autoHeight="true"
+					                           class="custom-textarea"
+					                         />
+					                         <button class="btn btn--primary" @click="submitOtherMaterials(item.record_id)">
+					                           提交
+					                         </button>
+					                       </view>
+					                       
+					                       <view class="tizidan-item-actions">
+					                         <view class="tizidan-file-count" v-if="item.files && item.files.length > 0">
+					                           <uni-icons type="paperclip" size="14" color="#166534" />
+					                           <text class="file-count-text">{{ item.files.length }}个文件</text>
+					                         </view>
+					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, null)">
+					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
+					                           <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                         </button>
+					                       </view>
+					                       
+					                       <!-- 已上传文件列表 -->
+					                       <view v-if="item.files && item.files.length > 0" class="tizidan-file-list">
+					                         <view v-for="(file, fileIndex) in item.files" :key="fileIndex" class="tizidan-file-item">
+					                           <view class="tizidan-file-info">
+					                             <uni-icons type="paperclip" size="16" color="#166534" />
+					                             <text class="tizidan-file-name">{{ file.name }}</text>
+					                             <text class="tizidan-file-size">{{ formatFileSize(file.size) }}</text>
+					                           </view>
+					                           <button class="btn btn--icon" @click="deleteTizidanFile(item.record_id, null, fileIndex)">
+					                             <uni-icons type="trash" size="16" color="#dc2626" />
+					                           </button>
+					                         </view>
+					                       </view>
+					                     </view>
+					                     
+					                     <view v-else class="tizidan-item-disabled">
+					                       <uni-icons type="minus-circle" size="18" color="#9ca3af" />
+					                       <text class="disabled-text">此项目无需提交</text>
+					                     </view>
+					                   </view>
+					                 </template>
+					               </view>
+					             </view>
+					           </view>
+					   
+					          <tizidan-footer>
+					            <view class="footer-content">
+					              <!-- 添加联系人信息输入区域 -->
+					              <view class="contact-info-section">
+					                <view class="contact-info-header">
+					                  <uni-icons type="phone" size="16" color="#166534" />
+					                  <text class="contact-info-title">联系人信息</text>
+					                </view>
+					                
+					                <view class="contact-info-form">
+					                  <!-- 联系人 -->
+					                  <view class="contact-info-item">
+					                    <text class="contact-info-label">联系人：</text>
+					                    <uni-easyinput 
+					                      v-model="contactPerson" 
+					                      placeholder="请输入联系人姓名" 
+					                      :clearable="true"
+					                      class="contact-info-input"
+					                    />
+					                  </view>
+					                  
+					                  <!-- 电话 -->
+					                  <view class="contact-info-item">
+					                    <text class="contact-info-label">电话：</text>
+					                    <uni-easyinput 
+					                      v-model="contactPhone" 
+					                      placeholder="请输入联系电话" 
+					                      :clearable="true"
+					                      class="contact-info-input"
+					                    />
+					                  </view>
+					                  
+					                  <!-- 邮箱 -->
+					                  <view class="contact-info-item">
+					                    <text class="contact-info-label">邮箱：</text>
+					                    <uni-easyinput 
+					                      v-model="contactEmail" 
+					                      placeholder="请输入电子邮箱" 
+					                      :clearable="true"
+					                      class="contact-info-input"
+					                    />
+					                  </view>
+					                </view>
+					              </view>
+					              
+					              <text class="footer-text">请确保所有需要的资料完整准确提交</text>
+					              <button class="btn btn--primary" @tap="generateAndDownloadTizidan" >
+					                <uni-icons type="download-filled" size="16" color="#ffffff" />
+					                <text>生成并下载验收报告提资单</text>
+					              </button>
+					            </view>
+					          </tizidan-footer>
+					         </view>
+					       </view>
+					     </view>
+					   
+					
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 					<!-- 步骤3: 现场踏勘比对 -->
 					<view v-show="currentStep === 3" class="content-section">
 						<FieldSurveyContainer :userId="user_id" :projectId="project_id" :signboard="signboard"
@@ -2534,8 +2976,238 @@
 	// 提资单数据
 	const tizidanItems = ref([])
 	const tizidanRecordMap = ref({}) // 用于存储 record_id 到前端索引的映射
+<<<<<<< HEAD
 
 
+=======
+	// 在 data 部分添加联系人信息
+	const contactPerson = ref('')
+	const contactPhone = ref('')
+	const contactEmail = ref('')
+	
+	// 修改下载函数为生成并下载提资单
+	async function generateAndDownloadTizidan() {
+	  if (!selectedProjectId.value) {
+	    uni.showToast({
+	      title: '请先选择项目',
+	      icon: 'none'
+	    })
+	    return
+	  }
+	
+	  // 验证联系人信息
+	  if (!contactPerson.value.trim()) {
+	    uni.showToast({
+	      title: '请输入联系人',
+	      icon: 'none'
+	    })
+	    return
+	  }
+	
+	  if (!contactPhone.value.trim()) {
+	    uni.showToast({
+	      title: '请输入电话',
+	      icon: 'none'
+	    })
+	    return
+	  }
+	
+	  if (!contactEmail.value.trim()) {
+	    uni.showToast({
+	      title: '请输入邮箱',
+	      icon: 'none'
+	    })
+	    return
+	  }
+	
+	  // 显示下载中提示
+	  uni.showLoading({
+	    title: '正在生成文档…',
+	    mask: true
+	  })
+	
+	  try {
+	    // 调用生成提资单接口
+	    const url = eco_baseUrl + '/api/v1/completion/tzdDetail/generate_and_download_tzd_doc'
+	    
+	    const formData = {
+	      user_id: user_id,
+	      project_id: project_id,
+	      contact_person: contactPerson.value,
+	      contact_phone: contactPhone.value,
+	      contact_email: contactEmail.value
+	    }
+	
+	    // 使用 POST 请求发送数据
+	    const response = await new Promise((resolve, reject) => {
+	      uni.request({
+	        url: url,
+	        method: 'POST',
+	        header: {
+	          'Content-Type': 'application/json'
+	        },
+	        data: formData,
+	        success: (res) => resolve(res),
+	        fail: (err) => reject(err)
+	      })
+	    })
+	
+	    if (response.statusCode === 200) {
+	      const data = response.data
+	      if (data.success) {
+	        if (data.download_url) {
+	          // 延迟 1 秒再下载，确保文件已保存
+	          setTimeout(() => {
+	            downloadGeneratedFile(data.download_url, data.file_name)
+	          }, 1000)
+	          
+	          uni.showToast({
+	            title: '文档生成成功，开始下载',
+	            icon: 'success'
+	          })
+	        } else {
+	          uni.showToast({
+	            title: data.message || '生成成功',
+	            icon: 'success'
+	          })
+	        }
+	      } else {
+	        throw new Error(data.message || '生成文档失败')
+	      }
+	    } else {
+	      throw new Error(`请求失败，状态码：${response.statusCode}`)
+	    }
+	  } catch (error) {
+	    console.error('生成提资单失败:', error)
+	    uni.showToast({
+	      title: '生成失败: ' + (error.message || '未知错误'),
+	      icon: 'none',
+	      duration: 3000
+	    })
+	  } finally {
+	    uni.hideLoading()
+	  }
+	}
+	
+	// 下载生成的文档
+	async function downloadGeneratedFile(downloadUrl, fileName) {
+	  try {
+	    // 构建完整的下载 URL
+	    const fullUrl = eco_baseUrl + downloadUrl
+	    
+	    console.log('开始下载文件:', fullUrl)
+	    
+	    // 显示下载进度
+	    uni.showLoading({
+	      title: '正在下载文档…',
+	      mask: true
+	    })
+	    
+	    // #ifdef H5
+	    // H5环境：直接打开链接下载
+	    window.open(fullUrl, '_blank')
+	    uni.hideLoading()
+	    uni.showToast({
+	      title: '下载已开始',
+	      icon: 'success'
+	    })
+	    // #endif
+	
+	    // #ifdef MP-WEIXIN
+	    // 微信小程序环境
+	    const downloadTask = uni.downloadFile({
+	      url: fullUrl,
+	      success: (res) => {
+	        uni.hideLoading()
+	        if (res.statusCode === 200) {
+	          const tempFilePath = res.tempFilePath
+	          uni.saveFile({
+	            tempFilePath: tempFilePath,
+	            success: (saveRes) => {
+	              console.log('文件保存成功:', saveRes.savedFilePath)
+	              uni.showToast({
+	                title: '文件已保存',
+	                icon: 'success'
+	              })
+	            },
+	            fail: (saveErr) => {
+	              console.error('保存文件失败:', saveErr)
+	              uni.showToast({
+	                title: '保存失败: ' + (saveErr.errMsg || '未知错误'),
+	                icon: 'none'
+	              })
+	            }
+	          })
+	        } else {
+	          uni.showToast({
+	            title: `下载失败，状态码: ${res.statusCode}`,
+	            icon: 'none'
+	          })
+	        }
+	      },
+	      fail: (err) => {
+	        uni.hideLoading()
+	        console.error('下载请求失败:', err)
+	        uni.showToast({
+	          title: '下载请求失败: ' + (err.errMsg || '未知错误'),
+	          icon: 'none'
+	        })
+	      }
+	    })
+	    
+	    // 监听下载进度
+	    downloadTask.onProgressUpdate((res) => {
+	      console.log('下载进度', res.progress)
+	      console.log('已经下载的数据长度', res.totalBytesWritten)
+	      console.log('预期需要下载的数据总长度', res.totalBytesExpectedToWrite)
+	    })
+	    // #endif
+	
+	    // #ifdef APP-PLUS
+	    // App环境
+	    uni.downloadFile({
+	      url: fullUrl,
+	      success: (res) => {
+	        uni.hideLoading()
+	        if (res.statusCode === 200) {
+	          const tempFilePath = res.tempFilePath
+	          plus.runtime.openFile(tempFilePath, {}, (e) => {
+	            if (e.code !== 0) {
+	              uni.showToast({
+	                title: '打开文件失败',
+	                icon: 'none'
+	              })
+	            }
+	          })
+	        } else {
+	          uni.showToast({
+	            title: `下载失败，状态码: ${res.statusCode}`,
+	            icon: 'none'
+	          })
+	        }
+	      },
+	      fail: (err) => {
+	        uni.hideLoading()
+	        console.error('下载请求失败:', err)
+	        uni.showToast({
+	          title: '下载请求失败: ' + (err.errMsg || '未知错误'),
+	          icon: 'none'
+	        })
+	      }
+	    })
+	    // #endif
+	
+	  } catch (error) {
+	    uni.hideLoading()
+	    console.error('下载文件失败:', error)
+	    uni.showToast({
+	      title: '下载失败: ' + (error.message || '未知错误'),
+	      icon: 'none'
+	    })
+	  }
+	}
+	
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	// 重置提交状态
 	function resetSubmissionStatus(item) {
 		// 重置主提交状态
@@ -3209,7 +3881,12 @@
 
 
 
+<<<<<<< HEAD
 	// 下载验收报告提资单
+=======
+	
+	// 生成并下载验收报告提资单
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	async function downloadTizidanFile() {
 		if (!selectedProjectId.value) {
 			uni.showToast({
@@ -5109,8 +5786,10 @@
 	}
 
 	/* ==========wilson 提资单样式比对样式 ========== */
-	/* 提资单样式 */
+	/* ========== 提资单比对模块优化 ========== */
+	/* 步骤2容器 */
 	.tizidan-container {
+<<<<<<< HEAD
 		display: flex;
 		flex-direction: column;
 		gap: 24rpx;
@@ -5120,17 +5799,43 @@
 	.tizidan-header {
 		text-align: center;
 		margin-bottom: 8rpx;
+=======
+	  background: $white;
+	  border-radius: $radius-lg;
+	  border: 1rpx solid #eef2f6;
+	  padding: 32rpx;
+	  margin-bottom: 24rpx;
+	  box-shadow: $shadow-sm;
+	}
+	
+	/* 头部区域 */
+	.tizidan-header {
+	  margin-bottom: 32rpx;
+	  text-align: center;
+	  padding-bottom: 24rpx;
+	  border-bottom: 2rpx solid #f1f5f9;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-title {
+<<<<<<< HEAD
 		display: block;
 		font-size: 32rpx;
 		color: #166534;
 		font-weight: 700;
 		margin-bottom: 8rpx;
+=======
+	  display: block;
+	  font-size: 36rpx;
+	  color: $ink;
+	  font-weight: 700;
+	  margin-bottom: 12rpx;
+	  line-height: 1.4;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-subtitle {
+<<<<<<< HEAD
 		display: block;
 		font-size: 24rpx;
 		color: #64748b;
@@ -5441,16 +6146,56 @@
 		padding: 20rpx 24rpx;
 		background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
 		border-bottom: 1rpx solid #dcfce7;
+=======
+	  display: block;
+	  font-size: 28rpx;
+	  color: $muted;
+	  line-height: 1.5;
+	}
+	
+	/* 分组容器 */
+	.tizidan-section {
+	  background: #fafbfd;
+	  border-radius: 16rpx;
+	  border: 1rpx solid #e9edf2;
+	  margin-bottom: 32rpx;
+	  overflow: hidden;
+	  transition: all 0.3s ease;
+	}
+	
+	.tizidan-section:hover {
+	  box-shadow: 0 8rpx 32rpx rgba(22, 101, 52, 0.08);
+	  border-color: #d1f5ea;
+	}
+	
+	/* 分组头部 */
+	.tizidan-section-header {
+	  display: flex;
+	  align-items: center;
+	  gap: 16rpx;
+	  padding: 24rpx 32rpx;
+	  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+	  border-bottom: 1rpx solid #dcfce7;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-section-number {
+<<<<<<< HEAD
 		font-size: 28rpx;
 		font-weight: 700;
 		color: #166534;
 		min-width: 32rpx;
+=======
+	  font-size: 32rpx;
+	  font-weight: 700;
+	  color: $brand;
+	  min-width: 40rpx;
+	  text-align: center;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-section-title {
+<<<<<<< HEAD
 		font-size: 28rpx;
 		font-weight: 600;
 		color: #1f2937;
@@ -5473,30 +6218,89 @@
 		align-items: center;
 		justify-content: space-between;
 		margin-bottom: 16rpx;
+=======
+	  font-size: 30rpx;
+	  font-weight: 700;
+	  color: $ink;
+	  line-height: 1.4;
+	  flex: 1;
+	}
+	
+	/* 项目卡片 */
+	.tizidan-item-card {
+	  background: $white;
+	  border-bottom: 1rpx solid #f1f5f9;
+	  padding: 28rpx 32rpx;
+	  transition: all 0.2s ease;
+	}
+	
+	.tizidan-item-card:last-child {
+	  border-bottom: none;
+	}
+	
+	.tizidan-item-card:hover {
+	  background: #f8fafc;
+	}
+	
+	/* 项目头部 */
+	.tizidan-item-header {
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  margin-bottom: 20rpx;
+	  flex-wrap: wrap;
+	  gap: 16rpx;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-item-left {
+<<<<<<< HEAD
 		display: flex;
 		align-items: flex-start;
 		gap: 12rpx;
 		flex: 1;
+=======
+	  display: flex;
+	  align-items: flex-start;
+	  gap: 16rpx;
+	  flex: 1;
+	  min-width: 0;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-item-number {
+<<<<<<< HEAD
 		font-size: 24rpx;
 		font-weight: 600;
 		color: #374151;
 		min-width: 40rpx;
+=======
+	  font-size: 28rpx;
+	  font-weight: 700;
+	  color: $brand;
+	  min-width: 40rpx;
+	  background: #f0fdf4;
+	  border-radius: 8rpx;
+	  padding: 4rpx 8rpx;
+	  text-align: center;
+	  flex-shrink: 0;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-item-content {
+<<<<<<< HEAD
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		gap: 4rpx;
+=======
+	  flex: 1;
+	  min-width: 0;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-item-title {
+<<<<<<< HEAD
 		font-size: 26rpx;
 		font-weight: 500;
 		color: #4b5563;
@@ -5507,16 +6311,46 @@
 	.tizidan-checkbox-group {
 		flex-shrink: 0;
 		margin-left: 16rpx;
+=======
+	  font-size: 28rpx;
+	  font-weight: 600;
+	  color: $ink;
+	  line-height: 1.5;
+	  margin-bottom: 4rpx;
+	}
+	
+	/* 复选框区域 */
+	.tizidan-checkbox-group {
+	  flex-shrink: 0;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.checkbox-label {
+<<<<<<< HEAD
 		display: flex;
 		align-items: center;
 		gap: 8rpx;
 		cursor: pointer;
+=======
+	  display: flex;
+	  align-items: center;
+	  gap: 12rpx;
+	  cursor: pointer;
+	  padding: 8rpx 16rpx;
+	  background: #f8fafc;
+	  border-radius: 10rpx;
+	  border: 1rpx solid #e9edf2;
+	  transition: all 0.2s ease;
+	}
+	
+	.checkbox-label:active {
+	  background: #f1f5f9;
+	  border-color: #d1dbe5;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.checkbox-text {
+<<<<<<< HEAD
 		font-size: 24rpx;
 		color: #64748b;
 		white-space: nowrap;
@@ -5535,18 +6369,73 @@
 		align-items: center;
 		justify-content: space-between;
 		margin-bottom: 16rpx;
+=======
+	  font-size: 26rpx;
+	  color: $muted;
+	  font-weight: 500;
+	}
+	
+	/* 禁用状态 */
+	.tizidan-item-disabled {
+	  display: flex;
+	  align-items: center;
+	  gap: 12rpx;
+	  padding: 24rpx;
+	  background: #f9fafb;
+	  border-radius: 12rpx;
+	  border: 2rpx dashed #d1d5db;
+	  text-align: center;
+	  justify-content: center;
+	  margin-top: 16rpx;
+	}
+	
+	.disabled-text {
+	  font-size: 26rpx;
+	  color: #9ca3af;
+	  font-weight: 500;
+	}
+	
+	/* 项目主体 */
+	.tizidan-item-body {
+	  background: #ffffff;
+	  border-radius: 12rpx;
+	  border: 1rpx solid #eef2f6;
+	  padding: 24rpx;
+	  margin-top: 16rpx;
+	}
+	
+	/* 操作区域 */
+	.tizidan-item-actions {
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  margin-bottom: 20rpx;
+	  padding-bottom: 20rpx;
+	  border-bottom: 1rpx solid #f1f5f9;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-file-count {
+<<<<<<< HEAD
 		display: flex;
 		align-items: center;
 		gap: 6rpx;
 		padding: 6rpx 12rpx;
 		background: #ecfdf5;
 		border-radius: 6rpx;
+=======
+	  display: flex;
+	  align-items: center;
+	  gap: 8rpx;
+	  padding: 8rpx 16rpx;
+	  background: #ecfdf5;
+	  border-radius: 20rpx;
+	  border: 1rpx solid #d1fae5;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.file-count-text {
+<<<<<<< HEAD
 		font-size: 22rpx;
 		color: #166534;
 	}
@@ -5556,9 +6445,23 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12rpx;
+=======
+	  font-size: 24rpx;
+	  color: $brand;
+	  font-weight: 500;
+	}
+	
+	/* 文件列表 */
+	.tizidan-file-list {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 12rpx;
+	  margin-top: 16rpx;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-file-item {
+<<<<<<< HEAD
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -5566,26 +6469,60 @@
 		background: #f9fafb;
 		border-radius: 8rpx;
 		border: 1rpx solid #e5e7eb;
+=======
+	  display: flex;
+	  align-items: center;
+	  justify-content: space-between;
+	  padding: 20rpx;
+	  background: #f8fafc;
+	  border-radius: 12rpx;
+	  border: 1rpx solid #e9edf2;
+	  transition: all 0.2s ease;
+	}
+	
+	.tizidan-file-item:hover {
+	  background: #f1f5f9;
+	  border-color: #d1dbe5;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-file-info {
+<<<<<<< HEAD
 		display: flex;
 		align-items: center;
 		gap: 12rpx;
 		flex: 1;
 		min-width: 0;
+=======
+	  display: flex;
+	  align-items: center;
+	  gap: 16rpx;
+	  flex: 1;
+	  min-width: 0;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-file-name {
+<<<<<<< HEAD
 		font-size: 24rpx;
 		color: #374151;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		flex: 1;
+=======
+	  font-size: 26rpx;
+	  color: $ink;
+	  font-weight: 500;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  white-space: nowrap;
+	  flex: 1;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.tizidan-file-size {
+<<<<<<< HEAD
 		font-size: 22rpx;
 		color: #9ca3af;
 		flex-shrink: 0;
@@ -5595,9 +6532,25 @@
 	/* 其他资料输入框 */
 	.tizidan-other-input {
 		margin-bottom: 20rpx;
+=======
+	  font-size: 24rpx;
+	  color: $muted;
+	  flex-shrink: 0;
+	  margin-left: 8rpx;
+	}
+	
+	/* 其他资料输入 */
+	.tizidan-other-input {
+	  margin-bottom: 24rpx;
+	  padding: 20rpx;
+	  background: #f8fafc;
+	  border-radius: 12rpx;
+	  border: 1rpx solid #e9edf2;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.custom-textarea {
+<<<<<<< HEAD
 		width: 100%;
 		margin-bottom: 12rpx;
 	}
@@ -5646,16 +6599,82 @@
 		margin-top: 32rpx;
 		padding-top: 24rpx;
 		border-top: 1rpx solid #e5e7eb;
+=======
+	  width: 100%;
+	  margin-bottom: 16rpx;
+	  border-radius: 10rpx;
+	  border: 1rpx solid #e2e8f0;
+	}
+	
+	/* 底部区域 */
+	.tizidan-footer {
+	  margin-top: 40rpx;
+	  padding-top: 32rpx;
+	  border-top: 2rpx solid #eef2f6;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.footer-content {
+<<<<<<< HEAD
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 16rpx;
+=======
+	  display: flex;
+	  flex-direction: column;
+	  gap: 24rpx;
+	}
+	
+	/* 联系人信息 */
+	.contact-info-section {
+	  background: #f0fdf4;
+	  border-radius: 16rpx;
+	  border: 1rpx solid #dcfce7;
+	  padding: 28rpx 32rpx;
+	  margin-bottom: 20rpx;
+	}
+	
+	.contact-info-header {
+	  display: flex;
+	  align-items: center;
+	  gap: 12rpx;
+	  margin-bottom: 24rpx;
+	}
+	
+	.contact-info-title {
+	  font-size: 30rpx;
+	  color: $brand;
+	  font-weight: 700;
+	}
+	
+	.contact-info-form {
+	  display: grid;
+	  gap: 20rpx;
+	}
+	
+	.contact-info-item {
+	  display: flex;
+	  flex-direction: column;
+	  gap: 8rpx;
+	}
+	
+	.contact-info-label {
+	  font-size: 26rpx;
+	  color: $ink;
+	  font-weight: 600;
+	}
+	
+	.contact-info-input {
+	  width: 100%;
+	  border-radius: 10rpx;
+	  border: 1rpx solid #e2e8f0;
+	  background: $white;
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	.footer-text {
+<<<<<<< HEAD
 		font-size: 24rpx;
 		color: #64748b;
 		text-align: center;
@@ -5729,10 +6748,148 @@
 			flex: 1;
 			text-align: left;
 		}
+=======
+	  font-size: 26rpx;
+	  color: $muted;
+	  text-align: center;
+	  line-height: 1.6;
+	  padding: 16rpx 0;
+	}
+	
+	/* 小按钮样式 */
+	.btn.btn--small {
+	  height: 60rpx;
+	  padding: 0 24rpx;
+	  font-size: 24rpx;
+	  gap: 8rpx;
+	  border-radius: 10rpx;
+	}
+	
+	.btn.btn--icon {
+	  width: 60rpx;
+	  height: 60rpx;
+	  padding: 0;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  border-radius: 10rpx;
+	  background: #fef2f2;
+	  border: 1rpx solid #fee2e2;
+	}
+	
+	.btn.btn--icon:active {
+	  background: #fee2e2;
+	  transform: scale(0.95);
+	}
+	
+	/* ========== 响应式设计 ========== */
+	/* 移动端适配 */
+	@media (max-width: 768px) {
+	  .tizidan-container {
+	    padding: 24rpx 20rpx;
+	    margin-bottom: 20rpx;
+	  }
+	  
+	  .tizidan-title {
+	    font-size: 32rpx;
+	  }
+	  
+	  .tizidan-subtitle {
+	    font-size: 26rpx;
+	  }
+	  
+	  .tizidan-section-header {
+	    padding: 20rpx 24rpx;
+	    flex-direction: column;
+	    align-items: flex-start;
+	    gap: 12rpx;
+	  }
+	  
+	  .tizidan-section-number {
+	    font-size: 30rpx;
+	  }
+	  
+	  .tizidan-section-title {
+	    font-size: 28rpx;
+	  }
+	  
+	  .tizidan-item-card {
+	    padding: 24rpx;
+	  }
+	  
+	  .tizidan-item-header {
+	    flex-direction: column;
+	    align-items: flex-start;
+	    gap: 16rpx;
+	  }
+	  
+	  .tizidan-checkbox-group {
+	    width: 100%;
+	  }
+	  
+	  .checkbox-label {
+	    width: 100%;
+	    justify-content: center;
+	  }
+	  
+	  .contact-info-form {
+	    gap: 16rpx;
+	  }
+	  
+	  .contact-info-section {
+	    padding: 24rpx;
+	  }
+	  
+	  .tizidan-file-item {
+	    flex-direction: column;
+	    align-items: flex-start;
+	    gap: 16rpx;
+	  }
+	  
+	  .tizidan-file-info {
+	    width: 100%;
+	    flex-wrap: wrap;
+	  }
+	}
+	
+	/* PC端适配 */
+	@media (min-width: 769px) {
+	  .tizidan-container {
+	    max-width: 1200rpx;
+	    margin: 0 auto 32rpx;
+	  }
+	  
+	  .contact-info-form {
+	    grid-template-columns: repeat(3, 1fr);
+	    gap: 24rpx;
+	  }
+	  
+	  .contact-info-item {
+	    margin-bottom: 0;
+	  }
+	  
+	  .footer-content {
+	    flex-direction: row;
+	    justify-content: space-between;
+	    align-items: center;
+	  }
+	  
+	  .footer-text {
+	    flex: 1;
+	    text-align: left;
+	    padding-right: 32rpx;
+	  }
+	  
+	  .tizidan-file-item {
+	    flex-direction: row;
+	    align-items: center;
+	  }
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 
 	/* 超大屏幕适配 */
 	@media (min-width: 1200px) {
+<<<<<<< HEAD
 		.tizidan-section-header {
 			padding: 28rpx 36rpx;
 		}
@@ -5740,5 +6897,79 @@
 		.tizidan-section-title {
 			font-size: 32rpx;
 		}
+=======
+	  .tizidan-container {
+	    padding: 48rpx;
+	  }
+	  
+	  .tizidan-section {
+	    margin-bottom: 40rpx;
+	  }
+	  
+	  .tizidan-section-header {
+	    padding: 32rpx 40rpx;
+	  }
+	  
+	  .tizidan-section-title {
+	    font-size: 32rpx;
+	  }
+	  
+	  .tizidan-item-card {
+	    padding: 32rpx 40rpx;
+	  }
+	  
+	  .contact-info-section {
+	    padding: 32rpx 40rpx;
+	  }
+	}
+	
+	/* 加载失败提示 */
+	.tizidan-container .empty-state {
+	  padding: 60rpx 32rpx;
+	  background: #f8fafc;
+	  border-radius: 16rpx;
+	  border: 2rpx dashed #e2e8f0;
+	  margin: 20rpx 0;
+	}
+	
+	.tizidan-container .empty-state uni-icons {
+	  margin-bottom: 16rpx;
+	}
+	
+	.tizidan-container .empty-state .empty-text {
+	  font-size: 30rpx;
+	  margin-bottom: 8rpx;
+	}
+	
+	.tizidan-container .empty-state .empty-tip {
+	  font-size: 26rpx;
+	  margin-bottom: 24rpx;
+	}
+	
+	/* 悬停效果优化 */
+	.tizidan-item-card,
+	.tizidan-file-item,
+	.tizidan-section {
+	  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	
+	.tizidan-item-card:hover {
+	  transform: translateY(-2rpx);
+	}
+	
+	/* 边框和阴影优化 */
+	.tizidan-container,
+	.tizidan-section,
+	.tizidan-item-body,
+	.tizidan-other-input,
+	.contact-info-section {
+	  box-shadow: 0 2rpx 12rpx rgba(22, 101, 52, 0.05);
+	}
+	
+	.tizidan-container:active,
+	.tizidan-section:active,
+	.tizidan-item-body:active {
+	  box-shadow: 0 4rpx 20rpx rgba(22, 101, 52, 0.08);
+>>>>>>> 8b10abef3c1af48d4842a0d4ac346fae92a98b63
 	}
 </style>
