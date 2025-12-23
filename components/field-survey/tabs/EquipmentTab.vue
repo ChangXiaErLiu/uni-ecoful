@@ -141,7 +141,8 @@
 <script setup>
 	import {
 		computed,
-		ref
+		ref,
+		onMounted
 	} from 'vue'
 	import {
 		useFieldSurveyData
@@ -174,6 +175,15 @@
 	function handleFetchEquipment() {
 		fetchEquipmentData(props.userId, props.projectId)
 	}
+
+	// 组件挂载时自动加载设备数据
+	onMounted(() => {
+		// 如果设备列表为空，自动加载数据
+		if (!filteredEquipmentList.value.length && props.userId && props.projectId) {
+			console.log('EquipmentTab 挂载，自动加载设备数据')
+			fetchEquipmentData(props.userId, props.projectId)
+		}
+	})
 
 	// 分页显示
 	const currentPage = ref(1)

@@ -95,7 +95,7 @@ function useFieldSurveyData() {
       for (let i = 1; i < apiData.length; i++) {
         const row = apiData[i];
         if (row.column_1) {
-          const columns = row.column_1.split("\\t");
+          const columns = row.column_1.includes("	") ? row.column_1.split("	") : row.column_1.split("\\t");
           if (columns.length >= 6) {
             const category = columns[0] || "";
             const name = columns[1] || "";
@@ -111,15 +111,15 @@ function useFieldSurveyData() {
               });
             }
           } else {
-            common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:144", `第${i + 1}行数据列数不足:`, columns);
+            common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:147", `第${i + 1}行数据列数不足 (${columns.length}列):`, columns);
           }
         } else {
-          common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:147", `第${i + 1}行没有column_1字段:`, row);
+          common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:150", `第${i + 1}行没有column_1字段:`, row);
         }
       }
       return parsedConstruction;
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:153", "解析主体工程数据失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:156", "解析主体工程数据失败:", error);
       return [];
     }
   }
@@ -128,13 +128,10 @@ function useFieldSurveyData() {
     fetchConstructionError.value = "";
     try {
       const resData = await api_fieldSurvey.fetchConstructionData(userId, projectId);
-      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:167", "接口返回完整数据:", resData);
       if (resData && resData.data) {
         const apiData = resData.data;
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:171", "主体工程数据数组:", apiData);
         if (apiData && Array.isArray(apiData) && apiData.length > 1) {
           const parsedData = parseConstructionData(apiData);
-          common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:175", "解析后的主体工程数据:", parsedData);
           if (parsedData.length > 0) {
             constructionList.value = parsedData;
             common_vendor.index.showToast({
@@ -167,7 +164,7 @@ function useFieldSurveyData() {
         });
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:209", "获取主体工程数据失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:212", "获取主体工程数据失败:", error);
       fetchConstructionError.value = error.message || "网络请求失败";
       common_vendor.index.showToast({
         title: "网络请求失败，请检查网络连接",
@@ -225,7 +222,7 @@ function useFieldSurveyData() {
     });
   });
   function onEquipmentSearchInput() {
-    common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:277", "搜索设备关键词:", equipmentSearchKeyword.value);
+    common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:280", "搜索设备关键词:", equipmentSearchKeyword.value);
   }
   function parseEquipmentData(apiData) {
     try {
@@ -236,7 +233,7 @@ function useFieldSurveyData() {
       for (let i = 1; i < apiData.length; i++) {
         const row = apiData[i];
         if (row.column_1) {
-          const columns = row.column_1.split("\\t");
+          const columns = row.column_1.includes("	") ? row.column_1.split("	") : row.column_1.split("\\t");
           if (columns.length >= 4) {
             const deviceName = columns[1] || "";
             const quantity = columns[3] || "";
@@ -250,15 +247,15 @@ function useFieldSurveyData() {
               });
             }
           } else {
-            common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:310", `第${i + 1}行数据列数不足:`, columns);
+            common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:316", `第${i + 1}行数据列数不足 (${columns.length}列):`, columns);
           }
         } else {
-          common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:313", `第${i + 1}行没有column_1字段:`, row);
+          common_vendor.index.__f__("warn", "at composables/useFieldSurveyData.js:319", `第${i + 1}行没有column_1字段:`, row);
         }
       }
       return parsedEquipment;
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:319", "解析设备数据失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:325", "解析设备数据失败:", error);
       return [];
     }
   }
@@ -267,13 +264,12 @@ function useFieldSurveyData() {
     fetchEquipmentError.value = "";
     try {
       const resData = await api_fieldSurvey.fetchEquipmentData(userId, projectId);
-      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:333", "接口返回完整数据:", resData);
+      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:339", "接口返回完整数据:", resData);
       if (resData && resData.data) {
         const apiData = resData.data;
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:337", "设备数据数组:", apiData);
+        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:343", "设备数据数组:", apiData);
         if (apiData && Array.isArray(apiData) && apiData.length > 1) {
           const parsedData = parseEquipmentData(apiData);
-          common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:341", "解析后的设备数据:", parsedData);
           if (parsedData.length > 0) {
             equipmentList.value = parsedData;
             common_vendor.index.showToast({
@@ -306,7 +302,7 @@ function useFieldSurveyData() {
         });
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:375", "获取设备数据失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:381", "获取设备数据失败:", error);
       fetchEquipmentError.value = error.message || "网络请求失败";
       common_vendor.index.showToast({
         title: "网络请求失败，请检查网络连接",
@@ -363,7 +359,7 @@ function useFieldSurveyData() {
     });
   });
   function onFacilitySearchInput() {
-    common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:442", "搜索设施关键词:", facilitySearchKeyword.value);
+    common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:448", "搜索设施关键词:", facilitySearchKeyword.value);
   }
   function extractFacilitiesFromBaseTable(projectId, baseTable) {
     var _a;
@@ -372,7 +368,7 @@ function useFieldSurveyData() {
       fetchFacilityError.value = "";
       const emissionData = (_a = baseTable.find((x) => x.id === "pollutants_emission")) == null ? void 0 : _a.value;
       if (!emissionData || typeof emissionData !== "object") {
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:458", "未找到污染物信息，跳过设施提取");
+        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:464", "未找到污染物信息，跳过设施提取");
         pollutionFacilityList.value = [];
         saveFacilityList(projectId, []);
         loadingFacility.value = false;
@@ -417,7 +413,6 @@ function useFieldSurveyData() {
       });
       pollutionFacilityList.value = facilityList;
       saveFacilityList(projectId, facilityList);
-      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:516", `✅ 从项目 ${projectId} 提取了 ${facilityList.length} 条治理设施`);
       if (facilityList.length > 0) {
         common_vendor.index.showToast({
           title: `已提取 ${facilityList.length} 条设施`,
@@ -426,7 +421,7 @@ function useFieldSurveyData() {
         });
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:527", "提取治理设施失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:533", "提取治理设施失败:", error);
       fetchFacilityError.value = error.message || "提取失败";
       common_vendor.index.showToast({
         title: "提取治理设施失败",
@@ -441,9 +436,8 @@ function useFieldSurveyData() {
     try {
       const cacheKey = `project_facility_list_${projectId}`;
       common_vendor.index.setStorageSync(cacheKey, JSON.stringify(facilityList));
-      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:548", `✅ 项目 ${projectId} 的治理设施已保存到本地`);
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:550", "保存治理设施失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:556", "保存治理设施失败:", error);
     }
   }
   function loadFacilityList(projectId) {
@@ -454,13 +448,13 @@ function useFieldSurveyData() {
       const cachedData = common_vendor.index.getStorageSync(cacheKey);
       if (cachedData) {
         pollutionFacilityList.value = JSON.parse(cachedData);
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:568", `✅ 已加载项目 ${projectId} 的治理设施，共 ${pollutionFacilityList.value.length} 条`);
+        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:574", `✅ 已加载项目 ${projectId} 的治理设施，共 ${pollutionFacilityList.value.length} 条`);
       } else {
         pollutionFacilityList.value = [];
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:571", `ℹ️ 项目 ${projectId} 暂无治理设施数据`);
+        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:577", `ℹ️ 项目 ${projectId} 暂无治理设施数据`);
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:574", "加载治理设施失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:580", "加载治理设施失败:", error);
       pollutionFacilityList.value = [];
       fetchFacilityError.value = error.message || "加载失败";
     } finally {
@@ -524,7 +518,7 @@ function useFieldSurveyData() {
       };
       const emissionData = (_a = baseTable.find((x) => x.id === "pollutants_emission")) == null ? void 0 : _a.value;
       if (!emissionData || typeof emissionData !== "object") {
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:658", "未找到污染物信息，跳过排污口提取");
+        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:664", "未找到污染物信息，跳过排污口提取");
         wastewaterOutlets.value = [];
         exhaustOutlets.value = [];
         noiseOutlets.value = [];
@@ -596,7 +590,7 @@ function useFieldSurveyData() {
       noiseOutlets.value = noiseList;
       saveOutletList(projectId, wastewaterList, exhaustList, noiseList);
       const totalCount = wastewaterList.length + exhaustList.length + noiseList.length;
-      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:765", `✅ 从项目 ${projectId} 提取了 ${totalCount} 个排污口`);
+      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:771", `✅ 从项目 ${projectId} 提取了 ${totalCount} 个排污口`);
       if (totalCount > 0) {
         common_vendor.index.showToast({
           title: `已提取 ${totalCount} 个排污口`,
@@ -605,7 +599,7 @@ function useFieldSurveyData() {
         });
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:776", "提取排污口失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:782", "提取排污口失败:", error);
       common_vendor.index.showToast({
         title: "提取排污口失败",
         icon: "none",
@@ -622,9 +616,9 @@ function useFieldSurveyData() {
         noise: noiseList
       };
       common_vendor.index.setStorageSync(cacheKey, JSON.stringify(outletData));
-      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:801", `✅ 项目 ${projectId} 的排污口已保存到本地`);
+      common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:807", `✅ 项目 ${projectId} 的排污口已保存到本地`);
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:803", "保存排污口失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:809", "保存排污口失败:", error);
     }
   }
   function loadOutletList(projectId) {
@@ -637,15 +631,15 @@ function useFieldSurveyData() {
         exhaustOutlets.value = outletData.exhaust || [];
         noiseOutlets.value = outletData.noise || [];
         const totalCount = wastewaterOutlets.value.length + exhaustOutlets.value.length + noiseOutlets.value.length;
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:823", `✅ 已加载项目 ${projectId} 的排污口，共 ${totalCount} 个`);
+        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:829", `✅ 已加载项目 ${projectId} 的排污口，共 ${totalCount} 个`);
       } else {
         wastewaterOutlets.value = [];
         exhaustOutlets.value = [];
         noiseOutlets.value = [];
-        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:828", `ℹ️ 项目 ${projectId} 暂无排污口数据`);
+        common_vendor.index.__f__("log", "at composables/useFieldSurveyData.js:834", `ℹ️ 项目 ${projectId} 暂无排污口数据`);
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:831", "加载排污口失败:", error);
+      common_vendor.index.__f__("error", "at composables/useFieldSurveyData.js:837", "加载排污口失败:", error);
       wastewaterOutlets.value = [];
       exhaustOutlets.value = [];
       noiseOutlets.value = [];
