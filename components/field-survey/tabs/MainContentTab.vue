@@ -54,7 +54,7 @@
 					<view class="construction-header">
 						<view class="header-title">
 							<uni-icons type="home" size="20" color="#166534" />
-							<text class="header-text">主体工程</text>
+							<text class="header-text">主要建设内容</text>
 							<text class="construction-count">共 {{ filteredConstructionList.length }} 条</text>
 						</view>
 						<view class="header-actions">

@@ -223,7 +223,7 @@
 								</view>
 
 								<view class="body-cell cell-photo">
-									<view class="mobile-label">照片</view>
+									<view class="mobile-label">照片(远近各一张)</view>
 									<uni-file-picker v-model="outlet.images" fileMediatype="image" mode="grid" :limit="2"
 										:auto-upload="false" class="photo-picker" />
 								</view>
