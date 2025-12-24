@@ -562,7 +562,7 @@
 					                         </view>
 					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, getFileKey(item))">
 					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
-					                           <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                           <text>{{ item.submitted ? '继续上传' : '上传' }}</text>
 					                         </button>
 					                       </view>
 					                       
@@ -628,7 +628,7 @@
 					                         </view>
 					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, null)">
 					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
-					                           <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                           <text>{{ item.submitted ? '继续上传' : '上传' }}</text>
 					                         </button>
 					                       </view>
 					                       
@@ -694,7 +694,7 @@
 					                         </view>
 					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, getFileKey(item))">
 					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
-					                           <text>{{ getSubmittedStatus(item) ? '重新上传' : '上传' }}</text>
+					                           <text>{{ getSubmittedStatus(item) ? '继续上传' : '上传' }}</text>
 					                         </button>
 					                       </view>
 					                       
@@ -763,7 +763,7 @@
 					                           </view>
 					                           <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, null)">
 					                             <uni-icons type="cloud-upload" size="14" color="#ffffff" />
-					                             <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                             <text>{{ item.submitted ? '继续上传' : '上传' }}</text>
 					                           </button>
 					                         </view>
 					                         
@@ -845,7 +845,7 @@
 					                         </view>
 					                         <button class="btn btn--small" @click="uploadTizidanFile(item.record_id, null)">
 					                           <uni-icons type="cloud-upload" size="14" color="#ffffff" />
-					                           <text>{{ item.submitted ? '重新上传' : '上传' }}</text>
+					                           <text>{{ item.submitted ? '继续上传' : '上传' }}</text>
 					                         </button>
 					                       </view>
 					                       
@@ -876,11 +876,11 @@
 					   
 					          <tizidan-footer>
 					            <view class="footer-content">
-					              <!-- 添加联系人信息输入区域 -->
+					              <!-- 添加资料接收者信息输入区域 -->
 					              <view class="contact-info-section">
 					                <view class="contact-info-header">
 					                  <uni-icons type="phone" size="16" color="#166534" />
-					                  <text class="contact-info-title">联系人信息</text>
+					                  <text class="contact-info-title">资料接收者信息</text>
 					                </view>
 					                
 					                <view class="contact-info-form">
@@ -2461,7 +2461,7 @@
 	// 提资单数据
 	const tizidanItems = ref([])
 	const tizidanRecordMap = ref({}) // 用于存储 record_id 到前端索引的映射
-	// 在 data 部分添加联系人信息
+	// 在 data 部分添加资料接收者信息
 	const contactPerson = ref('')
 	const contactPhone = ref('')
 	const contactEmail = ref('')
@@ -2476,10 +2476,10 @@
 	    return
 	  }
 	
-	  // 验证联系人信息
+	  // 验证资料接收者信息
 	  if (!contactPerson.value.trim()) {
 	    uni.showToast({
-	      title: '请输入联系人',
+	      title: '请输入接收资料的联系人',
 	      icon: 'none'
 	    })
 	    return
@@ -5552,7 +5552,7 @@
 	  gap: 24rpx;
 	}
 	
-	/* 联系人信息 */
+	/* 资料接收者信息*/
 	.contact-info-section {
 	  background: #f0fdf4;
 	  border-radius: 16rpx;
