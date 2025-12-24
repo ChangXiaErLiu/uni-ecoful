@@ -22,7 +22,7 @@
       </view>
 
       <!-- 项目看板 -->
-      <view v-if="currentProject" class="home__project-board">
+<!--      <view v-if="currentProject" class="home__project-board">
         <view class="project-board__header">
           <view class="project-board__title-row">
             <uni-icons type="folder" size="18" color="#166534" />
@@ -45,7 +45,7 @@
             </view>
           </view>
         </view>
-      </view>
+      </view> -->
 
       <!-- 数据统计卡片 -->
       <view class="home__stats-grid">
@@ -115,7 +115,7 @@
       </view>
 
       <!-- 搜索框 -->
-      <view class="home__search">
+      <!-- <view class="home__search">
         <uni-icons type="search" size="18" color="#94a3b8" />
         <input 
           v-model="keyword" 
@@ -123,7 +123,7 @@
           placeholder="搜索功能或关键字" 
           placeholder-style="color: #94a3b8;"
         />
-      </view>
+      </view> -->
 
       <!-- 快捷功能标题 -->
       <view class="home__section-header">
@@ -159,38 +159,6 @@
       <view v-if="filteredCards.length === 0" class="home__empty">
         <uni-icons type="search" size="60" color="#cbd5e1" />
         <text class="home__empty-text">未找到相关功能</text>
-      </view>
-
-      <!-- 最近活动 -->
-      <view class="home__recent-activity">
-        <view class="recent-activity__header">
-          <view class="recent-activity__title-row">
-            <uni-icons type="clock" size="18" color="#166534" />
-            <text class="recent-activity__title">最近活动</text>
-          </view>
-          <text class="recent-activity__more" @tap="viewAllActivities">查看全部</text>
-        </view>
-        <view class="recent-activity__list">
-          <view 
-            v-for="(activity, index) in recentActivities" 
-            :key="index"
-            class="activity-item"
-            @tap="onActivityTap(activity)"
-          >
-            <view class="activity-item__icon" :style="{ background: activity.iconBg }">
-              <uni-icons :type="activity.icon" size="20" :color="activity.iconColor" />
-            </view>
-            <view class="activity-item__content">
-              <text class="activity-item__title">{{ activity.title }}</text>
-              <text class="activity-item__time">{{ activity.time }}</text>
-            </view>
-            <uni-icons type="right" size="14" color="#cbd5e1" />
-          </view>
-        </view>
-        <view v-if="recentActivities.length === 0" class="activity-empty">
-          <uni-icons type="info" size="40" color="#cbd5e1" />
-          <text class="activity-empty__text">暂无最近活动</text>
-        </view>
       </view>
 
       <!-- 环保小贴士 -->
@@ -245,7 +213,6 @@ onShow(() => {
   loadUserInfo()
   loadProjectInfo()
   loadStatsData()
-  loadRecentActivities()
   initTip()
   loadAnnouncement()
 })
@@ -384,71 +351,6 @@ function quickAction(action) {
     default:
       break
   }
-}
-
-// 加载最近活动（模拟数据）
-function loadRecentActivities() {
-  try {
-    // 这里可以从后端API获取真实数据
-    const mockActivities = [
-      {
-        id: 1,
-        title: '完成了项目信息提取',
-        time: '2小时前',
-        icon: 'checkmarkempty',
-        iconColor: '#16a34a',
-        iconBg: '#dcfce7',
-        type: 'extract'
-      },
-      {
-        id: 2,
-        title: '生成了监测方案',
-        time: '5小时前',
-        icon: 'compose',
-        iconColor: '#2563eb',
-        iconBg: '#dbeafe',
-        type: 'plan'
-      },
-      {
-        id: 3,
-        title: '上传了环评报告',
-        time: '1天前',
-        icon: 'cloud-upload',
-        iconColor: '#7c3aed',
-        iconBg: '#f3e8ff',
-        type: 'upload'
-      }
-    ]
-    
-    recentActivities.value = mockActivities
-  } catch (error) {
-    console.error('加载最近活动失败:', error)
-  }
-}
-
-// 点击活动项
-function onActivityTap(activity) {
-  console.log('点击活动:', activity)
-  // 根据活动类型跳转到对应页面
-  switch (activity.type) {
-    case 'extract':
-    case 'plan':
-      uni.navigateTo({ url: '/pages/reports/acceptance/index' })
-      break
-    case 'upload':
-      uni.navigateTo({ url: '/pages/project/index' })
-      break
-    default:
-      break
-  }
-}
-
-// 查看全部活动
-function viewAllActivities() {
-  uni.showToast({
-    title: '功能开发中',
-    icon: 'none'
-  })
 }
 
 // 刷新环保小贴士
@@ -1105,110 +1007,6 @@ function getIconColor(color) {
 .home__empty-text {
   font-size: 28rpx;
   color: #64748b;
-}
-
-// 最近活动
-.home__recent-activity {
-  position: relative;
-  z-index: 1;
-  background: #ffffff;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 4rpx 24rpx rgba(15, 23, 42, 0.08);
-  border: 1rpx solid #f1f5f9;
-}
-
-.recent-activity__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
-}
-
-.recent-activity__title-row {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.recent-activity__title {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.recent-activity__more {
-  font-size: 24rpx;
-  color: #166534;
-  font-weight: 500;
-}
-
-.recent-activity__list {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
-
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  padding: 20rpx;
-  border-radius: 16rpx;
-  background: #f8faf9;
-  transition: all 0.2s ease;
-}
-
-.activity-item:active {
-  background: #f0fdf4;
-  transform: scale(0.98);
-}
-
-.activity-item__icon {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.activity-item__content {
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-  flex: 1;
-  min-width: 0;
-}
-
-.activity-item__title {
-  font-size: 28rpx;
-  color: #0f172a;
-  font-weight: 500;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.activity-item__time {
-  font-size: 24rpx;
-  color: #94a3b8;
-  line-height: 1.3;
-}
-
-.activity-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16rpx;
-  padding: 60rpx 0;
-}
-
-.activity-empty__text {
-  font-size: 26rpx;
-  color: #94a3b8;
 }
 
 // 环保小贴士

@@ -19,7 +19,6 @@ const _sfc_main = {
       loadUserInfo();
       loadProjectInfo();
       loadStatsData();
-      loadRecentActivities();
       initTip();
       loadAnnouncement();
     });
@@ -33,7 +32,7 @@ const _sfc_main = {
       documents: 0,
       completed: 0
     });
-    const recentActivities = common_vendor.ref([]);
+    common_vendor.ref([]);
     const tips = [
       "建议企业定期开展环保培训，提高员工环保意识",
       "及时更新环保设施运行记录，确保台账完整",
@@ -63,7 +62,7 @@ const _sfc_main = {
           userCompany.value = userInfo.company_name || userInfo.company || "";
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:314", "加载用户信息失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:281", "加载用户信息失败:", error);
       }
     }
     function loadProjectInfo() {
@@ -80,14 +79,11 @@ const _sfc_main = {
           };
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:337", "加载项目信息失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:304", "加载项目信息失败:", error);
       }
     }
     function goToProfile() {
       common_vendor.index.switchTab({ url: "/pages/profile/index" });
-    }
-    function goToProject() {
-      common_vendor.index.navigateTo({ url: "/pages/project/index" });
     }
     function loadStatsData() {
       try {
@@ -97,7 +93,7 @@ const _sfc_main = {
           completed: Math.floor(Math.random() * 15) + 1
         };
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:362", "加载统计数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:329", "加载统计数据失败:", error);
       }
     }
     function quickAction(action) {
@@ -119,60 +115,6 @@ const _sfc_main = {
           break;
       }
     }
-    function loadRecentActivities() {
-      try {
-        const mockActivities = [
-          {
-            id: 1,
-            title: "完成了项目信息提取",
-            time: "2小时前",
-            icon: "checkmarkempty",
-            iconColor: "#16a34a",
-            iconBg: "#dcfce7",
-            type: "extract"
-          },
-          {
-            id: 2,
-            title: "生成了监测方案",
-            time: "5小时前",
-            icon: "compose",
-            iconColor: "#2563eb",
-            iconBg: "#dbeafe",
-            type: "plan"
-          },
-          {
-            id: 3,
-            title: "上传了环评报告",
-            time: "1天前",
-            icon: "cloud-upload",
-            iconColor: "#7c3aed",
-            iconBg: "#f3e8ff",
-            type: "upload"
-          }
-        ];
-        recentActivities.value = mockActivities;
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:425", "加载最近活动失败:", error);
-      }
-    }
-    function onActivityTap(activity) {
-      common_vendor.index.__f__("log", "at pages/home/index.vue:431", "点击活动:", activity);
-      switch (activity.type) {
-        case "extract":
-        case "plan":
-          common_vendor.index.navigateTo({ url: "/pages/reports/acceptance/index" });
-          break;
-        case "upload":
-          common_vendor.index.navigateTo({ url: "/pages/project/index" });
-          break;
-      }
-    }
-    function viewAllActivities() {
-      common_vendor.index.showToast({
-        title: "功能开发中",
-        icon: "none"
-      });
-    }
     function refreshTip() {
       currentTipIndex.value = (currentTipIndex.value + 1) % tips.length;
       currentTip.value = tips[currentTipIndex.value];
@@ -188,7 +130,7 @@ const _sfc_main = {
           systemAnnouncement.value = "系统测试";
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:476", "加载系统公告失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:378", "加载系统公告失败:", error);
       }
     }
     function closeAnnouncement() {
@@ -325,88 +267,56 @@ const _sfc_main = {
           color: "#166534"
         }),
         e: common_vendor.o(goToProfile),
-        f: currentProject.value
-      }, currentProject.value ? common_vendor.e({
-        g: common_vendor.p({
-          type: "folder",
-          size: "18",
-          color: "#166534"
-        }),
-        h: common_vendor.p({
-          type: "right",
-          size: "14",
-          color: "#166534"
-        }),
-        i: common_vendor.o(goToProject),
-        j: common_vendor.t(currentProject.value.name),
-        k: currentProject.value.description
-      }, currentProject.value.description ? {
-        l: common_vendor.t(currentProject.value.description)
-      } : {}, {
-        m: common_vendor.p({
-          type: "calendar",
-          size: "14",
-          color: "#64748b"
-        }),
-        n: common_vendor.t(currentProject.value.folder_name || "未知")
-      }) : {}, {
-        o: common_vendor.p({
+        f: common_vendor.p({
           type: "folder-add",
           size: "24",
           color: "#ffffff"
         }),
-        p: common_vendor.t(statsData.value.projects),
-        q: common_vendor.p({
+        g: common_vendor.t(statsData.value.projects),
+        h: common_vendor.p({
           type: "paperclip",
           size: "24",
           color: "#ffffff"
         }),
-        r: common_vendor.t(statsData.value.documents),
-        s: common_vendor.p({
+        i: common_vendor.t(statsData.value.documents),
+        j: common_vendor.p({
           type: "checkmarkempty",
           size: "24",
           color: "#ffffff"
         }),
-        t: common_vendor.t(statsData.value.completed),
-        v: common_vendor.p({
+        k: common_vendor.t(statsData.value.completed),
+        l: common_vendor.p({
           type: "star",
           size: "18",
           color: "#f59e0b"
         }),
-        w: common_vendor.p({
+        m: common_vendor.p({
           type: "plus",
           size: "20",
           color: "#166534"
         }),
-        x: common_vendor.o(($event) => quickAction("newProject")),
-        y: common_vendor.p({
+        n: common_vendor.o(($event) => quickAction("newProject")),
+        o: common_vendor.p({
           type: "cloud-upload",
           size: "20",
           color: "#2563eb"
         }),
-        z: common_vendor.o(($event) => quickAction("newProject")),
-        A: common_vendor.p({
+        p: common_vendor.o(($event) => quickAction("newProject")),
+        q: common_vendor.p({
           type: "compose",
           size: "20",
           color: "#d97706"
         }),
-        B: common_vendor.o(($event) => quickAction("viewReports")),
-        C: common_vendor.p({
+        r: common_vendor.o(($event) => quickAction("viewReports")),
+        s: common_vendor.p({
           type: "gear",
           size: "20",
           color: "#7c3aed"
         }),
-        D: common_vendor.o(($event) => quickAction("settings")),
-        E: common_vendor.p({
-          type: "search",
-          size: "18",
-          color: "#94a3b8"
-        }),
-        F: keyword.value,
-        G: common_vendor.o(($event) => keyword.value = $event.detail.value),
-        H: common_vendor.f(filteredCards.value, (item, k0, i0) => {
+        t: common_vendor.o(($event) => quickAction("settings")),
+        v: common_vendor.f(filteredCards.value, (item, k0, i0) => {
           return common_vendor.e({
-            a: "4978fed5-14-" + i0 + ",4978fed5-0",
+            a: "4978fed5-10-" + i0 + ",4978fed5-0",
             b: common_vendor.p({
               type: item.icon,
               size: "28",
@@ -425,77 +335,42 @@ const _sfc_main = {
             k: common_vendor.o(($event) => onCardTap(item), item.id)
           });
         }),
-        I: filteredCards.value.length === 0
+        w: filteredCards.value.length === 0
       }, filteredCards.value.length === 0 ? {
-        J: common_vendor.p({
+        x: common_vendor.p({
           type: "search",
           size: "60",
           color: "#cbd5e1"
         })
       } : {}, {
-        K: common_vendor.p({
-          type: "clock",
-          size: "18",
-          color: "#166534"
-        }),
-        L: common_vendor.o(viewAllActivities),
-        M: common_vendor.f(recentActivities.value, (activity, index, i0) => {
-          return {
-            a: "4978fed5-17-" + i0 + ",4978fed5-0",
-            b: common_vendor.p({
-              type: activity.icon,
-              size: "20",
-              color: activity.iconColor
-            }),
-            c: activity.iconBg,
-            d: common_vendor.t(activity.title),
-            e: common_vendor.t(activity.time),
-            f: "4978fed5-18-" + i0 + ",4978fed5-0",
-            g: index,
-            h: common_vendor.o(($event) => onActivityTap(activity), index)
-          };
-        }),
-        N: common_vendor.p({
-          type: "right",
-          size: "14",
-          color: "#cbd5e1"
-        }),
-        O: recentActivities.value.length === 0
-      }, recentActivities.value.length === 0 ? {
-        P: common_vendor.p({
-          type: "info",
-          size: "40",
-          color: "#cbd5e1"
-        })
-      } : {}, {
-        Q: common_vendor.p({
+        y: common_vendor.p({
           type: "info",
           size: "20",
           color: "#16a34a"
         }),
-        R: common_vendor.t(currentTip.value),
-        S: common_vendor.p({
+        z: common_vendor.t(currentTip.value),
+        A: common_vendor.p({
           type: "refresh",
           size: "14",
           color: "#16a34a"
         }),
-        T: common_vendor.o(refreshTip),
-        U: systemAnnouncement.value
+        B: common_vendor.o(refreshTip),
+        C: systemAnnouncement.value
       }, systemAnnouncement.value ? {
-        V: common_vendor.p({
+        D: common_vendor.p({
           type: "sound",
           size: "18",
           color: "#f59e0b"
         }),
-        W: common_vendor.t(systemAnnouncement.value),
-        X: common_vendor.p({
+        E: common_vendor.t(systemAnnouncement.value),
+        F: common_vendor.p({
           type: "close",
           size: "16",
           color: "#94a3b8"
         }),
-        Y: common_vendor.o(closeAnnouncement)
+        G: common_vendor.o(closeAnnouncement)
       } : {}, {
-        Z: common_vendor.p({
+        H: common_vendor.p({
           current: "pages/home/index"
         })
       });

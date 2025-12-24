@@ -37,7 +37,7 @@ const _sfc_main = {
     const pollingCount = common_vendor.ref(0);
     function stopPolling() {
       pollingCount.value = 0;
-      common_vendor.index.__f__("log", "at pages/auth/login.vue:185", "已停止二维码轮询");
+      common_vendor.index.__f__("log", "at pages/auth/login.vue:155", "已停止二维码轮询");
     }
     async function generateQRCode() {
       stopPolling();
@@ -49,23 +49,34 @@ const _sfc_main = {
       });
     }
     function refreshQRCode() {
-      common_vendor.index.__f__("log", "at pages/auth/login.vue:232", "用户手动刷新二维码");
+      common_vendor.index.__f__("log", "at pages/auth/login.vue:209", "用户手动刷新二维码");
       stopPolling();
       generateQRCode();
     }
     async function sendCode() {
       if (!mobile.value) {
-        common_vendor.index.showToast({ title: "请输入手机号", icon: "none" });
+        common_vendor.index.showToast({
+          title: "请输入手机号",
+          icon: "none"
+        });
         return;
       }
       if (!/^1[3-9]\d{9}$/.test(mobile.value)) {
-        common_vendor.index.showToast({ title: "手机号格式不正确", icon: "none" });
+        common_vendor.index.showToast({
+          title: "手机号格式不正确",
+          icon: "none"
+        });
         return;
       }
       try {
-        const { sendSmsCode } = await "../../api/auth.js";
+        const {
+          sendSmsCode
+        } = await "../../api/auth.js";
         await sendSmsCode(mobile.value, "login");
-        common_vendor.index.showToast({ title: "验证码已发送", icon: "success" });
+        common_vendor.index.showToast({
+          title: "验证码已发送",
+          icon: "success"
+        });
         codeCountdown.value = 60;
         countdownTimer = setInterval(() => {
           codeCountdown.value--;
@@ -86,14 +97,23 @@ const _sfc_main = {
     async function loginWithCode() {
       var _a, _b, _c;
       if (!mobile.value) {
-        common_vendor.index.showToast({ title: "请输入手机号", icon: "none" });
+        common_vendor.index.showToast({
+          title: "请输入手机号",
+          icon: "none"
+        });
         return;
       }
       if (!code.value) {
-        common_vendor.index.showToast({ title: "请输入验证码", icon: "none" });
+        common_vendor.index.showToast({
+          title: "请输入验证码",
+          icon: "none"
+        });
         return;
       }
-      common_vendor.index.showLoading({ title: "登录中...", mask: true });
+      common_vendor.index.showLoading({
+        title: "登录中...",
+        mask: true
+      });
       try {
         const result = await userStore.loginByCode(mobile.value, code.value);
         common_vendor.index.hideLoading();
@@ -104,7 +124,9 @@ const _sfc_main = {
             duration: 1500
           });
           setTimeout(() => {
-            common_vendor.index.switchTab({ url: "/pages/home/index" });
+            common_vendor.index.switchTab({
+              url: "/pages/home/index"
+            });
           }, 1500);
         } else {
           const errorMsg = ((_a = result.error) == null ? void 0 : _a.message) || ((_c = (_b = result.error) == null ? void 0 : _b.data) == null ? void 0 : _c.detail) || "登录失败";
@@ -116,7 +138,7 @@ const _sfc_main = {
         }
       } catch (error) {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/auth/login.vue:404", "验证码登录异常:", error);
+        common_vendor.index.__f__("error", "at pages/auth/login.vue:422", "验证码登录异常:", error);
         common_vendor.index.showToast({
           title: "登录失败，请稍后重试",
           icon: "none"
@@ -126,14 +148,23 @@ const _sfc_main = {
     async function loginWithPassword() {
       var _a, _b, _c;
       if (!account.value) {
-        common_vendor.index.showToast({ title: "请输入账号", icon: "none" });
+        common_vendor.index.showToast({
+          title: "请输入账号",
+          icon: "none"
+        });
         return;
       }
       if (!password.value) {
-        common_vendor.index.showToast({ title: "请输入密码", icon: "none" });
+        common_vendor.index.showToast({
+          title: "请输入密码",
+          icon: "none"
+        });
         return;
       }
-      common_vendor.index.showLoading({ title: "登录中...", mask: true });
+      common_vendor.index.showLoading({
+        title: "登录中...",
+        mask: true
+      });
       try {
         const result = await userStore.loginByPassword(account.value, password.value);
         common_vendor.index.hideLoading();
@@ -158,18 +189,26 @@ const _sfc_main = {
         }
       } catch (error) {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/auth/login.vue:458", "登录异常:", error);
+        common_vendor.index.__f__("error", "at pages/auth/login.vue:485", "登录异常:", error);
         common_vendor.index.showToast({
           title: "登录失败，请稍后重试",
           icon: "none"
         });
       }
     }
+    common_vendor.onMounted(() => {
+    });
+    common_vendor.onUnmounted(() => {
+    });
     function goForgotPassword() {
-      common_vendor.index.navigateTo({ url: "/pages/auth/forgot-password" });
+      common_vendor.index.navigateTo({
+        url: "/pages/auth/forgot-password"
+      });
     }
     function goRegister() {
-      common_vendor.index.navigateTo({ url: "/pages/auth/register" });
+      common_vendor.index.navigateTo({
+        url: "/pages/auth/register"
+      });
     }
     common_vendor.onUnmounted(() => {
       if (countdownTimer) {
@@ -193,61 +232,65 @@ const _sfc_main = {
           size: "20",
           color: "#64748b"
         }),
-        i: mobile.value,
-        j: common_vendor.o(($event) => mobile.value = $event.detail.value),
-        k: common_vendor.p({
+        i: common_vendor.o(loginWithCode),
+        j: mobile.value,
+        k: common_vendor.o(($event) => mobile.value = $event.detail.value),
+        l: common_vendor.p({
           type: "chat",
           size: "20",
           color: "#64748b"
         }),
-        l: code.value,
-        m: common_vendor.o(($event) => code.value = $event.detail.value),
-        n: common_vendor.t(codeCountdown.value > 0 ? `${codeCountdown.value}s后重发` : "发送验证码"),
-        o: codeCountdown.value > 0,
-        p: common_vendor.o(sendCode),
-        q: common_vendor.o(loginWithCode)
+        m: common_vendor.o(loginWithCode),
+        n: code.value,
+        o: common_vendor.o(($event) => code.value = $event.detail.value),
+        p: common_vendor.t(codeCountdown.value > 0 ? `${codeCountdown.value}s后重发` : "发送验证码"),
+        q: codeCountdown.value > 0,
+        r: common_vendor.o(sendCode),
+        s: common_vendor.o(loginWithCode)
       } : {}, {
-        r: activeTab.value === "password"
+        t: activeTab.value === "password"
       }, activeTab.value === "password" ? {
-        s: common_vendor.p({
+        v: common_vendor.p({
           type: "person",
           size: "20",
           color: "#64748b"
         }),
-        t: account.value,
-        v: common_vendor.o(($event) => account.value = $event.detail.value),
-        w: common_vendor.p({
+        w: common_vendor.o(loginWithPassword),
+        x: account.value,
+        y: common_vendor.o(($event) => account.value = $event.detail.value),
+        z: common_vendor.p({
           type: "locked",
           size: "20",
           color: "#64748b"
         }),
-        x: showPassword.value ? "text" : "password",
-        y: password.value,
-        z: common_vendor.o(($event) => password.value = $event.detail.value),
-        A: common_vendor.o(togglePassword),
-        B: common_vendor.p({
+        A: showPassword.value ? "text" : "password",
+        B: common_vendor.o(loginWithPassword),
+        C: password.value,
+        D: common_vendor.o(($event) => password.value = $event.detail.value),
+        E: common_vendor.o(togglePassword),
+        F: common_vendor.p({
           type: showPassword.value ? "eye-slash" : "eye",
           size: "20",
           color: "#64748b"
         }),
-        C: common_vendor.o(goForgotPassword),
-        D: common_vendor.o(loginWithPassword)
+        G: common_vendor.o(goForgotPassword),
+        H: common_vendor.o(loginWithPassword)
       } : {}, {
-        E: activeTab.value === "wechat"
+        I: activeTab.value === "wechat"
       }, activeTab.value === "wechat" ? {
-        F: common_vendor.p({
+        J: common_vendor.p({
           type: "weixin",
           size: "120",
           color: "#22c55e"
         }),
-        G: common_vendor.p({
+        K: common_vendor.p({
           type: "refresh",
           size: "16",
           color: "#2563eb"
         }),
-        H: common_vendor.o(refreshQRCode)
+        L: common_vendor.o(refreshQRCode)
       } : {}, {
-        I: common_vendor.o(goRegister)
+        M: common_vendor.o(goRegister)
       });
     };
   }

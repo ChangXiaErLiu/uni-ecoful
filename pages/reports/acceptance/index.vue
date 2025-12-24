@@ -1848,9 +1848,6 @@
 			uni.setStorageSync(cacheKey, JSON.stringify(baseTable.value))
 			console.log(`✅ 项目 ${selectedProjectId.value} 的数据已缓存`)
 
-			// 9. 自动提取污染治理设施到现场踏勘（静默填充）
-			fieldSurveyData.extractFacilitiesFromPollutants(baseTable.value)
-
 			// 10. 标记提取完成
 			extractionOk.value = true
 
@@ -1991,7 +1988,7 @@
 		// 清空旧数据
 		signboard.sections.forEach(sec => (sec.items = []));
 
-		// 辅助函数：拆分排污口编号（处理"DA001、DA002、DA003"这种情况）
+		// 辅助函数：拆分排污口编号（处理"DA001、DA002、DA003"或"DA001;DA002;DA003"这种情况）
 		function splitOutletCodes(codeStr) {
 			if (!codeStr) return [];
 
@@ -1999,31 +1996,32 @@
 			const invalidCodes = ['/', '信息待补充', ''];
 
 			return codeStr
-				.split(/[、,，]/) // 按顿号、逗号分隔
+				.split(/[、,，;；]/) // 按顿号、逗号、分号分隔
 				.map(c => c.trim()) // 去除空格
 				.filter(c => c && !invalidCodes.includes(c)); // 过滤无效编号
 		}
 
-		// 辅助函数：按排污口编号分组并合并污染物
-		function groupByOutletCode(list, blockType) {
-			const outletMap = new Map(); // key: 排污口编号, value: { pollutants: [], ...otherInfo }
+		// 辅助函数：按排污口编号分组并合并污染因子
+		// 功能：将同一排污口的多条记录合并，污染因子去重
+		function groupByOutletCode(list) {
+			const outletMap = new Map(); // key: 排污口编号, value: { factors: Set, otherInfo }
 
 			list.forEach(item => {
 				const codes = splitOutletCodes(item['排污口编号']);
-				const pollutantName = item['污染物名称'] || '';
 				const wryz = item['污染因子'] || '';
 
 				codes.forEach(code => {
 					if (!outletMap.has(code)) {
 						outletMap.set(code, {
-							pollutants: [],
-							wryz: [],
-							otherInfo: item // 保存其他信息（如执行标准、排放去向等）
+							factors: new Set(), // 使用 Set 自动去重
+							otherInfo: item
 						});
 					}
-					// 合并污染物名称
+					
+					// 拆分污染因子字符串并添加到 Set 中（自动去重）
 					if (wryz) {
-						outletMap.get(code).wryz.push(wryz);
+						const factors = wryz.split(/[、,，;；]/).map(f => f.trim()).filter(f => f);
+						factors.forEach(factor => outletMap.get(code).factors.add(factor));
 					}
 				});
 			});
@@ -2031,91 +2029,124 @@
 			return outletMap;
 		}
 
-		// 废水
-		const waterList = emissionData['水污染物'] || [];
-		const waterOutlets = groupByOutletCode(waterList, '废水');
-		waterOutlets.forEach((data, code) => {
-			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
-			signboard.sections.find(s => s.block === '废水').items.push({
-				title: '单位名称',
-				content: unitName
-			}, {
-				title: '排放口编号',
-				content: code
-			}, {
-				title: '污染因子',
-				content: wryz
+		// 辅助函数：生成标识牌项（统一处理废水、废气、噪声）
+		function generateSignboardItems(pollutantList, blockName) {
+			const outlets = groupByOutletCode(pollutantList);
+			const section = signboard.sections.find(s => s.block === blockName);
+			
+			outlets.forEach((data, code) => {
+				// 将 Set 转为数组并用顿号连接
+				const factors = Array.from(data.factors).join('、');
+				
+				section.items.push({
+					title: '单位名称',
+					content: unitName
+				}, {
+					title: '排放口编号',
+					content: code
+				}, {
+					title: '污染因子',
+					content: factors || (blockName === '噪声' ? '设备噪声' : '未提取到污染因子')
+				});
 			});
-		});
-
-		// 废气
-		const gasList = emissionData['大气污染物'] || [];
-		const gasOutlets = groupByOutletCode(gasList, '废气');
-		gasOutlets.forEach((data, code) => {
-			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
-			signboard.sections.find(s => s.block === '废气').items.push({
-				title: '单位名称',
-				content: unitName
-			}, {
-				title: '排放口编号',
-				content: code
-			}, {
-				title: '污染因子',
-				content: wryz
-			});
-		});
-
-		// 噪声
-		const noiseList = emissionData['噪声'] || [];
-		const noiseOutlets = groupByOutletCode(noiseList, '噪声');
-		noiseOutlets.forEach((data, code) => {
-			const wryz = [...new Set(data.wryz)].join('、'); // 去重并合并
-			signboard.sections.find(s => s.block === '噪声').items.push({
-				title: '单位名称',
-				content: unitName
-			}, {
-				title: '排放口编号',
-				content: code
-			}, {
-				title: '污染因子',
-				content: '设备噪声'
-			});
-		});
-
-		// 辅助函数：提取危险废物类别代码（如 HW49、HW12）
-		function extractHazardCodes(str) {
-			if (!str) return '';
-			// 提取所有 HW 开头的代码
-			const matches = str.match(/HW\d+/g);
-			if (!matches) return '';
-			// 去重并用顿号连接
-			return [...new Set(matches)].join('、');
 		}
 
-		// 辅助函数：提取危险特性中文描述（如 毒性、易燃性）
-		function extractHazardProperties(str) {
-			if (!str) return '';
-			// 提取所有括号内的中文
-			const matches = str.match(/（([^）]+)）/g);
-			if (!matches) return '';
-			// 提取括号内容，去重并用顿号连接
-			const properties = matches.map(m => m.replace(/[（）]/g, ''));
-			return [...new Set(properties)].join('、');
+		// 生成废水标识牌
+		const waterList = emissionData['水污染物'] || [];
+		if (waterList.length > 0) {
+			generateSignboardItems(waterList, '废水');
+		}
+
+		// 生成废气标识牌
+		const gasList = emissionData['大气污染物'] || [];
+		if (gasList.length > 0) {
+			generateSignboardItems(gasList, '废气');
+		}
+
+		// 生成噪声标识牌
+		const noiseList = emissionData['噪声'] || [];
+		if (noiseList.length > 0) {
+			generateSignboardItems(noiseList, '噪声');
 		}
 
 		// 危险废物
-		const hazardousWaste = emissionData['危险废物'] || {};
+		const hazardousWasteList = emissionData['危险废物'] || [];
+		
+		// 辅助函数：从危险废物列表中提取并合并所有废物名称
+		function extractWasteNames(wasteList) {
+			if (!Array.isArray(wasteList) || wasteList.length === 0) {
+				return '实验室废弃物、实验室废水污泥、医疗废物、废活性炭';
+			}
+			
+			const names = new Set();
+			wasteList.forEach(item => {
+				const name = item['废物名称'] || '';
+				if (name) {
+					names.add(name.trim());
+				}
+			});
+			
+			return names.size > 0 ? Array.from(names).join('、') : '实验室废弃物、实验室废水污泥、医疗废物、废活性炭';
+		}
+		
+		// 辅助函数：从危险废物列表中提取并合并所有类别代码
+		function extractAllHazardCodes(wasteList) {
+			if (!Array.isArray(wasteList) || wasteList.length === 0) {
+				return 'HW49';
+			}
+			
+			const codes = new Set();
+			wasteList.forEach(item => {
+				const category = item['危险废物类别'] || '';
+				if (category) {
+					// 提取 HW 开头的代码
+					const matches = category.match(/HW\d+/g);
+					if (matches) {
+						matches.forEach(code => codes.add(code));
+					}
+				}
+			});
+			
+			return codes.size > 0 ? Array.from(codes).join('、') : 'HW49';
+		}
+		
+		// 辅助函数：从危险废物列表中提取并合并所有危险特性
+		function extractAllHazardProperties(wasteList) {
+			if (!Array.isArray(wasteList) || wasteList.length === 0) {
+				return '毒性、腐蚀性';
+			}
+			
+			const properties = new Set();
+			wasteList.forEach(item => {
+				const hazard = item['危险特性'] || '';
+				if (hazard) {
+					// 提取括号内的中文描述
+					const matches = hazard.match(/（([^）]+)）/g);
+					if (matches) {
+						matches.forEach(m => {
+							const prop = m.replace(/[（）]/g, '').trim();
+							if (prop) {
+								properties.add(prop);
+							}
+						});
+					}
+				}
+			});
+			
+			return properties.size > 0 ? Array.from(properties).join('、') : '毒性、腐蚀性';
+		}
+		
 		const WFItems = [{
 				title: '主要成分',
-				content: extractHazardCodes(hazardousWaste['危险废物类别']) || 'HW49'
+				content: extractAllHazardCodes(hazardousWasteList)
 			},
 			{
 				title: '化学名称',
-				content: hazardousWaste['废物名称'] || '实验室废弃物、实验室废水污泥、医疗废物、废活性炭'
+				content: extractWasteNames(hazardousWasteList)
 			},
 			{
 				title: '危险情况',
-				content: extractHazardProperties(hazardousWaste['危险特性']) || '毒性、腐蚀性'
+				content: extractAllHazardProperties(hazardousWasteList)
 			},
 			{
 				title: '安全措施',
@@ -2453,10 +2484,10 @@
 	const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null
 	// 获取user_id 
 	const user_id = userInfo?.id || userInfo?.user_id
-	console.log("test userid",user_id)
-	console.log("test project_id",project_id)
+	// console.log("test userid",user_id)
+	// console.log("test project_id",project_id)
 	// 上传提资单文件
-	const eco_baseUrl = "http://127.0.0.1:8000"
+	const eco_baseUrl = "http://172.16.1.61:8000"
 		
 	// 提资单数据
 	const tizidanItems = ref([])

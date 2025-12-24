@@ -54,7 +54,7 @@
 					<view class="construction-header">
 						<view class="header-title">
 							<uni-icons type="home" size="20" color="#166534" />
-							<text class="header-text">主体工程</text>
+							<text class="header-text">主要建设内容</text>
 							<text class="construction-count">共 {{ filteredConstructionList.length }} 条</text>
 						</view>
 						<view class="header-actions">
@@ -186,7 +186,8 @@
 <script setup>
 	import {
 		ref,
-		computed
+		computed,
+		onMounted
 	} from 'vue'
 	import {
 		useFieldSurveyData
@@ -265,6 +266,15 @@
 	function handleFetchConstruction() {
 		fetchConstructionData(props.userId, props.projectId)
 	}
+
+	// 组件挂载时自动加载主体工程数据
+	onMounted(() => {
+		// 如果主体工程列表为空，自动加载数据
+		if (!constructionList.value.length && props.userId && props.projectId) {
+			// console.log('MainContentTab 挂载，自动加载主体工程数据')
+			fetchConstructionData(props.userId, props.projectId)
+		}
+	})
 
 	// 主体工程分页
 	const constructionCurrentPage = ref(1)

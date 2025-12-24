@@ -34,7 +34,7 @@ const _sfc_main = {
     const props = __props;
     const searchKeyword = common_vendor.ref("");
     function onSearchInput() {
-      common_vendor.index.__f__("log", "at components/field-survey/tabs/MainContentTab.vue:215", "搜索关键词:", searchKeyword.value);
+      common_vendor.index.__f__("log", "at components/field-survey/tabs/MainContentTab.vue:216", "搜索关键词:", searchKeyword.value);
     }
     const displayItems = common_vendor.computed(() => {
       return props.baseTable.filter((item) => item.id !== "pollutants_emission");
@@ -73,6 +73,11 @@ const _sfc_main = {
     function handleFetchConstruction() {
       fetchConstructionData(props.userId, props.projectId);
     }
+    common_vendor.onMounted(() => {
+      if (!constructionList.value.length && props.userId && props.projectId) {
+        fetchConstructionData(props.userId, props.projectId);
+      }
+    });
     const constructionCurrentPage = common_vendor.ref(1);
     const paginatedConstructionList = common_vendor.computed(() => {
       const start = (constructionCurrentPage.value - 1) * constructionPageSize;

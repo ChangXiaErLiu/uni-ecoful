@@ -123,7 +123,10 @@ export function useFieldSurveyData() {
 				const row = apiData[i]
 
 				if (row.column_1) {
-					const columns = row.column_1.split('\\t')
+					// 尝试两种分隔符：实际的tab字符 \t 和转义的 \\t
+					const columns = row.column_1.includes('\t') 
+						? row.column_1.split('\t') 
+						: row.column_1.split('\\t')
 
 					if (columns.length >= 6) {
 						const category = columns[0] || ''
@@ -141,7 +144,7 @@ export function useFieldSurveyData() {
 							})
 						}
 					} else {
-						console.warn(`第${i+1}行数据列数不足:`, columns)
+						console.warn(`第${i+1}行数据列数不足 (${columns.length}列):`, columns)
 					}
 				} else {
 					console.warn(`第${i+1}行没有column_1字段:`, row)
@@ -164,15 +167,15 @@ export function useFieldSurveyData() {
 			// request.js 已经处理过响应，直接使用返回的数据
 			const resData = await apiFetchConstructionData(userId, projectId)
 
-			console.log('接口返回完整数据:', resData)
+			// console.log('接口返回完整数据:', resData)
 
 			if (resData && resData.data) {
 				const apiData = resData.data
-				console.log('主体工程数据数组:', apiData)
+				// console.log('主体工程数据数组:', apiData)
 
 				if (apiData && Array.isArray(apiData) && apiData.length > 1) {
 					const parsedData = parseConstructionData(apiData)
-					console.log('解析后的主体工程数据:', parsedData)
+					// console.log('解析后的主体工程数据:', parsedData)
 
 					if (parsedData.length > 0) {
 						constructionList.value = parsedData
@@ -291,7 +294,10 @@ export function useFieldSurveyData() {
 				const row = apiData[i]
 
 				if (row.column_1) {
-					const columns = row.column_1.split('\\t')
+					// 尝试两种分隔符：实际的tab字符 \t 和转义的 \\t
+					const columns = row.column_1.includes('\t') 
+						? row.column_1.split('\t') 
+						: row.column_1.split('\\t')
 
 					if (columns.length >= 4) {
 						const deviceName = columns[1] || ''
@@ -307,7 +313,7 @@ export function useFieldSurveyData() {
 							})
 						}
 					} else {
-						console.warn(`第${i+1}行数据列数不足:`, columns)
+						console.warn(`第${i+1}行数据列数不足 (${columns.length}列):`, columns)
 					}
 				} else {
 					console.warn(`第${i+1}行没有column_1字段:`, row)
@@ -330,15 +336,13 @@ export function useFieldSurveyData() {
 			// request.js 已经处理过响应，直接使用返回的数据
 			const resData = await apiFetchEquipmentData(userId, projectId)
 
-			console.log('接口返回完整数据:', resData)
-
 			if (resData && resData.data) {
 				const apiData = resData.data
-				console.log('设备数据数组:', apiData)
+				// console.log('设备数据数组:', apiData)
 
 				if (apiData && Array.isArray(apiData) && apiData.length > 1) {
 					const parsedData = parseEquipmentData(apiData)
-					console.log('解析后的设备数据:', parsedData)
+					// console.log('解析后的设备数据:', parsedData)
 
 					if (parsedData.length > 0) {
 						equipmentList.value = parsedData
@@ -464,8 +468,8 @@ export function useFieldSurveyData() {
 
 			const facilityList = []
 
-			// 2. 遍历所有污染物类型，提取设施信息
-			const pollutantTypes = ['水污染物', '大气污染物', '噪声', '固体废物', '危险废物']
+			// 2. 只提取水污染物、大气污染物、噪声的治理措施（不包括固体废物和危险废物）
+			const pollutantTypes = ['水污染物', '大气污染物', '噪声']
 
 			pollutantTypes.forEach(type => {
 				const pollutants = emissionData[type]
@@ -507,13 +511,32 @@ export function useFieldSurveyData() {
 				}
 			})
 
-			// 3. 更新状态
+			// 3. 固定添加两条固废暂存间记录（处理工艺留空，由用户手动填写）
+			facilityList.push({
+				id: `facility_solid_waste_${Date.now()}`,
+				name: '一般固废暂存间',
+				quantity: '',
+				remark: '',
+				images: [],
+				pollutantType: '固体废物'
+			})
+
+			facilityList.push({
+				id: `facility_hazardous_waste_${Date.now()}`,
+				name: '危废暂存间',
+				quantity: '',
+				remark: '',
+				images: [],
+				pollutantType: '危险废物'
+			})
+
+			// 4. 更新状态
 			pollutionFacilityList.value = facilityList
 
-			// 4. 保存到本地存储
+			// 5. 保存到本地存储
 			saveFacilityList(projectId, facilityList)
 
-			console.log(`✅ 从项目 ${projectId} 提取了 ${facilityList.length} 条治理设施`)
+			console.log(`✅ 从项目 ${projectId} 提取了 ${facilityList.length} 条治理设施（含2条固废暂存间）`)
 
 			if (facilityList.length > 0) {
 				uni.showToast({
@@ -545,7 +568,7 @@ export function useFieldSurveyData() {
 		try {
 			const cacheKey = `project_facility_list_${projectId}`
 			uni.setStorageSync(cacheKey, JSON.stringify(facilityList))
-			console.log(`✅ 项目 ${projectId} 的治理设施已保存到本地`)
+			// console.log(`✅ 项目 ${projectId} 的治理设施已保存到本地`)
 		} catch (error) {
 			console.error('保存治理设施失败:', error)
 		}

@@ -41,6 +41,12 @@ const _sfc_main = {
     function handleFetchEquipment() {
       fetchEquipmentData(props.userId, props.projectId);
     }
+    common_vendor.onMounted(() => {
+      if (!filteredEquipmentList.value.length && props.userId && props.projectId) {
+        common_vendor.index.__f__("log", "at components/field-survey/tabs/EquipmentTab.vue:183", "EquipmentTab 挂载，自动加载设备数据");
+        fetchEquipmentData(props.userId, props.projectId);
+      }
+    });
     const currentPage = common_vendor.ref(1);
     const paginatedEquipmentList = common_vendor.computed(() => {
       const start = (currentPage.value - 1) * pageSize;
