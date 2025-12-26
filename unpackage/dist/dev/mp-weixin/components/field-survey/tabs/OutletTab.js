@@ -17,8 +17,8 @@ const _sfc_main = {
   __name: "OutletTab",
   props: {
     projectId: {
-      type: [String, Number],
-      required: true
+      type: [String, Number, null],
+      default: null
     },
     baseTable: {
       type: Array,

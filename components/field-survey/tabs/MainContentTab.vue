@@ -203,8 +203,8 @@
 			required: true
 		},
 		projectId: {
-			type: [String, Number],
-			required: true
+			type: [String, Number, null],
+			default: null
 		}
 	})
 

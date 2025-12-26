@@ -1,0 +1,280 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/* 层级规范（全局使用） */
+.baseinfo-tab.data-v-fe6d06f0 {
+  padding: 24rpx;
+}
+.subsection.data-v-fe6d06f0 {
+  margin-bottom: 32rpx;
+}
+.subsection-head.data-v-fe6d06f0 {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 0;
+  margin-bottom: 16rpx;
+  border-bottom: 2rpx solid #e2e8f0;
+}
+.subsection-title.data-v-fe6d06f0 {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #166534;
+}
+.section-actions.data-v-fe6d06f0 {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+  flex-wrap: wrap;
+}
+.btn.data-v-fe6d06f0 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  border-radius: 12rpx;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn--ghost.data-v-fe6d06f0 {
+  background: transparent;
+  color: #166534;
+  border: 2rpx solid #166534;
+}
+.btn--ghost.data-v-fe6d06f0:active {
+  background: #f0fdf4;
+}
+.btn--danger.data-v-fe6d06f0 {
+  background: #dc2626;
+  color: #ffffff;
+}
+.btn--danger.data-v-fe6d06f0:active {
+  background: #b91c1c;
+}
+.btn--danger.data-v-fe6d06f0:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+.btn--secondary.data-v-fe6d06f0 {
+  background: #f0fdf4;
+  color: #155e3b;
+  border: 2rpx solid #166534;
+}
+.btn--secondary.data-v-fe6d06f0:active {
+  background: #dcfce7;
+}
+.btn--primary.data-v-fe6d06f0 {
+  background: #166534;
+  color: #ffffff;
+}
+.btn--primary.data-v-fe6d06f0:active {
+  background: #14532d;
+}
+.form-grid.data-v-fe6d06f0 {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.form-item.data-v-fe6d06f0 {
+  width: 100%;
+}
+.baseinfo__row.data-v-fe6d06f0 {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+  background: #f8fafc;
+  border-radius: 12rpx;
+  border: 1rpx solid #e2e8f0;
+}
+.form-item__label.data-v-fe6d06f0 {
+  flex-shrink: 0;
+  min-width: 200rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #1e293b;
+}
+.extract-tag.data-v-fe6d06f0 {
+  display: inline-block;
+  margin-left: 8rpx;
+  padding: 4rpx 12rpx;
+  font-size: 20rpx;
+  font-weight: 500;
+  color: #166534;
+  background: #dcfce7;
+  border-radius: 6rpx;
+}
+.form-item__input.data-v-fe6d06f0 {
+  flex: 1;
+}
+.form-item__select.data-v-fe6d06f0 {
+  flex-shrink: 0;
+}
+.pollutants-container.data-v-fe6d06f0 {
+  padding: 24rpx;
+  background: #f8fafc;
+  border-radius: 12rpx;
+  border: 1rpx solid #e2e8f0;
+  position: relative;
+}
+.pollutants_baseinfo_row.data-v-fe6d06f0 {
+  margin-bottom: 16rpx;
+}
+.pollutants-select.data-v-fe6d06f0 {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+}
+.pollutants-table.data-v-fe6d06f0 {
+  width: 100%;
+  overflow-x: auto;
+  background: #ffffff;
+  border-radius: 8rpx;
+  border: 1rpx solid #e2e8f0;
+}
+.pollutants-header.data-v-fe6d06f0 {
+  display: flex;
+  background: #f0fdf4;
+  border-bottom: 2rpx solid #166534;
+}
+.pollutants-body.data-v-fe6d06f0 {
+  display: flex;
+  flex-direction: column;
+}
+.pollutants-row.data-v-fe6d06f0 {
+  display: flex;
+  border-bottom: 1rpx solid #e2e8f0;
+}
+.pollutants-row.data-v-fe6d06f0:last-child {
+  border-bottom: none;
+}
+.pollutants-col.data-v-fe6d06f0 {
+  padding: 16rpx 12rpx;
+  font-size: 24rpx;
+  word-break: break-word;
+  border-right: 1rpx solid #e2e8f0;
+}
+.pollutants-col.data-v-fe6d06f0:last-child {
+  border-right: none;
+}
+.pollutants-header .pollutants-col.data-v-fe6d06f0 {
+  font-weight: 600;
+  color: #166534;
+  text-align: center;
+}
+.pollutants-body .pollutants-col.data-v-fe6d06f0 {
+  color: #1e293b;
+}
+.pollutants-col--type.data-v-fe6d06f0 {
+  flex: 0 0 120rpx;
+  min-width: 120rpx;
+}
+.pollutants-col--link.data-v-fe6d06f0 {
+  flex: 0 0 180rpx;
+  min-width: 180rpx;
+}
+.pollutants-col--name.data-v-fe6d06f0 {
+  flex: 0 0 200rpx;
+  min-width: 200rpx;
+}
+.pollutants-col--measure.data-v-fe6d06f0 {
+  flex: 1;
+  min-width: 250rpx;
+}
+.pollutants-col--direction.data-v-fe6d06f0 {
+  flex: 0 0 180rpx;
+  min-width: 180rpx;
+}
+.pollutants-col--standard.data-v-fe6d06f0 {
+  flex: 1;
+  min-width: 300rpx;
+}
+.empty-state.data-v-fe6d06f0 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 40rpx;
+  text-align: center;
+}
+.empty-text.data-v-fe6d06f0 {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 24rpx;
+}
+.modal.data-v-fe6d06f0 {
+  width: 80vw;
+  max-width: 500rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+.modal-header.data-v-fe6d06f0 {
+  padding: 32rpx 24rpx;
+  border-bottom: 1rpx solid #e2e8f0;
+}
+.modal-title.data-v-fe6d06f0 {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+.modal-body.data-v-fe6d06f0 {
+  padding: 32rpx 24rpx;
+}
+.modal-description.data-v-fe6d06f0 {
+  display: block;
+  font-size: 26rpx;
+  color: #64748b;
+  margin-bottom: 16rpx;
+}
+.modal-actions.data-v-fe6d06f0 {
+  display: flex;
+  gap: 16rpx;
+  padding: 24rpx;
+  border-top: 1rpx solid #e2e8f0;
+}
+.modal-actions .btn.data-v-fe6d06f0 {
+  flex: 1;
+}
+@media (max-width: 768px) {
+.pollutants-table.data-v-fe6d06f0 {
+    font-size: 22rpx;
+}
+.pollutants-col.data-v-fe6d06f0 {
+    padding: 12rpx 8rpx;
+}
+.section-actions.data-v-fe6d06f0 {
+    flex-direction: column;
+}
+.btn.data-v-fe6d06f0 {
+    width: 100%;
+}
+}

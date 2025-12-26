@@ -78,18 +78,25 @@
 			required: true
 		},
 		projectId: {
-			type: [String, Number],
-			required: true
+			type: [String, Number, null],
+			default: null
 		},
 		// 排污标识牌数据（来自步骤0）
 		signboard: {
 			type: Object,
 			required: true
 		},
-		// 基本信息表（用于排污口Tab查找数据）
+		// 基本信息表（用于排污口Tab查找数据）- 必须是数组
 		baseTable: {
 			type: Array,
-			default: () => []
+			default: () => [],
+			validator: (value) => {
+				if (!Array.isArray(value)) {
+					console.error('❌ FieldSurveyContainer: baseTable 必须是数组，当前类型:', typeof value)
+					return false
+				}
+				return true
+			}
 		},
 		// 提资单数据（用于生成比对清单）
 		datasheet: {

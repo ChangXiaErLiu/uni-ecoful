@@ -1,6 +1,13 @@
 <template>
 	<view class="monitor-plan-container">
-		<view class="section-card">
+		<!-- 未选项目时：组件内部空状态 -->
+		<view v-if="!projectId" class="empty-state">
+			<uni-icons type="folder-add" size="48" color="#cbd5e1" />
+			<text class="empty-text">请先选择项目</text>
+			<text class="empty-tip">请在第一步选择项目后，即可生成监测方案</text>
+		</view>
+		<!-- 已选项目：原来的完整界面 -->
+		<view v-else class="section-card">
 			<view class="section-header">
 				<uni-icons type="eye" size="20" color="#166534" />
 				<text class="section-title">监测方案</text>
@@ -48,209 +55,208 @@
 		</view>
 
 		<!-- 进度弹窗 -->
-		<TaskProgressModal 
-			ref="taskProgressModal"
-			:title="taskProgressTitle"
-			:progress="taskProgress"
-			:statusText="taskStatusText"
-			:state="taskState"
-		/>
+		<TaskProgressModal ref="taskProgressModal" :title="taskProgressTitle" :progress="taskProgress"
+			:statusText="taskStatusText" :state="taskState" />
 	</view>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useMonitorPlan } from '@/composables/useMonitorPlan.js'
-import TaskProgressModal from '@/components/message-pop-up/TaskProgressModal.vue'
+	import {
+		ref
+	} from 'vue'
+	import {
+		useMonitorPlan
+	} from '@/composables/useMonitorPlan.js'
+	import TaskProgressModal from '@/components/message-pop-up/TaskProgressModal.vue'
 
-const props = defineProps({
-	// 项目ID
-	projectId: {
-		type: [Number, String],
-		required: true
-	},
-	// 是否已提取项目信息
-	hasExtracted: {
-		type: Boolean,
-		default: false
+	const props = defineProps({
+		// 项目ID
+		projectId: {
+			type: [Number, String],
+			required: true
+		},
+		// 是否已提取项目信息
+		hasExtracted: {
+			type: Boolean,
+			default: false
+		}
+	})
+
+	const emit = defineEmits(['plan-generated'])
+
+	// 使用 composable
+	const {
+		plan,
+		canDownload,
+		isGenerating,
+		taskProgress,
+		taskStatusText,
+		taskState,
+		generatePlan,
+		downloadPlan
+	} = useMonitorPlan()
+
+	// 进度弹窗 ref
+	const taskProgressModal = ref(null)
+	const taskProgressTitle = ref('监测方案生成中')
+
+	// 生成监测方案
+	async function handleGenerate() {
+		await generatePlan(
+			props.projectId,
+			props.hasExtracted,
+			taskProgressModal.value
+		)
+
+		// 触发事件通知父组件
+		emit('plan-generated')
 	}
-})
 
-const emit = defineEmits(['plan-generated'])
-
-// 使用 composable
-const {
-	plan,
-	canDownload,
-	isGenerating,
-	taskProgress,
-	taskStatusText,
-	taskState,
-	generatePlan,
-	downloadPlan
-} = useMonitorPlan()
-
-// 进度弹窗 ref
-const taskProgressModal = ref(null)
-const taskProgressTitle = ref('监测方案生成中')
-
-// 生成监测方案
-async function handleGenerate() {
-	await generatePlan(
-		props.projectId,
-		props.hasExtracted,
-		taskProgressModal.value
-	)
-	
-	// 触发事件通知父组件
-	emit('plan-generated')
-}
-
-// 下载监测方案
-async function handleDownload() {
-	await downloadPlan(props.projectId)
-}
+	// 下载监测方案
+	async function handleDownload() {
+		await downloadPlan(props.projectId)
+	}
 </script>
 
 <style scoped lang="scss">
-.monitor-plan-container {
-	width: 100%;
-}
+	.monitor-plan-container {
+		width: 100%;
+	}
 
-.section-card {
-	background: #ffffff;
-	border-radius: 16rpx;
-	overflow: hidden;
-	box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.08);
-}
+	.section-card {
+		background: #ffffff;
+		border-radius: 16rpx;
+		overflow: hidden;
+		box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.08);
+	}
 
-.section-header {
-	display: flex;
-	align-items: center;
-	gap: 10rpx;
-	padding: 28rpx 24rpx;
-	background: #ffffff;
-	border-bottom: 1rpx solid #e2e8f0;
-}
+	.section-header {
+		display: flex;
+		align-items: center;
+		gap: 10rpx;
+		padding: 28rpx 24rpx;
+		background: #ffffff;
+		border-bottom: 1rpx solid #e2e8f0;
+	}
 
-.section-title {
-	font-size: 32rpx;
-	font-weight: 600;
-	color: #166534;
-}
+	.section-title {
+		font-size: 32rpx;
+		font-weight: 600;
+		color: #166534;
+	}
 
-.section-body {
-	padding: 32rpx 24rpx;
-}
+	.section-body {
+		padding: 32rpx 24rpx;
+	}
 
-.empty-state {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	padding: 80rpx 40rpx;
-	gap: 16rpx;
-}
-
-.empty-text {
-	font-size: 32rpx;
-	font-weight: 500;
-	color: #64748b;
-}
-
-.empty-tip {
-	font-size: 24rpx;
-	color: #94a3b8;
-	text-align: center;
-}
-
-.action-row {
-	display: flex;
-	gap: 16rpx;
-	justify-content: center;
-	margin-top: 32rpx;
-}
-
-.btn {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8rpx;
-	// padding: 24rpx 48rpx;
-	border-radius: 12rpx;
-	font-size: 28rpx;
-	font-weight: 500;
-	transition: all 0.3s ease;
-	border: none;
-}
-
-.btn--primary {
-	background: #166534;
-	color: #ffffff;
-}
-
-.btn--primary:active {
-	opacity: 0.8;
-	transform: scale(0.98);
-}
-
-.btn--primary:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.plan-preview {
-	padding: 24rpx;
-	background: #f0fdf4;
-	border-radius: 12rpx;
-	border: 1rpx solid #dcfce7;
-	margin-top: 32rpx;
-}
-
-.preview-header {
-	display: flex;
-	align-items: center;
-	gap: 8rpx;
-	margin-bottom: 16rpx;
-}
-
-.preview-title {
-	font-size: 28rpx;
-	color: #166534;
-	font-weight: 700;
-}
-
-.preview-content {
-	display: flex;
-	flex-direction: column;
-	gap: 12rpx;
-}
-
-.preview-text {
-	font-size: 24rpx;
-	color: #374151;
-}
-
-.preview-sections {
-	display: flex;
-	flex-direction: column;
-	gap: 8rpx;
-	padding-left: 20rpx;
-}
-
-.section-item {
-	font-size: 24rpx;
-	color: #475569;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-	.action-row {
+	.empty-state {
+		display: flex;
 		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 80rpx 40rpx;
+		gap: 16rpx;
+	}
+
+	.empty-text {
+		font-size: 32rpx;
+		font-weight: 500;
+		color: #64748b;
+	}
+
+	.empty-tip {
+		font-size: 24rpx;
+		color: #94a3b8;
+		text-align: center;
+	}
+
+	.action-row {
+		display: flex;
+		gap: 16rpx;
+		justify-content: center;
+		margin-top: 32rpx;
 	}
 
 	.btn {
-		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8rpx;
+		// padding: 24rpx 48rpx;
+		border-radius: 12rpx;
+		font-size: 28rpx;
+		font-weight: 500;
+		transition: all 0.3s ease;
+		border: none;
 	}
-}
+
+	.btn--primary {
+		background: #166534;
+		color: #ffffff;
+	}
+
+	.btn--primary:active {
+		opacity: 0.8;
+		transform: scale(0.98);
+	}
+
+	.btn--primary:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.plan-preview {
+		padding: 24rpx;
+		background: #f0fdf4;
+		border-radius: 12rpx;
+		border: 1rpx solid #dcfce7;
+		margin-top: 32rpx;
+	}
+
+	.preview-header {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		margin-bottom: 16rpx;
+	}
+
+	.preview-title {
+		font-size: 28rpx;
+		color: #166534;
+		font-weight: 700;
+	}
+
+	.preview-content {
+		display: flex;
+		flex-direction: column;
+		gap: 12rpx;
+	}
+
+	.preview-text {
+		font-size: 24rpx;
+		color: #374151;
+	}
+
+	.preview-sections {
+		display: flex;
+		flex-direction: column;
+		gap: 8rpx;
+		padding-left: 20rpx;
+	}
+
+	.section-item {
+		font-size: 24rpx;
+		color: #475569;
+	}
+
+	/* 响应式设计 */
+	@media (max-width: 768px) {
+		.action-row {
+			flex-direction: column;
+		}
+
+		.btn {
+			width: 100%;
+		}
+	}
 </style>

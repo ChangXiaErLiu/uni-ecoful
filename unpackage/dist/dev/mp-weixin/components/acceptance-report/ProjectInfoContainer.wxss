@@ -1,0 +1,328 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/* 层级规范（全局使用） */
+.project-info-container.data-v-abb50b5f {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.section-card.data-v-abb50b5f {
+  background: #ffffff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(15, 23, 42, 0.08);
+  border: 2rpx solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+.section-card--fade-in.data-v-abb50b5f {
+  animation: fadeInUp-abb50b5f 0.5s ease-out;
+}
+@keyframes fadeInUp-abb50b5f {
+from {
+    opacity: 0;
+    transform: translateY(20rpx);
+}
+to {
+    opacity: 1;
+    transform: translateY(0);
+}
+}
+.section-header.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 32rpx;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-bottom: 2rpx solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+.section-header--completed.data-v-abb50b5f {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+}
+.header-left.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.step-badge.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+  background: #166534;
+  border-radius: 50%;
+  margin-right: 4rpx;
+}
+.section-header--completed .step-badge.data-v-abb50b5f {
+  background: #10b981;
+}
+.step-number.data-v-abb50b5f {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #ffffff;
+}
+.section-title.data-v-abb50b5f {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #166534;
+  letter-spacing: 0.5rpx;
+}
+.status-badge.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+.status-badge--success.data-v-abb50b5f {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.status-badge--pending.data-v-abb50b5f {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+.status-badge--info.data-v-abb50b5f {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+.section-body.data-v-abb50b5f {
+  padding: 0;
+}
+@media (max-width: 768px) {
+.project-info-container.data-v-abb50b5f {
+    gap: 20rpx;
+}
+.section-card.data-v-abb50b5f {
+    border-radius: 12rpx;
+}
+.section-header.data-v-abb50b5f {
+    padding: 24rpx 24rpx;
+}
+.step-badge.data-v-abb50b5f {
+    width: 44rpx;
+    height: 44rpx;
+}
+.section-title.data-v-abb50b5f {
+    font-size: 30rpx;
+}
+.status-badge.data-v-abb50b5f {
+    font-size: 22rpx;
+    padding: 6rpx 12rpx;
+}
+}
+@media (min-width: 1025px) {
+.section-card.data-v-abb50b5f:hover {
+    box-shadow: 0 4rpx 20rpx rgba(15, 23, 42, 0.12);
+    transform: translateY(-2rpx);
+}
+}
+.global-popup-mask.data-v-abb50b5f {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn-abb50b5f 0.3s ease;
+}
+.global-popup-content.data-v-abb50b5f {
+  animation: slideUp-abb50b5f 0.3s ease;
+}
+@keyframes fadeIn-abb50b5f {
+from {
+    opacity: 0;
+}
+to {
+    opacity: 1;
+}
+}
+@keyframes slideUp-abb50b5f {
+from {
+    opacity: 0;
+    transform: translateY(50rpx);
+}
+to {
+    opacity: 1;
+    transform: translateY(0);
+}
+}
+.project-picker-modal.data-v-abb50b5f {
+  width: 90vw;
+  max-width: 800rpx;
+  height: 80vh;
+  max-height: 1000rpx;
+  background: #ffffff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+}
+.picker-header.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 24rpx;
+  border-bottom: 1rpx solid #e2e8f0;
+  flex-shrink: 0;
+}
+.picker-title.data-v-abb50b5f {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+.picker-close.data-v-abb50b5f {
+  padding: 8rpx;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.picker-close.data-v-abb50b5f:active {
+  transform: scale(0.9);
+}
+.picker-search.data-v-abb50b5f {
+  padding: 24rpx;
+  border-bottom: 1rpx solid #e2e8f0;
+  flex-shrink: 0;
+}
+.picker-stats.data-v-abb50b5f {
+  padding: 16rpx 24rpx;
+  background: #f8fafc;
+  border-bottom: 1rpx solid #e2e8f0;
+  flex-shrink: 0;
+}
+.stats-text.data-v-abb50b5f {
+  font-size: 24rpx;
+  color: #64748b;
+}
+.stats-highlight.data-v-abb50b5f {
+  color: #166534;
+  font-weight: 500;
+}
+.picker-list.data-v-abb50b5f {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+.picker-item.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+  border-bottom: 1rpx solid #e2e8f0;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.picker-item.data-v-abb50b5f:active {
+  background: #f8fafc;
+}
+.picker-item--active.data-v-abb50b5f {
+  background: #f0fdf4;
+  border-left: 4rpx solid #166534;
+}
+.picker-item-icon.data-v-abb50b5f {
+  flex-shrink: 0;
+}
+.picker-item-content.data-v-abb50b5f {
+  flex: 1;
+  min-width: 0;
+}
+.picker-item-name.data-v-abb50b5f {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 4rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.picker-item-desc.data-v-abb50b5f {
+  display: block;
+  font-size: 24rpx;
+  color: #64748b;
+  margin-bottom: 8rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.picker-item-meta.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+.meta-text.data-v-abb50b5f {
+  font-size: 22rpx;
+  color: #9ca3af;
+}
+.picker-item-action.data-v-abb50b5f {
+  flex-shrink: 0;
+}
+.selected-badge.data-v-abb50b5f {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+  background: #166534;
+  border-radius: 50%;
+}
+.picker-empty.data-v-abb50b5f {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  text-align: center;
+  min-height: 400rpx;
+}
+.picker-empty-text.data-v-abb50b5f {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 24rpx;
+  margin-bottom: 8rpx;
+}
+.picker-empty-tip.data-v-abb50b5f {
+  display: block;
+  font-size: 24rpx;
+  color: #94a3b8;
+}
+@media (max-width: 768px) {
+.project-picker-modal.data-v-abb50b5f {
+    width: 95vw;
+    height: 85vh;
+}
+}

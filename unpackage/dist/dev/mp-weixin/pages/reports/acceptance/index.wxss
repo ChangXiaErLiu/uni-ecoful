@@ -1547,7 +1547,7 @@
   gap: 24rpx;
 }
 
-/* 联系人信息 */
+/* 资料接收者信息*/
 .contact-info-section.data-v-41308e16 {
   background: #f0fdf4;
   border-radius: 16rpx;
