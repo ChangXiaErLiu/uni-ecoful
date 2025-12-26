@@ -56,12 +56,8 @@ to {
   align-items: center;
   justify-content: space-between;
   padding: 28rpx 32rpx;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   border-bottom: 2rpx solid #e2e8f0;
   transition: all 0.3s ease;
-}
-.section-header--completed.data-v-abb50b5f {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
 }
 .header-left.data-v-abb50b5f {
   display: flex;
@@ -136,12 +132,6 @@ to {
 .status-badge.data-v-abb50b5f {
     font-size: 22rpx;
     padding: 6rpx 12rpx;
-}
-}
-@media (min-width: 1025px) {
-.section-card.data-v-abb50b5f:hover {
-    box-shadow: 0 4rpx 20rpx rgba(15, 23, 42, 0.12);
-    transform: translateY(-2rpx);
 }
 }
 .global-popup-mask.data-v-abb50b5f {

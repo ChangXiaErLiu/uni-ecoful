@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const common_vendor = require("../common/vendor.js");
 const utils_request = require("../utils/request.js");
 const utils_config = require("../utils/config.js");

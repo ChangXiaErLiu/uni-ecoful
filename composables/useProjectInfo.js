@@ -1,5 +1,6 @@
-import { ref, reactive, computed, watch, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { runTask, transformExtractResult, downloadSignboardWord } from '@/api/acceptance.js'
+import { getProjects, getProjectDocuments } from '@/api/project.js'
 import { useMonitorPlan } from '@/composables/useMonitorPlan.js'
 import { useFieldSurveyData } from '@/composables/useFieldSurveyData.js'
 
@@ -82,7 +83,6 @@ export function useProjectInfo() {
 	// 加载项目列表
 	async function loadProjects() {
 		try {
-			const { getProjects } = await import('@/api/project.js')
 			const response = await getProjects()
 			projectList.value = response || []
 		} catch (error) {
@@ -104,7 +104,6 @@ export function useProjectInfo() {
 				})
 			}
 
-			const { getProjectDocuments } = await import('@/api/project.js')
 			const response = await getProjectDocuments(projectId)
 
 			if (Array.isArray(response)) {

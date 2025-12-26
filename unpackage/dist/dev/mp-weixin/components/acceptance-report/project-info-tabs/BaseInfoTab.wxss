@@ -265,6 +265,9 @@
   flex: 1;
 }
 @media (max-width: 768px) {
+.baseinfo__row.data-v-fe6d06f0 {
+    display: block;
+}
 .pollutants-table.data-v-fe6d06f0 {
     font-size: 22rpx;
 }

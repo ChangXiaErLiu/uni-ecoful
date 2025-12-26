@@ -743,7 +743,9 @@
 	// 从 useProjectInfo composable 获取第一步的状态
 	const projectInfoState = useProjectInfo()
 	const {
-		selectedProjectId
+		selectedProjectId,
+		filteredProjects,
+		projectSearchKeyword
 	} = projectInfoState
 
 	// 所有步骤的完成度
@@ -754,9 +756,9 @@
 			case 1:
 				return monitorPlanState.canDownload.value;
 			case 2:
-				return tizidanItems.value.some(item => item.submitted);
+				return tizidanItems.value && tizidanItems.value.some(item => item.submitted);
 			case 3:
-				return fieldSurveyData.fieldworkComparison.value.length > 0;
+				return fieldSurveyData.fieldworkComparison && fieldSurveyData.fieldworkComparison.value && fieldSurveyData.fieldworkComparison.value.length > 0;
 			case 4:
 				return acceptanceReportState.canDownloadReport.value;
 			default:
@@ -764,7 +766,7 @@
 		}
 	}
 
-	// 第一步：项目信息管理（已重构为独立组件） =====
+	// 第一步：项目信息管理（已重构为独立组件）
 	// 所有状态和方法已迁移到 composables/useProjectInfo.js
 	// 通过 ProjectInfoContainer 组件使用
 
@@ -773,7 +775,7 @@
 		// console.log('✅ 项目信息提取完成')
 	}
 
-	// 初始化和清理 =====
+	// 初始化和清理
 	onLoad(async () => {
 		// 初始化项目信息管理
 		await projectInfoState.initialize()
@@ -2110,18 +2112,6 @@
 		background: $white;
 		color: $muted;
 		border-color: #e9edf2;
-	}
-
-	.btn--danger {
-		background: $danger;
-		color: $white;
-		border-color: $danger;
-	}
-
-	.btn--danger-ghost {
-		background: #fef3f2;
-		color: $danger;
-		border-color: #fde2e1;
 	}
 
 	/* 步骤导航 */

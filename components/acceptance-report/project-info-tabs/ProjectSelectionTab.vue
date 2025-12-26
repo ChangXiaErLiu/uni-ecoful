@@ -77,8 +77,8 @@
 			</button>
 		</view>
 
-		<!-- 项目选择弹窗 - 使用 teleport 传送到 body -->
-		<teleport to="body">
+		<!-- 项目选择弹窗 -->
+		
 			<view v-if="showPicker" class="custom-popup-mask" @tap="handleClosePicker">
 				<view class="custom-popup-content" @tap.stop>
 					<view class="project-picker-modal">
@@ -153,7 +153,6 @@
 					</view>
 				</view>
 			</view>
-		</teleport>
 		
 		<!-- 任务进度弹窗 -->
 		<TaskProgressModal 

@@ -251,8 +251,8 @@ function handleComplete() {
 	align-items: center;
 }
 
-.form-item__row > * {
-	flex: 1;
+.form-item__row .uni-easyinput {
+  flex: 1;
 }
 
 // 响应式设计
@@ -265,12 +265,11 @@ function handleComplete() {
 		width: 100%;
 	}
 	
-	.form-item__row {
-		flex-direction: column;
+	.form-item__row .uni-easyinput {
+	  flex: 1;
 	}
-	
-	.form-item__row > * {
-		width: 100%;
+	.form-item__row button {
+	  flex-shrink: 0;
 	}
 }
 </style>
