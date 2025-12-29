@@ -696,10 +696,6 @@ async function handleExtract() {
 		height: 85vh;
 	}
 	
-	.action-row {
-		flex-direction: column;
-	}
-	
 	.btn {
 		width: 100%;
 	}

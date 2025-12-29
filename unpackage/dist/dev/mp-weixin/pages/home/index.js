@@ -62,7 +62,7 @@ const _sfc_main = {
           userCompany.value = userInfo.company_name || userInfo.company || "";
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:281", "加载用户信息失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:283", "加载用户信息失败:", error);
       }
     }
     function loadProjectInfo() {
@@ -79,11 +79,13 @@ const _sfc_main = {
           };
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:304", "加载项目信息失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:306", "加载项目信息失败:", error);
       }
     }
     function goToProfile() {
-      common_vendor.index.switchTab({ url: "/pages/profile/index" });
+      common_vendor.index.switchTab({
+        url: "/pages/profile/index"
+      });
     }
     function loadStatsData() {
       try {
@@ -93,13 +95,15 @@ const _sfc_main = {
           completed: Math.floor(Math.random() * 15) + 1
         };
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:329", "加载统计数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:335", "加载统计数据失败:", error);
       }
     }
     function quickAction(action) {
       switch (action) {
         case "newProject":
-          common_vendor.index.navigateTo({ url: "/pages/project/index" });
+          common_vendor.index.navigateTo({
+            url: "/pages/project/index"
+          });
           break;
         case "uploadDoc":
           common_vendor.index.showToast({
@@ -108,10 +112,14 @@ const _sfc_main = {
           });
           break;
         case "viewReports":
-          common_vendor.index.navigateTo({ url: "/pages/reports/acceptance/index" });
+          common_vendor.index.navigateTo({
+            url: "/pages/reports/acceptance/index"
+          });
           break;
         case "settings":
-          common_vendor.index.switchTab({ url: "/pages/profile/index" });
+          common_vendor.index.switchTab({
+            url: "/pages/profile/index"
+          });
           break;
       }
     }
@@ -130,7 +138,7 @@ const _sfc_main = {
           systemAnnouncement.value = "系统测试";
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/home/index.vue:378", "加载系统公告失败:", error);
+        common_vendor.index.__f__("error", "at pages/home/index.vue:390", "加载系统公告失败:", error);
       }
     }
     function closeAnnouncement() {
@@ -234,18 +242,22 @@ const _sfc_main = {
       const kw = keyword.value.trim();
       if (!kw)
         return cards.value;
-      return cards.value.filter(
-        (c) => [c.title, c.subtitle, c.id].some((t) => String(t).toLowerCase().includes(kw.toLowerCase()))
-      );
+      return cards.value.filter((c) => [c.title, c.subtitle, c.id].some((t) => String(t).toLowerCase().includes(
+        kw.toLowerCase()
+      )));
     });
     function onCardTap(item) {
       if (!(item == null ? void 0 : item.path))
         return;
       const url = item.path.startsWith("/") ? item.path : `/${item.path}`;
       if (TAB_PAGES.has(url)) {
-        common_vendor.index.switchTab({ url });
+        common_vendor.index.switchTab({
+          url
+        });
       } else {
-        common_vendor.index.navigateTo({ url });
+        common_vendor.index.navigateTo({
+          url
+        });
       }
     }
     function getIconBgColor(color) {
@@ -268,55 +280,37 @@ const _sfc_main = {
         }),
         e: common_vendor.o(goToProfile),
         f: common_vendor.p({
-          type: "folder-add",
-          size: "24",
-          color: "#ffffff"
-        }),
-        g: common_vendor.t(statsData.value.projects),
-        h: common_vendor.p({
-          type: "paperclip",
-          size: "24",
-          color: "#ffffff"
-        }),
-        i: common_vendor.t(statsData.value.documents),
-        j: common_vendor.p({
-          type: "checkmarkempty",
-          size: "24",
-          color: "#ffffff"
-        }),
-        k: common_vendor.t(statsData.value.completed),
-        l: common_vendor.p({
           type: "star",
           size: "18",
           color: "#f59e0b"
         }),
-        m: common_vendor.p({
+        g: common_vendor.p({
           type: "plus",
           size: "20",
           color: "#166534"
         }),
-        n: common_vendor.o(($event) => quickAction("newProject")),
-        o: common_vendor.p({
+        h: common_vendor.o(($event) => quickAction("newProject")),
+        i: common_vendor.p({
           type: "cloud-upload",
           size: "20",
           color: "#2563eb"
         }),
-        p: common_vendor.o(($event) => quickAction("newProject")),
-        q: common_vendor.p({
+        j: common_vendor.o(($event) => quickAction("newProject")),
+        k: common_vendor.p({
           type: "compose",
           size: "20",
           color: "#d97706"
         }),
-        r: common_vendor.o(($event) => quickAction("viewReports")),
-        s: common_vendor.p({
+        l: common_vendor.o(($event) => quickAction("viewReports")),
+        m: common_vendor.p({
           type: "gear",
           size: "20",
           color: "#7c3aed"
         }),
-        t: common_vendor.o(($event) => quickAction("settings")),
-        v: common_vendor.f(filteredCards.value, (item, k0, i0) => {
+        n: common_vendor.o(($event) => quickAction("settings")),
+        o: common_vendor.f(filteredCards.value, (item, k0, i0) => {
           return common_vendor.e({
-            a: "4978fed5-10-" + i0 + ",4978fed5-0",
+            a: "4978fed5-7-" + i0 + ",4978fed5-0",
             b: common_vendor.p({
               type: item.icon,
               size: "28",
@@ -335,42 +329,42 @@ const _sfc_main = {
             k: common_vendor.o(($event) => onCardTap(item), item.id)
           });
         }),
-        w: filteredCards.value.length === 0
+        p: filteredCards.value.length === 0
       }, filteredCards.value.length === 0 ? {
-        x: common_vendor.p({
+        q: common_vendor.p({
           type: "search",
           size: "60",
           color: "#cbd5e1"
         })
       } : {}, {
-        y: common_vendor.p({
+        r: common_vendor.p({
           type: "info",
           size: "20",
           color: "#16a34a"
         }),
-        z: common_vendor.t(currentTip.value),
-        A: common_vendor.p({
+        s: common_vendor.t(currentTip.value),
+        t: common_vendor.p({
           type: "refresh",
           size: "14",
           color: "#16a34a"
         }),
-        B: common_vendor.o(refreshTip),
-        C: systemAnnouncement.value
+        v: common_vendor.o(refreshTip),
+        w: systemAnnouncement.value
       }, systemAnnouncement.value ? {
-        D: common_vendor.p({
+        x: common_vendor.p({
           type: "sound",
           size: "18",
           color: "#f59e0b"
         }),
-        E: common_vendor.t(systemAnnouncement.value),
-        F: common_vendor.p({
+        y: common_vendor.t(systemAnnouncement.value),
+        z: common_vendor.p({
           type: "close",
           size: "16",
           color: "#94a3b8"
         }),
-        G: common_vendor.o(closeAnnouncement)
+        A: common_vendor.o(closeAnnouncement)
       } : {}, {
-        H: common_vendor.p({
+        B: common_vendor.p({
           current: "pages/home/index"
         })
       });

@@ -410,9 +410,6 @@ to {
     width: 95vw;
     height: 85vh;
 }
-.action-row.data-v-7034a124 {
-    flex-direction: column;
-}
 .btn.data-v-7034a124 {
     width: 100%;
 }

@@ -99,7 +99,7 @@
 .form-grid.data-v-fe6d06f0 {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 32rpx;
 }
 .form-item.data-v-fe6d06f0 {
   width: 100%;
@@ -139,81 +139,181 @@
 .pollutants-container.data-v-fe6d06f0 {
   padding: 24rpx;
   background: #f8fafc;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   border: 1rpx solid #e2e8f0;
   position: relative;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
-.pollutants_baseinfo_row.data-v-fe6d06f0 {
-  margin-bottom: 16rpx;
+.table-title-container.data-v-fe6d06f0 {
+  margin-bottom: 20rpx;
+}
+.table-title.data-v-fe6d06f0 {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.table-subtitle.data-v-fe6d06f0 {
+  font-size: 24rpx;
+  color: #64748b;
+  margin-top: 8rpx;
 }
 .pollutants-select.data-v-fe6d06f0 {
   position: absolute;
   top: 24rpx;
   right: 24rpx;
 }
-.pollutants-table.data-v-fe6d06f0 {
+.enhanced-table-wrapper.data-v-fe6d06f0 {
   width: 100%;
   overflow-x: auto;
   background: #ffffff;
-  border-radius: 8rpx;
+  border-radius: 12rpx;
   border: 1rpx solid #e2e8f0;
+  box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.05);
 }
-.pollutants-header.data-v-fe6d06f0 {
+.enhanced-table-wrapper.waste-table.data-v-fe6d06f0 {
+  margin-top: 24rpx;
+}
+.enhanced-table-header.data-v-fe6d06f0 {
   display: flex;
-  background: #f0fdf4;
-  border-bottom: 2rpx solid #166534;
+  background: #1ec553;
+  border-bottom: 2rpx solid #14532d;
 }
-.pollutants-body.data-v-fe6d06f0 {
+.enhanced-table-body.data-v-fe6d06f0 {
   display: flex;
   flex-direction: column;
 }
-.pollutants-row.data-v-fe6d06f0 {
+.enhanced-table-row.data-v-fe6d06f0 {
   display: flex;
-  border-bottom: 1rpx solid #e2e8f0;
+  border-bottom: 1rpx solid #f1f5f9;
+  transition: background-color 0.2s ease;
 }
-.pollutants-row.data-v-fe6d06f0:last-child {
+.enhanced-table-row.data-v-fe6d06f0:last-child {
   border-bottom: none;
 }
-.pollutants-col.data-v-fe6d06f0 {
-  padding: 16rpx 12rpx;
+.enhanced-table-row.data-v-fe6d06f0:hover {
+  background-color: #f8fafc;
+}
+.enhanced-table-row--water.data-v-fe6d06f0 {
+  background-color: rgba(14, 165, 233, 0.02);
+}
+.enhanced-table-row--air.data-v-fe6d06f0 {
+  background-color: rgba(34, 197, 94, 0.02);
+}
+.enhanced-table-row--noise.data-v-fe6d06f0 {
+  background-color: rgba(249, 115, 22, 0.02);
+}
+.enhanced-table-row--solid.data-v-fe6d06f0 {
+  background-color: rgba(139, 92, 246, 0.02);
+}
+.enhanced-table-row--hazard.data-v-fe6d06f0 {
+  background-color: rgba(239, 68, 68, 0.02);
+}
+.enhanced-table-row--empty.data-v-fe6d06f0 {
+  justify-content: center;
+  padding: 40rpx 20rpx;
+}
+.enhanced-table-col.data-v-fe6d06f0 {
+  padding: 24rpx 16rpx;
   font-size: 24rpx;
   word-break: break-word;
-  border-right: 1rpx solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1rpx solid #f1f5f9;
+  min-height: 80rpx;
 }
-.pollutants-col.data-v-fe6d06f0:last-child {
+.enhanced-table-col.data-v-fe6d06f0:last-child {
   border-right: none;
 }
-.pollutants-header .pollutants-col.data-v-fe6d06f0 {
+.enhanced-table-header .enhanced-table-col.data-v-fe6d06f0 {
   font-weight: 600;
-  color: #166534;
+  color: #ffffff;
+  font-size: 26rpx;
+  text-align: center;
+  white-space: nowrap;
+  padding: 28rpx 16rpx;
+}
+.enhanced-table-body .enhanced-table-col.data-v-fe6d06f0 {
+  color: #334155;
   text-align: center;
 }
-.pollutants-body .pollutants-col.data-v-fe6d06f0 {
-  color: #1e293b;
+.cell-content.data-v-fe6d06f0 {
+  display: block;
+  width: 100%;
+  text-align: center;
+  line-height: 1.4;
 }
-.pollutants-col--type.data-v-fe6d06f0 {
-  flex: 0 0 120rpx;
-  min-width: 120rpx;
+.empty-data-text.data-v-fe6d06f0 {
+  color: #94a3b8;
+  font-size: 26rpx;
+  text-align: center;
 }
-.pollutants-col--link.data-v-fe6d06f0 {
-  flex: 0 0 180rpx;
-  min-width: 180rpx;
+.enhanced-table-col--type.data-v-fe6d06f0 {
+  flex: 0 0 140rpx;
+  min-width: 140rpx;
 }
-.pollutants-col--name.data-v-fe6d06f0 {
+.enhanced-table-col--name.data-v-fe6d06f0 {
+  flex: 0 0 220rpx;
+  min-width: 220rpx;
+}
+.enhanced-table-col--factor.data-v-fe6d06f0 {
+  flex: 0 0 240rpx;
+  min-width: 240rpx;
+}
+.enhanced-table-col--measure.data-v-fe6d06f0 {
+  flex: 1;
+  min-width: 280rpx;
+}
+.enhanced-table-col--direction.data-v-fe6d06f0 {
   flex: 0 0 200rpx;
   min-width: 200rpx;
 }
-.pollutants-col--measure.data-v-fe6d06f0 {
+.enhanced-table-col--standard.data-v-fe6d06f0 {
   flex: 1;
-  min-width: 250rpx;
+  min-width: 320rpx;
 }
-.pollutants-col--direction.data-v-fe6d06f0 {
+.enhanced-table-col--waste-type.data-v-fe6d06f0 {
   flex: 0 0 180rpx;
   min-width: 180rpx;
 }
-.pollutants-col--standard.data-v-fe6d06f0 {
-  flex: 1;
-  min-width: 300rpx;
+.enhanced-table-col--source.data-v-fe6d06f0 {
+  flex: 0 0 380rpx;
+  min-width: 380rpx;
+}
+.enhanced-table-col--property.data-v-fe6d06f0 {
+  flex: 0 0 380rpx;
+  min-width: 380rpx;
+}
+.enhanced-table-col--category.data-v-fe6d06f0 {
+  flex: 0 0 380rpx;
+  min-width: 380rpx;
+}
+.type-badge.data-v-fe6d06f0 {
+  display: inline-block;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  color: #ffffff;
+  white-space: nowrap;
+}
+.type-badge--water.data-v-fe6d06f0 {
+  background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+}
+.type-badge--air.data-v-fe6d06f0 {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+.type-badge--noise.data-v-fe6d06f0 {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+.type-badge--solid.data-v-fe6d06f0 {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+.type-badge--hazard.data-v-fe6d06f0 {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
 }
 .empty-state.data-v-fe6d06f0 {
   display: flex;
@@ -268,16 +368,66 @@
 .baseinfo__row.data-v-fe6d06f0 {
     display: block;
 }
-.pollutants-table.data-v-fe6d06f0 {
-    font-size: 22rpx;
-}
-.pollutants-col.data-v-fe6d06f0 {
-    padding: 12rpx 8rpx;
-}
 .section-actions.data-v-fe6d06f0 {
     flex-direction: column;
 }
 .btn.data-v-fe6d06f0 {
     width: 100%;
+}
+.enhanced-table-header.data-v-fe6d06f0 {
+    width: 84.5vh;
+}
+.enhanced-table-wrapper.data-v-fe6d06f0 {
+    font-size: 24rpx;
+}
+.enhanced-table-col.data-v-fe6d06f0 {
+    padding: 20rpx 12rpx;
+    min-height: 70rpx;
+}
+.enhanced-table-header .enhanced-table-col.data-v-fe6d06f0 {
+    padding: 24rpx 12rpx;
+    font-size: 24rpx;
+}
+.enhanced-table-col--type.data-v-fe6d06f0,
+.enhanced-table-col--waste-type.data-v-fe6d06f0 {
+    flex: 0 0 120rpx;
+    min-width: 120rpx;
+}
+.enhanced-table-col--name.data-v-fe6d06f0,
+.enhanced-table-col--source.data-v-fe6d06f0 {
+    flex: 0 0 180rpx;
+    min-width: 180rpx;
+}
+.enhanced-table-col--factor.data-v-fe6d06f0 {
+    flex: 0 0 200rpx;
+    min-width: 200rpx;
+}
+.enhanced-table-col--direction.data-v-fe6d06f0,
+.enhanced-table-col--property.data-v-fe6d06f0 {
+    flex: 0 0 160rpx;
+    min-width: 160rpx;
+}
+.enhanced-table-col--category.data-v-fe6d06f0 {
+    flex: 0 0 180rpx;
+    min-width: 180rpx;
+}
+.type-badge.data-v-fe6d06f0 {
+    padding: 4rpx 12rpx;
+    font-size: 20rpx;
+}
+.property-tag.data-v-fe6d06f0 {
+    padding: 2rpx 8rpx;
+    font-size: 20rpx;
+}
+}
+.pollutants-container.data-v-fe6d06f0 {
+  box-shadow: none;
+}
+.enhanced-table-wrapper.data-v-fe6d06f0 {
+  border-radius: 8rpx;
+}
+@media (orientation: landscape) {
+.enhanced-table-wrapper.data-v-fe6d06f0 {
+    font-size: 22rpx;
 }
 }

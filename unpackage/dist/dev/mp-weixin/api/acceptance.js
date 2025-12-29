@@ -153,8 +153,10 @@ function transformExtractResult(result) {
     },
     // 污染物
     "固体废物产生情况": {
-      id: "solid_generation",
-      label: "固体废物产生情况"
+      id: "waste_production",
+      label: "固体废物产生情况",
+      type: "table"
+      // 添加类型标识
     },
     "污染物产排情况": {
       id: "pollutants_emission",
@@ -234,10 +236,10 @@ function transformExtractResult(result) {
     // 联系人
     "contact_phone",
     // 联系方式
-    "solid_generation",
-    // 固体废物产生情况
-    "pollutants_emission"
+    "pollutants_emission",
     // 污染物产排情况
+    "waste_production"
+    // 固体废物产生情况
   ];
   return baseTable.sort((a, b) => {
     const aIndex = ORDER.indexOf(a.id);
@@ -296,7 +298,7 @@ function downloadSignboardWord(signboard, projectId) {
       header,
       responseType: "arraybuffer",
       success: (res) => {
-        common_vendor.index.__f__("log", "at api/acceptance.js:442", "标识牌下载响应:", res);
+        common_vendor.index.__f__("log", "at api/acceptance.js:443", "标识牌下载响应:", res);
         if (res.statusCode === 200 && res.data) {
           if (res.data instanceof ArrayBuffer && res.data.byteLength > 0) {
             resolve(res.data);
@@ -351,12 +353,12 @@ async function generateMonitorPlan(options = {}) {
             task_result,
             error_message
           } = statusResult;
-          common_vendor.index.__f__("log", "at api/acceptance.js:522", `[${status}] ${progress}% - ${current_step}`);
+          common_vendor.index.__f__("log", "at api/acceptance.js:523", `[${status}] ${progress}% - ${current_step}`);
           if (onProgress && typeof onProgress === "function") {
             onProgress(progress, current_step, status);
           }
           if (status === "success") {
-            common_vendor.index.__f__("log", "at api/acceptance.js:531", "✅ 监测方案生成完成！");
+            common_vendor.index.__f__("log", "at api/acceptance.js:532", "✅ 监测方案生成完成！");
             resolve({
               status: "success",
               result: task_result,
@@ -365,7 +367,7 @@ async function generateMonitorPlan(options = {}) {
             return;
           }
           if (status === "failed") {
-            common_vendor.index.__f__("error", "at api/acceptance.js:542", "❌ 任务失败:", error_message);
+            common_vendor.index.__f__("error", "at api/acceptance.js:543", "❌ 任务失败:", error_message);
             reject(new Error(error_message || "监测方案生成失败"));
             return;
           }
@@ -375,7 +377,7 @@ async function generateMonitorPlan(options = {}) {
           }
           setTimeout(pollStatus, pollInterval);
         } catch (error) {
-          common_vendor.index.__f__("error", "at api/acceptance.js:557", "查询任务状态失败:", error);
+          common_vendor.index.__f__("error", "at api/acceptance.js:558", "查询任务状态失败:", error);
           reject(error);
         }
       };
@@ -481,7 +483,7 @@ async function generateReport(options = {}) {
             onProgress(progress, current_step, status);
           }
           if (status === "success") {
-            common_vendor.index.__f__("log", "at api/acceptance.js:737", "✅ 竣工验收报告已生成！");
+            common_vendor.index.__f__("log", "at api/acceptance.js:738", "✅ 竣工验收报告已生成！");
             resolve({
               status: "success",
               result: task_result,
@@ -490,7 +492,7 @@ async function generateReport(options = {}) {
             return;
           }
           if (status === "failed") {
-            common_vendor.index.__f__("error", "at api/acceptance.js:748", "❌ 任务失败:", error_message);
+            common_vendor.index.__f__("error", "at api/acceptance.js:749", "❌ 任务失败:", error_message);
             reject(new Error(error_message || "竣工验收报告生成失败"));
             return;
           }
@@ -500,7 +502,7 @@ async function generateReport(options = {}) {
           }
           setTimeout(pollStatus, pollInterval);
         } catch (error) {
-          common_vendor.index.__f__("error", "at api/acceptance.js:763", "查询任务状态失败:", error);
+          common_vendor.index.__f__("error", "at api/acceptance.js:764", "查询任务状态失败:", error);
           reject(error);
         }
       };

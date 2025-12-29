@@ -257,8 +257,9 @@ export function transformExtractResult(result) {
 
 		// 污染物
 		'固体废物产生情况': {
-			id: 'solid_generation',
-			label: '固体废物产生情况'
+			id: 'waste_production',
+			label: '固体废物产生情况',
+			type: 'table' // 添加类型标识
 		},
 		'污染物产排情况': {
 			id: 'pollutants_emission',
@@ -334,8 +335,8 @@ export function transformExtractResult(result) {
 		'registered_address', // 注册地址
 		'contact_person', // 联系人
 		'contact_phone', // 联系方式
-		'solid_generation', // 固体废物产生情况
 		'pollutants_emission', // 污染物产排情况
+		'waste_production', // 固体废物产生情况
 	];
 	return baseTable.sort((a, b) => {
 		const aIndex = ORDER.indexOf(a.id)

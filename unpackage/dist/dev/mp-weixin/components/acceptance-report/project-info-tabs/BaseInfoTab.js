@@ -77,21 +77,23 @@ const _sfc_main = {
         k: common_vendor.t(common_vendor.unref(selectMode) ? "取消" : "选择删除"),
         l: common_vendor.o((...args) => common_vendor.unref(toggleSelectMode) && common_vendor.unref(toggleSelectMode)(...args)),
         m: common_vendor.f(common_vendor.unref(baseTable), (item, idx, i0) => {
+          var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
           return common_vendor.e({
             a: item.id === "pollutants_emission" && item.type === "table"
           }, item.id === "pollutants_emission" && item.type === "table" ? common_vendor.e({
-            b: common_vendor.t(item.label),
-            c: item.source === "extracted"
+            b: item.source === "extracted"
           }, item.source === "extracted" ? {} : {}, {
+            c: ((_a = item.value.水污染物) == null ? void 0 : _a.length) || ((_b = item.value.大气污染物) == null ? void 0 : _b.length) || ((_c = item.value.噪声) == null ? void 0 : _c.length)
+          }, ((_d = item.value.水污染物) == null ? void 0 : _d.length) || ((_e = item.value.大气污染物) == null ? void 0 : _e.length) || ((_f = item.value.噪声) == null ? void 0 : _f.length) ? common_vendor.e({
             d: item.value.水污染物 && item.value.水污染物.length
           }, item.value.水污染物 && item.value.水污染物.length ? {
             e: common_vendor.f(item.value.水污染物, (water, index, i1) => {
               return {
-                a: common_vendor.t(water.污染物名称 || "未提取到相关信息"),
-                b: common_vendor.t(water.污染因子 || "未提取到污染因子"),
-                c: common_vendor.t(water.污染治理措施 || "未提取到相关信息"),
-                d: common_vendor.t(water.排放去向 || "未提取到相关信息"),
-                e: common_vendor.t(water.执行标准 || "未提取到相关信息"),
+                a: common_vendor.t(water.污染物名称 || "-"),
+                b: common_vendor.t(water.污染因子 || "-"),
+                c: common_vendor.t(water.污染治理措施 || "-"),
+                d: common_vendor.t(water.排放去向 || "-"),
+                e: common_vendor.t(water.执行标准 || "-"),
                 f: "water-" + index
               };
             })
@@ -100,11 +102,11 @@ const _sfc_main = {
           }, item.value.大气污染物 && item.value.大气污染物.length ? {
             g: common_vendor.f(item.value.大气污染物, (air, index, i1) => {
               return {
-                a: common_vendor.t(air.污染物名称 || "未提取到污染物名称"),
-                b: common_vendor.t(air.污染因子 || "未提取到污染因子"),
-                c: common_vendor.t(air.污染治理措施 || "未提取到污染治理措施"),
-                d: common_vendor.t(air.排放去向 || "大气环境"),
-                e: common_vendor.t(air.执行标准 || "未提取到执行标准"),
+                a: common_vendor.t(air.污染物名称 || "-"),
+                b: common_vendor.t(air.污染因子 || "-"),
+                c: common_vendor.t(air.污染治理措施 || "-"),
+                d: common_vendor.t(air.排放去向 || "-"),
+                e: common_vendor.t(air.执行标准 || "-"),
                 f: "air-" + index
               };
             })
@@ -113,71 +115,75 @@ const _sfc_main = {
           }, item.value.噪声 && item.value.噪声.length ? {
             i: common_vendor.f(item.value.噪声, (noise, index, i1) => {
               return {
-                a: common_vendor.t(noise.污染物名称 || "未提取到相关信息"),
-                b: common_vendor.t(noise.污染因子 || "未提取到污染因子"),
-                c: common_vendor.t(noise.污染治理措施 || "未提取到相关信息"),
-                d: common_vendor.t(noise.排放去向 || "未提取到相关信息"),
-                e: common_vendor.t(noise.执行标准 || "未提取到相关信息"),
+                a: common_vendor.t(noise.污染物名称 || "-"),
+                b: common_vendor.t(noise.污染因子 || "-"),
+                c: common_vendor.t(noise.污染治理措施 || "-"),
+                d: common_vendor.t(noise.排放去向 || "-"),
+                e: common_vendor.t(noise.执行标准 || "-"),
                 f: "noise-" + index
               };
             })
           } : {}, {
-            j: common_vendor.unref(selectMode)
-          }, common_vendor.unref(selectMode) ? {
-            k: common_vendor.unref(selectedIds).includes(item.id),
-            l: common_vendor.o(() => common_vendor.unref(toggleSelected)(item.id), item.id)
-          } : {}) : {}, {
-            m: item.id === "pollutants_emission" && item.type === "table"
-          }, item.id === "pollutants_emission" && item.type === "table" ? common_vendor.e({
-            n: item.source === "extracted"
-          }, item.source === "extracted" ? {} : {}, {
-            o: item.value.固体废物 && item.value.固体废物.length
+            j: !((_g = item.value.水污染物) == null ? void 0 : _g.length) && !((_h = item.value.大气污染物) == null ? void 0 : _h.length) && !((_i = item.value.噪声) == null ? void 0 : _i.length)
+          }, !((_j = item.value.水污染物) == null ? void 0 : _j.length) && !((_k = item.value.大气污染物) == null ? void 0 : _k.length) && !((_l = item.value.噪声) == null ? void 0 : _l.length) ? {} : {}) : {}, {
+            k: ((_m = item.value.固体废物) == null ? void 0 : _m.length) || ((_n = item.value.危险废物) == null ? void 0 : _n.length)
+          }, ((_o = item.value.固体废物) == null ? void 0 : _o.length) || ((_p = item.value.危险废物) == null ? void 0 : _p.length) ? common_vendor.e({
+            l: item.value.固体废物 && item.value.固体废物.length
           }, item.value.固体废物 && item.value.固体废物.length ? {
-            p: common_vendor.f(item.value.固体废物, (solid, index, i1) => {
+            m: common_vendor.f(item.value.固体废物, (solid, index, i1) => {
               return {
-                a: common_vendor.t(solid.废物来源 || "无"),
-                b: common_vendor.t(solid.废物名称 || "无"),
+                a: common_vendor.t(solid.废物来源 || solid.产生环节 || "-"),
+                b: common_vendor.t(solid.废物名称 || "-"),
                 c: common_vendor.t(solid.危险特性 || "无"),
                 d: common_vendor.t(solid.危险废物类别 || "无"),
-                e: common_vendor.t(solid.污染治理措施 || "无"),
+                e: common_vendor.t(solid.污染治理措施 || solid.处置方式 || "-"),
                 f: "solid-" + index
               };
             })
           } : {}, {
-            q: item.value.危险废物 && item.value.危险废物.length
+            n: item.value.危险废物 && item.value.危险废物.length
           }, item.value.危险废物 && item.value.危险废物.length ? {
-            r: common_vendor.f(item.value.危险废物, (solid, index, i1) => {
-              return {
-                a: common_vendor.t(solid.废物来源 || "无"),
-                b: common_vendor.t(solid.废物名称 || "无"),
-                c: common_vendor.t(solid.危险特性 || "无"),
-                d: common_vendor.t(solid.危险废物类别 || "无"),
-                e: common_vendor.t(solid.污染治理措施 || "无"),
-                f: "hazard-" + index
-              };
+            o: common_vendor.f(item.value.危险废物, (hazard, index, i1) => {
+              return common_vendor.e({
+                a: common_vendor.t(hazard.废物来源 || hazard.产生环节 || "-"),
+                b: common_vendor.t(hazard.废物名称 || "-"),
+                c: hazard.危险特性
+              }, hazard.危险特性 ? {
+                d: common_vendor.f(hazard.危险特性.includes("、") ? hazard.危险特性.split("、") : [hazard.危险特性], (prop, propIdx, i2) => {
+                  return {
+                    a: common_vendor.t(prop),
+                    b: propIdx
+                  };
+                })
+              } : {}, {
+                e: common_vendor.t(hazard.危险废物类别 || "-"),
+                f: common_vendor.t(hazard.污染治理措施 || hazard.处置方式 || "-"),
+                g: "hazard-" + index
+              });
             })
-          } : {}, {
-            s: common_vendor.unref(selectMode)
+          } : {}) : {}, {
+            p: common_vendor.unref(selectMode)
           }, common_vendor.unref(selectMode) ? {
-            t: common_vendor.unref(selectedIds).includes(item.id),
-            v: common_vendor.o(() => common_vendor.unref(toggleSelected)(item.id), item.id)
-          } : {}) : common_vendor.e({
-            w: common_vendor.t(item.label),
-            x: item.source === "extracted"
+            q: common_vendor.unref(selectedIds).includes(item.id),
+            r: common_vendor.o(() => common_vendor.unref(toggleSelected)(item.id), item.id)
+          } : {}) : item.id !== "pollutants_emission" && item.id !== "waste_production" ? common_vendor.e({
+            t: common_vendor.t(item.label),
+            v: item.source === "extracted"
           }, item.source === "extracted" ? {} : {}, {
-            y: "fe6d06f0-4-" + i0,
-            z: common_vendor.o(($event) => item.value = $event, item.id),
-            A: common_vendor.p({
+            w: "fe6d06f0-4-" + i0,
+            x: common_vendor.o(($event) => item.value = $event, item.id),
+            y: common_vendor.p({
               placeholder: "请输入具体的值",
               clearable: true,
               modelValue: item.value
             }),
-            B: common_vendor.unref(selectMode)
+            z: common_vendor.unref(selectMode)
           }, common_vendor.unref(selectMode) ? {
-            C: common_vendor.unref(selectedIds).includes(item.id),
-            D: common_vendor.o(() => common_vendor.unref(toggleSelected)(item.id), item.id)
-          } : {}), {
-            E: item.id
+            A: common_vendor.unref(selectedIds).includes(item.id),
+            B: common_vendor.o(() => common_vendor.unref(toggleSelected)(item.id), item.id)
+          } : {}) : {}, {
+            s: item.id !== "pollutants_emission" && item.id !== "waste_production",
+            C: item.id
           });
         })
       }) : {
