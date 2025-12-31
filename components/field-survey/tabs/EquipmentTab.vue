@@ -88,7 +88,7 @@
 							<!-- 备注 -->
 							<view class="body-cell cell-remark">
 								<view class="mobile-label">备注</view>
-								<uni-easyinput v-model="item.remark" placeholder="备注信息" :clearable="true"
+								<uni-easyinput v-model="item.remark" placeholder="请填写备注信息" :clearable="true"
 									class="cell-input" />
 							</view>
 

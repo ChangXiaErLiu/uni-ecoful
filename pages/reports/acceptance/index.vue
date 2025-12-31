@@ -779,6 +779,18 @@
 	onLoad(async () => {
 		// 初始化项目信息管理
 		await projectInfoState.initialize()
+		
+		// 等待下一个tick确保selectedProjectId已更新
+		await nextTick()
+		
+		// 如果有选中的项目，加载监测方案和竣工报告的缓存
+		if (selectedProjectId.value) {
+			console.log('📦 页面加载时恢复缓存，项目ID:', selectedProjectId.value)
+			monitorPlanState.loadPlanCache(selectedProjectId.value)
+			acceptanceReportState.loadReportCache(selectedProjectId.value)
+		} else {
+			console.log('ℹ️ 页面加载时无选中项目，跳过缓存加载')
+		}
 	})
 
 	onUnmounted(() => {

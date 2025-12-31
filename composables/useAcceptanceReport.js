@@ -167,10 +167,14 @@ export function useAcceptanceReport() {
 			})
 
 			// 生成成功
+			console.log('🎉 竣工验收报告生成成功，设置 reportGenerated.value = true')
 			reportGenerated.value = true
 			previewTitle.value = reportType.value === 'withoutData' 
 				? '无监测数据的竣工验收报告已生成，请点击下载！'
 				: '有监测数据的竣工验收报告已生成，请点击下载！'
+			
+			console.log('📊 当前 reportGenerated.value:', reportGenerated.value)
+			console.log('📊 当前 canDownloadReport.value:', canDownloadReport.value)
 			
 			saveReportCache(projectId, {
 				generated: true,

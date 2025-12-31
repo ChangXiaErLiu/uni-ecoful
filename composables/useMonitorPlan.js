@@ -142,7 +142,11 @@ export function useMonitorPlan() {
 			})
 
 			// 生成成功
+			console.log('🎉 监测方案生成成功，设置 plan.value = true')
 			plan.value = true
+			console.log('📊 当前 plan.value:', plan.value)
+			console.log('📊 当前 canDownload.value:', canDownload.value)
+			
 			savePlanCache(projectId, true)
 
 			// 关闭弹窗

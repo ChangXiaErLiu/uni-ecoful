@@ -102,6 +102,7 @@
 						<view class="table-header">
 							<view class="header-cell header-category">类别</view>
 							<view class="header-cell header-name">工程名称</view>
+							<view class="header-cell header-location">位置</view>
 							<view class="header-cell header-content">工程内容</view>
 							<view class="header-cell header-remark">备注</view>
 							<view class="header-cell header-photo">照片</view>
@@ -126,6 +127,13 @@
 										class="cell-input" />
 								</view>
 
+								<!-- 位置 -->
+								<view class="body-cell cell-location">
+									<view class="mobile-label">位置</view>
+									<uni-easyinput v-model="item.location" placeholder="位置" :clearable="true"
+										class="cell-input" />
+								</view>
+
 								<!-- 工程内容 -->
 								<view class="body-cell cell-content">
 									<view class="mobile-label">工程内容</view>
@@ -136,7 +144,7 @@
 								<!-- 备注 -->
 								<view class="body-cell cell-remark">
 									<view class="mobile-label">备注</view>
-									<uni-easyinput v-model="item.remark" placeholder="备注信息" :clearable="true"
+									<uni-easyinput v-model="item.remark" placeholder="请填写备注信息" :clearable="true"
 										class="cell-input" />
 								</view>
 
@@ -763,7 +771,11 @@
 		}
 
 		.header-name {
-			flex: 1.5;
+			flex: 1.2;
+		}
+
+		.header-location {
+			flex: 0.8;
 		}
 
 		.header-content {
@@ -803,7 +815,11 @@
 		}
 
 		.cell-name {
-			flex: 1.5;
+			flex: 1.2;
+		}
+
+		.cell-location {
+			flex: 0.8;
 		}
 
 		.cell-content {

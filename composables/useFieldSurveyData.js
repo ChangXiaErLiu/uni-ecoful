@@ -109,51 +109,87 @@ export function useFieldSurveyData() {
 		console.log('搜索主体工程关键词:', constructionSearchKeyword.value)
 	}
 
-	// 解析主体工程数据
+	// 解析主体工程数据（新格式：column_1 里是二次 JSON 字符串）
 	function parseConstructionData(apiData) {
 		try {
-			const parsedConstruction = []
-
-			if (!apiData || !Array.isArray(apiData) || apiData.length <= 1) {
+			if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+				console.warn('主体工程数据为空或格式不正确')
 				return []
 			}
 
-			// 跳过表头行，从索引1开始
-			for (let i = 1; i < apiData.length; i++) {
-				const row = apiData[i]
+			// 检查第一个元素是否有 column_1
+			const firstItem = apiData[0]
+			if (!firstItem || !firstItem.column_1) {
+				console.warn('主体工程数据缺少 column_1 字段')
+				return []
+			}
 
-				if (row.column_1) {
-					// 尝试两种分隔符：实际的tab字符 \t 和转义的 \\t
-					const columns = row.column_1.includes('\t') 
-						? row.column_1.split('\t') 
-						: row.column_1.split('\\t')
+			// 1. 解析 JSON 字符串
+			const raw = firstItem.column_1
+			const table = JSON.parse(raw)
 
-					if (columns.length >= 6) {
-						const category = columns[0] || ''
-						const name = columns[1] || ''
-						const content = columns[4] || ''
+			// 2. 检查解析结果
+			if (!table || !table.success) {
+				console.warn('主体工程数据解析失败或 success 为 false')
+				return []
+			}
 
-						if (name.trim()) {
-							parsedConstruction.push({
-								id: 'const_' + Date.now() + '_' + i,
-								category: category.trim(),
-								name: name.trim(),
-								content: content.trim(),
-								remark: '',
-								images: []
-							})
-						}
-					} else {
-						console.warn(`第${i+1}行数据列数不足 (${columns.length}列):`, columns)
-					}
-				} else {
-					console.warn(`第${i+1}行没有column_1字段:`, row)
+			const rows = table.data || []
+			console.log(`✅ 成功解析主体工程数据，共 ${rows.length} 条记录`)
+
+			// 3. 映射成前端需要的结构
+			// 根据数据结构，提取有意义的行
+			const parsedConstruction = []
+			
+			for (let i = 0; i < rows.length; i++) {
+				const row = rows[i]
+				
+				// 获取所有字段值
+				const col0 = row['表21本项白组成一宽表'] || ''
+				const col1 = row['field_1'] || ''
+				const col2 = row['field_2'] || ''
+				const col3 = row['field_3'] || ''
+				const col4 = row['field_4'] || ''
+				const col5 = row['field_5'] || ''
+				
+				// 跳过表头行和空行
+				if (i === 0 || (!col0 && !col1 && !col2 && !col3 && !col4 && !col5)) {
+					continue
+				}
+				
+				// 提取有效数据
+				// 根据数据特点：
+				// - col0 通常是序号或类别
+				// - col1 是建筑名称或工程类型
+				// - col2 是子类型
+				// - col3 是楼层或位置
+				// - col4 是工程内容
+				// - col5 是面积等备注信息
+				
+				let category = col0.trim()
+				let name = col1.trim() || col2.trim()
+				let location = col3.trim()
+				let content = col4.trim()
+				let remark = col5.trim()
+				
+				// 如果有内容，就添加
+				if (content || name) {
+					parsedConstruction.push({
+						id: 'const_' + Date.now() + '_' + i,
+						category: category,
+						name: name,
+						location: location,
+						content: content,
+						remark: remark,
+						images: []
+					})
 				}
 			}
 
+			console.log(`✅ 过滤后有效数据 ${parsedConstruction.length} 条`)
 			return parsedConstruction
-		} catch (error) {
-			console.error('解析主体工程数据失败:', error)
+		} catch (e) {
+			console.error('❌ 解析主体工程数据失败:', e)
 			return []
 		}
 	}
@@ -164,38 +200,38 @@ export function useFieldSurveyData() {
 		fetchConstructionError.value = ''
 
 		try {
+			console.log(`🔄 开始获取主体工程数据 - userId: ${userId}, projectId: ${projectId}`)
+			
 			// request.js 已经处理过响应，直接使用返回的数据
 			const resData = await apiFetchConstructionData(userId, projectId)
 
-			// console.log('接口返回完整数据:', resData)
-
 			if (resData && resData.data) {
 				const apiData = resData.data
-				// console.log('主体工程数据数组:', apiData)
+				console.log('📦 接收到主体工程数据:', apiData)
 
-				if (apiData && Array.isArray(apiData) && apiData.length > 1) {
+				if (apiData && Array.isArray(apiData) && apiData.length > 0) {
 					const parsedData = parseConstructionData(apiData)
-					// console.log('解析后的主体工程数据:', parsedData)
+					console.log('✅ 解析后的主体工程数据:', parsedData)
 
 					if (parsedData.length > 0) {
 						constructionList.value = parsedData
 						uni.showToast({
-							title: `加载成功`,
+							title: `加载成功，共${parsedData.length}条工程`,
 							icon: 'success',
 							duration: 2000
 						})
 					} else {
-						fetchConstructionError.value = '解析到的工程数据为空'
+						fetchConstructionError.value = '未找到有效的工程数据'
 						uni.showToast({
-							title: '工程数据解析为空',
+							title: '未找到工程数据',
 							icon: 'none',
 							duration: 2000
 						})
 					}
 				} else {
-					fetchConstructionError.value = '接口返回的工程数据格式不正确'
+					fetchConstructionError.value = '接口返回的数据为空'
 					uni.showToast({
-						title: '工程数据格式错误',
+						title: '工程数据为空',
 						icon: 'none',
 						duration: 2000
 					})
@@ -209,10 +245,10 @@ export function useFieldSurveyData() {
 				})
 			}
 		} catch (error) {
-			console.error('获取主体工程数据失败:', error)
+			console.error('❌ 获取主体工程数据失败:', error)
 			fetchConstructionError.value = error.message || '网络请求失败'
 			uni.showToast({
-				title: '网络请求失败，请检查网络连接',
+				title: '网络请求失败',
 				icon: 'none',
 				duration: 2000
 			})
@@ -281,88 +317,91 @@ export function useFieldSurveyData() {
 	}
 
 	// 解析设备数据
+	// 解析设备数据（新格式：column_1 里是二次 JSON 字符串）
 	function parseEquipmentData(apiData) {
 		try {
-			const parsedEquipment = []
-
-			if (!apiData || !Array.isArray(apiData) || apiData.length <= 1) {
+			if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+				console.warn('设备数据为空或格式不正确')
 				return []
 			}
 
-			// 跳过表头行，从索引1开始
-			for (let i = 1; i < apiData.length; i++) {
-				const row = apiData[i]
-
-				if (row.column_1) {
-					// 尝试两种分隔符：实际的tab字符 \t 和转义的 \\t
-					const columns = row.column_1.includes('\t') 
-						? row.column_1.split('\t') 
-						: row.column_1.split('\\t')
-
-					if (columns.length >= 4) {
-						const deviceName = columns[1] || ''
-						const quantity = columns[3] || ''
-
-						if (deviceName.trim()) {
-							parsedEquipment.push({
-								id: 'eq_' + Date.now() + '_' + i,
-								name: deviceName.trim(),
-								quantity: quantity.trim(),
-								remark: '',
-								images: []
-							})
-						}
-					} else {
-						console.warn(`第${i+1}行数据列数不足 (${columns.length}列):`, columns)
-					}
-				} else {
-					console.warn(`第${i+1}行没有column_1字段:`, row)
-				}
+			// 检查第一个元素是否有 column_1
+			const firstItem = apiData[0]
+			if (!firstItem || !firstItem.column_1) {
+				console.warn('设备数据缺少 column_1 字段')
+				return []
 			}
 
-			return parsedEquipment
-		} catch (error) {
-			console.error('解析设备数据失败:', error)
+			// 1. 解析 JSON 字符串
+			const raw = firstItem.column_1
+			const table = JSON.parse(raw)
+
+			// 2. 检查解析结果
+			if (!table || !table.success) {
+				console.warn('设备数据解析失败或 success 为 false')
+				return []
+			}
+
+			const rows = table.data || []
+			console.log(`✅ 成功解析设备数据，共 ${rows.length} 条记录`)
+
+			// 3. 映射成前端需要的结构
+			return rows
+				.filter(r => r.col_设备名 && r.col_设备名.trim()) // 过滤掉空行
+				.map((r, idx) => ({
+					id: 'eq_' + Date.now() + '_' + idx,
+					name: r.col_设备名 || '',
+					model: r.col_型号 || '',
+					quantity: r.col_数量 || '',
+					purpose: r.col_用途 || '', // 用途
+					location: r.col_所处实 || '', // 所处实验室
+					remark: '', // 备注留空，供用户填写
+					images: []
+				}))
+		} catch (e) {
+			console.error('❌ 解析设备数据失败:', e)
 			return []
 		}
 	}
-
+	
 	// 从接口获取设备数据
 	async function fetchEquipmentData(userId, projectId) {
 		loadingEquipment.value = true
 		fetchEquipmentError.value = ''
 
 		try {
+			console.log(`🔄 开始获取设备数据 - userId: ${userId}, projectId: ${projectId}`)
+			
 			// request.js 已经处理过响应，直接使用返回的数据
 			const resData = await apiFetchEquipmentData(userId, projectId)
 
 			if (resData && resData.data) {
 				const apiData = resData.data
-				// console.log('设备数据数组:', apiData)
+				console.log('📦 接收到设备数据:', apiData)
 
-				if (apiData && Array.isArray(apiData) && apiData.length > 1) {
+				if (apiData && Array.isArray(apiData) && apiData.length > 0) {
 					const parsedData = parseEquipmentData(apiData)
-					// console.log('解析后的设备数据:', parsedData)
+					console.log('✅ 解析后的设备数据:', parsedData)
 
 					if (parsedData.length > 0) {
 						equipmentList.value = parsedData
 						uni.showToast({
-							title: `加载成功，共${parsedData.length}条设备数据`,
+							title: `加载成功，共${parsedData.length}条设备`,
 							icon: 'success',
 							duration: 2000
 						})
 					} else {
-						fetchEquipmentError.value = '解析到的设备数据为空'
+						fetchEquipmentError.value = '未找到有效的设备数据'
 						uni.showToast({
-							title: '设备数据解析为空',
+							title: '未找到设备数据',
 							icon: 'none',
 							duration: 2000
 						})
 					}
 				} else {
-					fetchEquipmentError.value = '接口返回的设备数据格式不正确'
+					fetchEquipmentError.value = '接口返回的数据为空'
 					uni.showToast({
-						title: '设备数据格式错误',
+						title: '设备数据为空',
 						icon: 'none',
 						duration: 2000
 					})
@@ -376,10 +415,10 @@ export function useFieldSurveyData() {
 				})
 			}
 		} catch (error) {
-			console.error('获取设备数据失败:', error)
+			console.error('❌ 获取设备数据失败:', error)
 			fetchEquipmentError.value = error.message || '网络请求失败'
 			uni.showToast({
-				title: '网络请求失败，请检查网络连接',
+				title: '网络请求失败',
 				icon: 'none',
 				duration: 2000
 			})

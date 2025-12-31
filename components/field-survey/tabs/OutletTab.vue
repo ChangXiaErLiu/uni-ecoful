@@ -193,7 +193,7 @@
 							<view class="header-cell header-code">排污口编号</view>
 							<view class="header-cell header-name">排污口名称</view>
 							<view class="header-cell header-remark">备注</view>
-							<view class="header-cell header-photo">照片</view>
+							<view class="header-cell header-photo">照片(远近各一张)</view>
 							<view class="header-cell header-action">操作</view>
 						</view>
 

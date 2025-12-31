@@ -2,6 +2,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { runTask, transformExtractResult, downloadSignboardWord } from '@/api/acceptance.js'
 import { getProjects, getProjectDocuments } from '@/api/project.js'
 import { useMonitorPlan } from '@/composables/useMonitorPlan.js'
+import { useAcceptanceReport } from '@/composables/useAcceptanceReport.js'
 import { useFieldSurveyData } from '@/composables/useFieldSurveyData.js'
 
 /**
@@ -373,6 +374,10 @@ export function useProjectInfo() {
 				// 加载监测方案缓存
 				const monitorPlanState = useMonitorPlan()
 				monitorPlanState.loadPlanCache(projectId)
+				
+				// 加载竣工验收报告缓存
+				const acceptanceReportState = useAcceptanceReport()
+				acceptanceReportState.loadReportCache(projectId)
 
 				uni.showToast({
 					title: '已加载缓存数据',
@@ -1078,6 +1083,9 @@ export function useProjectInfo() {
 		if (newId) {
 			const monitorPlanState = useMonitorPlan()
 			monitorPlanState.loadPlanCache(newId)
+			
+			const acceptanceReportState = useAcceptanceReport()
+			acceptanceReportState.loadReportCache(newId)
 		}
 	})
 

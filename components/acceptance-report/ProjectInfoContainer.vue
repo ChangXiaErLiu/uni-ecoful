@@ -58,10 +58,10 @@
 					<uni-icons type="flag" size="20" color="#166534" />
 					<text class="section-title">标识牌</text>
 				</view>
-				<view class="status-badge status-badge--info">
+				<!-- <view class="status-badge status-badge--info">
 					<uni-icons type="compose" size="14" color="#3b82f6" />
 					<text>可选</text>
-				</view>
+				</view> -->
 			</view>
 			
 			<view class="section-body">

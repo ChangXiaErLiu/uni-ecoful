@@ -79,7 +79,8 @@
 
 <script setup>
 	import {
-		ref
+		ref,
+		nextTick
 	} from 'vue'
 	import {
 		useAcceptanceReport
@@ -137,6 +138,10 @@
 
 		// 触发事件通知父组件
 		emit('report-generated')
+		
+		// 强制等待下一个 tick 确保 UI 更新
+		await nextTick()
+		console.log('🔄 UI 更新后 - reportGenerated:', reportGenerated.value, 'canDownloadReport:', canDownloadReport.value)
 	}
 
 	// 下载竣工验收报告

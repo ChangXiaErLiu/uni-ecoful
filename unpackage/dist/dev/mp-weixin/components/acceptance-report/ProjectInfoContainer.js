@@ -106,36 +106,31 @@ const _sfc_main = {
           size: "20",
           color: "#166534"
         }),
-        s: common_vendor.p({
-          type: "compose",
-          size: "14",
-          color: "#3b82f6"
-        }),
-        t: common_vendor.o(handleComplete),
-        v: extractionCompleted.value ? 1 : ""
+        s: common_vendor.o(handleComplete),
+        t: extractionCompleted.value ? 1 : ""
       } : {}, {
-        w: showPicker.value
+        v: showPicker.value
       }, showPicker.value ? common_vendor.e({
-        x: common_vendor.p({
+        w: common_vendor.p({
           type: "close",
           size: "20",
           color: "#6b7280"
         }),
-        y: common_vendor.o(handleClosePicker),
-        z: common_vendor.o(common_vendor.unref(onSearchInput)),
-        A: common_vendor.o(($event) => common_vendor.isRef(projectSearchKeyword) ? projectSearchKeyword.value = $event : null),
-        B: common_vendor.p({
+        x: common_vendor.o(handleClosePicker),
+        y: common_vendor.o(common_vendor.unref(onSearchInput)),
+        z: common_vendor.o(($event) => common_vendor.isRef(projectSearchKeyword) ? projectSearchKeyword.value = $event : null),
+        A: common_vendor.p({
           placeholder: "搜索项目名称...",
           prefixIcon: "search",
           clearable: true,
           modelValue: common_vendor.unref(projectSearchKeyword)
         }),
-        C: common_vendor.t(common_vendor.unref(filteredProjects).length),
-        D: common_vendor.unref(projectSearchKeyword)
+        B: common_vendor.t(common_vendor.unref(filteredProjects).length),
+        C: common_vendor.unref(projectSearchKeyword)
       }, common_vendor.unref(projectSearchKeyword) ? {} : {}, {
-        E: common_vendor.f(common_vendor.unref(filteredProjects), (project, k0, i0) => {
+        D: common_vendor.f(common_vendor.unref(filteredProjects), (project, k0, i0) => {
           return common_vendor.e({
-            a: "abb50b5f-14-" + i0,
+            a: "abb50b5f-13-" + i0,
             b: common_vendor.p({
               type: "folder",
               size: "22",
@@ -148,7 +143,7 @@ const _sfc_main = {
           } : {}, {
             f: project.folder_name
           }, project.folder_name ? {
-            g: "abb50b5f-15-" + i0,
+            g: "abb50b5f-14-" + i0,
             h: common_vendor.p({
               type: "calendar",
               size: "14",
@@ -158,14 +153,14 @@ const _sfc_main = {
           } : {}, {
             j: common_vendor.unref(selectedProjectId) === project.id
           }, common_vendor.unref(selectedProjectId) === project.id ? {
-            k: "abb50b5f-16-" + i0,
+            k: "abb50b5f-15-" + i0,
             l: common_vendor.p({
               type: "checkmarkempty",
               size: "18",
               color: "#ffffff"
             })
           } : {
-            m: "abb50b5f-17-" + i0,
+            m: "abb50b5f-16-" + i0,
             n: common_vendor.p({
               type: "right",
               size: "16",
@@ -177,19 +172,19 @@ const _sfc_main = {
             q: common_vendor.o(($event) => handleSelectProject(project), project.id)
           });
         }),
-        F: common_vendor.unref(filteredProjects).length === 0
+        E: common_vendor.unref(filteredProjects).length === 0
       }, common_vendor.unref(filteredProjects).length === 0 ? common_vendor.e({
-        G: common_vendor.p({
+        F: common_vendor.p({
           type: "search",
           size: "48",
           color: "#cbd5e1"
         }),
-        H: common_vendor.t(common_vendor.unref(projectSearchKeyword) ? "未找到匹配的项目" : "暂无项目"),
-        I: common_vendor.unref(projectSearchKeyword)
+        G: common_vendor.t(common_vendor.unref(projectSearchKeyword) ? "未找到匹配的项目" : "暂无项目"),
+        H: common_vendor.unref(projectSearchKeyword)
       }, common_vendor.unref(projectSearchKeyword) ? {} : {}) : {}, {
-        J: common_vendor.o(() => {
+        I: common_vendor.o(() => {
         }),
-        K: common_vendor.o(handleClosePicker)
+        J: common_vendor.o(handleClosePicker)
       }) : {});
     };
   }

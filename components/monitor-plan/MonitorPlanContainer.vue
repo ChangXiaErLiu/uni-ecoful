@@ -14,8 +14,8 @@
 			</view>
 
 			<view class="section-body">
-				<!-- 空状态提示 -->
-				<view class="empty-state">
+				<!-- 空状态提示 - 只在未生成时显示 -->
+				<view v-if="!plan" class="empty-state">
 					<uni-icons type="eye" size="48" color="#cbd5e1" />
 					<text class="empty-text">AI帮您制定监测方案</text>
 					<text class="empty-tip">请点击下方按钮为您生成智能检测方案</text>
@@ -41,15 +41,6 @@
 						<uni-icons type="checkmark-circle" size="18" color="#166534" />
 						<text class="preview-title">环保验收监测方案已为您已生成，请点击下载！</text>
 					</view>
-					<!-- <view class="preview-content">
-						<text class="preview-text">环保验收监测方案已生成，包含以下内容：</text>
-						<view class="preview-sections">
-							<text class="section-item">• 项目基本情况</text>
-							<text class="section-item">• 环保设施建设情况</text>
-							<text class="section-item">• 污染物详细情况</text>
-							<text class="section-item">• 方案已生成，请点击下载</text>
-						</view>
-					</view> -->
 				</view>
 			</view>
 		</view>
@@ -62,7 +53,8 @@
 
 <script setup>
 	import {
-		ref
+		ref,
+		nextTick
 	} from 'vue'
 	import {
 		useMonitorPlan
@@ -110,6 +102,10 @@
 
 		// 触发事件通知父组件
 		emit('plan-generated')
+		
+		// 强制等待下一个 tick 确保 UI 更新
+		await nextTick()
+		console.log('🔄 UI 更新后 - plan:', plan.value, 'canDownload:', canDownload.value)
 	}
 
 	// 下载监测方案
