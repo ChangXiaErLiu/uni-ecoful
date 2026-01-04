@@ -3,6 +3,7 @@ const common_vendor = require("../common/vendor.js");
 const api_acceptance = require("../api/acceptance.js");
 const api_project = require("../api/project.js");
 const composables_useMonitorPlan = require("./useMonitorPlan.js");
+const composables_useAcceptanceReport = require("./useAcceptanceReport.js");
 const composables_useFieldSurveyData = require("./useFieldSurveyData.js");
 let instance = null;
 function useProjectInfo() {
@@ -57,7 +58,7 @@ function useProjectInfo() {
       const response = await api_project.getProjects();
       projectList.value = response || [];
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useProjectInfo.js:89", "加载项目列表失败:", error);
+      common_vendor.index.__f__("error", "at composables/useProjectInfo.js:90", "加载项目列表失败:", error);
       common_vendor.index.showToast({
         title: "加载项目列表失败",
         icon: "none"
@@ -90,7 +91,7 @@ function useProjectInfo() {
         }
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useProjectInfo.js:127", "加载项目文件失败:", error);
+      common_vendor.index.__f__("error", "at composables/useProjectInfo.js:128", "加载项目文件失败:", error);
       if (!silent) {
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
@@ -111,7 +112,7 @@ function useProjectInfo() {
       return;
     }
     if (isPolling.value) {
-      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:153", "⚠️ 已在轮询中，跳过");
+      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:154", "⚠️ 已在轮询中，跳过");
       return;
     }
     isPolling.value = true;
@@ -119,7 +120,7 @@ function useProjectInfo() {
     pollingTimer.value = setInterval(async () => {
       pollingCount.value++;
       if (pollingCount.value > MAX_POLLING_COUNT) {
-        common_vendor.index.__f__("log", "at composables/useProjectInfo.js:164", "⏰ 达到最大轮询次数，停止轮询");
+        common_vendor.index.__f__("log", "at composables/useProjectInfo.js:165", "⏰ 达到最大轮询次数，停止轮询");
         stopPolling();
         common_vendor.index.showToast({
           title: "文件处理超时，请手动刷新",
@@ -131,7 +132,7 @@ function useProjectInfo() {
       try {
         await loadProjectFiles(projectId, true);
         if (!hasProcessingFiles()) {
-          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:178", "✅ 所有文件处理完成，停止轮询");
+          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:179", "✅ 所有文件处理完成，停止轮询");
           stopPolling();
           common_vendor.index.showToast({
             title: "文件处理完成",
@@ -140,7 +141,7 @@ function useProjectInfo() {
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at composables/useProjectInfo.js:187", "❌ 轮询文件状态失败:", error);
+        common_vendor.index.__f__("error", "at composables/useProjectInfo.js:188", "❌ 轮询文件状态失败:", error);
       }
     }, POLLING_INTERVAL);
   }
@@ -178,7 +179,7 @@ function useProjectInfo() {
         folder_name: project.folder_name
       }));
     } catch (e) {
-      common_vendor.index.__f__("warn", "at composables/useProjectInfo.js:236", "⚠️ 保存项目选择失败:", e);
+      common_vendor.index.__f__("warn", "at composables/useProjectInfo.js:237", "⚠️ 保存项目选择失败:", e);
     }
     stopPolling();
     await loadProjectFiles(project.id);
@@ -192,7 +193,7 @@ function useProjectInfo() {
     return true;
   }
   function onSearchInput() {
-    common_vendor.index.__f__("log", "at composables/useProjectInfo.js:255", "搜索关键词:", projectSearchKeyword.value);
+    common_vendor.index.__f__("log", "at composables/useProjectInfo.js:256", "搜索关键词:", projectSearchKeyword.value);
   }
   function getFileIcon(extension) {
     const ext = (extension || "").toLowerCase().replace(".", "");
@@ -281,25 +282,27 @@ function useProjectInfo() {
           return;
         }
         extractionOk.value = true;
-        common_vendor.index.__f__("log", "at composables/useProjectInfo.js:367", `✅ 已加载项目 ${projectId} 的缓存数据，共 ${baseTable.value.length} 条`);
+        common_vendor.index.__f__("log", "at composables/useProjectInfo.js:368", `✅ 已加载项目 ${projectId} 的缓存数据，共 ${baseTable.value.length} 条`);
         const fieldSurveyData = composables_useFieldSurveyData.useFieldSurveyData();
         fieldSurveyData.extractFacilitiesFromBaseTable(projectId, baseTable.value);
         const monitorPlanState = composables_useMonitorPlan.useMonitorPlan();
         monitorPlanState.loadPlanCache(projectId);
+        const acceptanceReportState = composables_useAcceptanceReport.useAcceptanceReport();
+        acceptanceReportState.loadReportCache(projectId);
         common_vendor.index.showToast({
           title: "已加载缓存数据",
           icon: "success",
           duration: 1500
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at composables/useProjectInfo.js:383", "解析缓存数据失败:", error);
+        common_vendor.index.__f__("error", "at composables/useProjectInfo.js:388", "解析缓存数据失败:", error);
         baseTable.value = [];
         extractionOk.value = false;
       }
     } else {
       baseTable.value = [];
       extractionOk.value = false;
-      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:390", `ℹ️ 项目 ${projectId} 暂无缓存数据`);
+      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:395", `ℹ️ 项目 ${projectId} 暂无缓存数据`);
     }
   }
   function clearProjectCache() {
@@ -333,7 +336,7 @@ function useProjectInfo() {
           selectedProjectId.value = null;
           selectedProject.value = null;
           projectFiles.value = [];
-          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:434", `🗑️ 已清除项目缓存和选择`);
+          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:439", `🗑️ 已清除项目缓存和选择`);
           common_vendor.index.showToast({
             title: "缓存已清除",
             icon: "success"
@@ -355,7 +358,7 @@ function useProjectInfo() {
     if (progressChanged) {
       lastUpdateTime = Date.now();
       lastTargetProgress = newProgress;
-      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:465", `[进度真实更新] ${newProgress}% - ${statusText}`);
+      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:470", `[进度真实更新] ${newProgress}% - ${statusText}`);
     }
     if (!smoothProgressTimer) {
       smoothProgressTimer = setInterval(() => {
@@ -452,14 +455,14 @@ function useProjectInfo() {
       }
       const transformed = api_acceptance.transformExtractResult(result.result);
       if (!Array.isArray(transformed)) {
-        common_vendor.index.__f__("error", "at composables/useProjectInfo.js:581", "❌ transformExtractResult 返回的不是数组:", typeof transformed);
+        common_vendor.index.__f__("error", "at composables/useProjectInfo.js:586", "❌ transformExtractResult 返回的不是数组:", typeof transformed);
         throw new Error("数据转换失败：结果不是数组格式");
       }
       baseTable.value = transformed;
-      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:586", "✅ 信息提取成功，baseTable 长度:", baseTable.value.length);
+      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:591", "✅ 信息提取成功，baseTable 长度:", baseTable.value.length);
       const cacheKey = `project_base_info_${selectedProjectId.value}`;
       common_vendor.index.setStorageSync(cacheKey, JSON.stringify(baseTable.value));
-      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:590", `✅ 项目 ${selectedProjectId.value} 的数据已缓存`);
+      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:595", `✅ 项目 ${selectedProjectId.value} 的数据已缓存`);
       extractionOk.value = true;
       if (taskProgressModalRef) {
         setTimeout(() => {
@@ -476,7 +479,7 @@ function useProjectInfo() {
       if (taskProgressModalRef) {
         taskProgressModalRef.close();
       }
-      common_vendor.index.__f__("error", "at composables/useProjectInfo.js:612", "[Extract] 提取失败:", error);
+      common_vendor.index.__f__("error", "at composables/useProjectInfo.js:617", "[Extract] 提取失败:", error);
       if (error.message.includes("超时") || error.message.includes("timeout")) {
         common_vendor.index.showModal({
           title: "提取超时了！",
@@ -814,34 +817,36 @@ function useProjectInfo() {
       if (savedProjectId) {
         const project = projectList.value.find((p) => p.id === savedProjectId);
         if (project) {
-          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1047", "🔄 恢复上次选择的项目:", project.name);
+          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1052", "🔄 恢复上次选择的项目:", project.name);
           selectedProjectId.value = project.id;
           selectedProject.value = project;
           await loadProjectFiles(project.id);
           startPollingFileStatus(project.id);
           loadProjectCache(project.id);
         } else {
-          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1055", "⚠️ 上次选择的项目已不存在，清除缓存");
+          common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1060", "⚠️ 上次选择的项目已不存在，清除缓存");
           common_vendor.index.removeStorageSync("acceptance_project_id");
           common_vendor.index.removeStorageSync("acceptance_project_info");
         }
       }
     } catch (e) {
-      common_vendor.index.__f__("warn", "at composables/useProjectInfo.js:1061", "⚠️ 恢复项目选择失败:", e);
+      common_vendor.index.__f__("warn", "at composables/useProjectInfo.js:1066", "⚠️ 恢复项目选择失败:", e);
     }
   }
   function cleanup() {
     stopPolling();
-    common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1068", "📄 页面卸载，清理轮询定时器");
+    common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1073", "📄 页面卸载，清理轮询定时器");
   }
   common_vendor.watch(selectedProjectId, (newId, oldId) => {
     if (oldId && newId !== oldId) {
       stopPolling();
-      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1075", "🔄 切换项目，停止旧项目的轮询");
+      common_vendor.index.__f__("log", "at composables/useProjectInfo.js:1080", "🔄 切换项目，停止旧项目的轮询");
     }
     if (newId) {
       const monitorPlanState = composables_useMonitorPlan.useMonitorPlan();
       monitorPlanState.loadPlanCache(newId);
+      const acceptanceReportState = composables_useAcceptanceReport.useAcceptanceReport();
+      acceptanceReportState.loadReportCache(newId);
     }
   });
   instance = {

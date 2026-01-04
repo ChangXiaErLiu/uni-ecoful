@@ -96,7 +96,10 @@ function useMonitorPlan() {
           updateProgressSmooth(progress, statusText);
         }
       });
+      common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:145", "🎉 监测方案生成成功，设置 plan.value = true");
       plan.value = true;
+      common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:147", "📊 当前 plan.value:", plan.value);
+      common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:148", "📊 当前 canDownload.value:", canDownload.value);
       savePlanCache(projectId, true);
       if (modalRef) {
         setTimeout(() => {
@@ -175,9 +178,9 @@ function useMonitorPlan() {
         generatedAt: Date.now()
       };
       common_vendor.index.setStorageSync(cacheKey, JSON.stringify(cacheData));
-      common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:281", `✅ 项目 ${projectId} 的监测方案已缓存`);
+      common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:285", `✅ 项目 ${projectId} 的监测方案已缓存`);
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useMonitorPlan.js:283", "保存监测方案缓存失败:", error);
+      common_vendor.index.__f__("error", "at composables/useMonitorPlan.js:287", "保存监测方案缓存失败:", error);
     }
   }
   function loadPlanCache(projectId) {
@@ -187,13 +190,13 @@ function useMonitorPlan() {
       if (cachedData) {
         const cacheData = JSON.parse(cachedData);
         plan.value = cacheData.plan;
-        common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:299", `✅ 已加载项目 ${projectId} 的监测方案缓存`);
+        common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:303", `✅ 已加载项目 ${projectId} 的监测方案缓存`);
       } else {
         plan.value = null;
-        common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:302", `ℹ️ 项目 ${projectId} 暂无监测方案缓存`);
+        common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:306", `ℹ️ 项目 ${projectId} 暂无监测方案缓存`);
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useMonitorPlan.js:305", "加载监测方案缓存失败:", error);
+      common_vendor.index.__f__("error", "at composables/useMonitorPlan.js:309", "加载监测方案缓存失败:", error);
       plan.value = null;
     }
   }
@@ -202,9 +205,9 @@ function useMonitorPlan() {
       const cacheKey = `monitor_plan_${projectId}`;
       common_vendor.index.removeStorageSync(cacheKey);
       plan.value = null;
-      common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:319", `✅ 已清除项目 ${projectId} 的监测方案缓存`);
+      common_vendor.index.__f__("log", "at composables/useMonitorPlan.js:323", `✅ 已清除项目 ${projectId} 的监测方案缓存`);
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useMonitorPlan.js:321", "清除监测方案缓存失败:", error);
+      common_vendor.index.__f__("error", "at composables/useMonitorPlan.js:325", "清除监测方案缓存失败:", error);
     }
   }
   function resetState() {

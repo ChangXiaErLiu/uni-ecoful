@@ -82,6 +82,14 @@ const _sfc_main = {
     }
     common_vendor.onLoad(async () => {
       await projectInfoState.initialize();
+      await common_vendor.nextTick$1();
+      if (selectedProjectId.value) {
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:788", "📦 页面加载时恢复缓存，项目ID:", selectedProjectId.value);
+        monitorPlanState.loadPlanCache(selectedProjectId.value);
+        acceptanceReportState.loadReportCache(selectedProjectId.value);
+      } else {
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:792", "ℹ️ 页面加载时无选中项目，跳过缓存加载");
+      }
     });
     common_vendor.onUnmounted(() => {
       projectInfoState.cleanup();
@@ -180,7 +188,7 @@ const _sfc_main = {
           throw new Error(`请求失败，状态码：${response.statusCode}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:926", "生成提资单失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:938", "生成提资单失败:", error);
         common_vendor.index.showToast({
           title: "生成失败: " + (error.message || "未知错误"),
           icon: "none",
@@ -193,7 +201,7 @@ const _sfc_main = {
     async function downloadGeneratedFile(downloadUrl, fileName) {
       try {
         const fullUrl = eco_baseUrl + downloadUrl;
-        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:943", "开始下载文件:", fullUrl);
+        common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:955", "开始下载文件:", fullUrl);
         common_vendor.index.showLoading({
           title: "正在下载文档…",
           mask: true
@@ -207,14 +215,14 @@ const _sfc_main = {
               common_vendor.index.saveFile({
                 tempFilePath,
                 success: (saveRes) => {
-                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:972", "文件保存成功:", saveRes.savedFilePath);
+                  common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:984", "文件保存成功:", saveRes.savedFilePath);
                   common_vendor.index.showToast({
                     title: "文件已保存",
                     icon: "success"
                   });
                 },
                 fail: (saveErr) => {
-                  common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:979", "保存文件失败:", saveErr);
+                  common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:991", "保存文件失败:", saveErr);
                   common_vendor.index.showToast({
                     title: "保存失败: " + (saveErr.errMsg || "未知错误"),
                     icon: "none"
@@ -230,7 +238,7 @@ const _sfc_main = {
           },
           fail: (err) => {
             common_vendor.index.hideLoading();
-            common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:995", "下载请求失败:", err);
+            common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1007", "下载请求失败:", err);
             common_vendor.index.showToast({
               title: "下载请求失败: " + (err.errMsg || "未知错误"),
               icon: "none"
@@ -238,13 +246,13 @@ const _sfc_main = {
           }
         });
         downloadTask.onProgressUpdate((res) => {
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1005", "下载进度", res.progress);
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1006", "已经下载的数据长度", res.totalBytesWritten);
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1007", "预期需要下载的数据总长度", res.totalBytesExpectedToWrite);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1017", "下载进度", res.progress);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1018", "已经下载的数据长度", res.totalBytesWritten);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1019", "预期需要下载的数据总长度", res.totalBytesExpectedToWrite);
         });
       } catch (error) {
         common_vendor.index.hideLoading();
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1047", "下载文件失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1059", "下载文件失败:", error);
         common_vendor.index.showToast({
           title: "下载失败: " + (error.message || "未知错误"),
           icon: "none"
@@ -254,7 +262,7 @@ const _sfc_main = {
     async function toggleRequired(item) {
       var _a;
       if (!item || !item.record_id) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1072", "切换复选框失败：item或record_id不存在");
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1084", "切换复选框失败：item或record_id不存在");
         return;
       }
       try {
@@ -278,11 +286,11 @@ const _sfc_main = {
               project_id
             },
             success: (res) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1102", "更新is_require成功:", res);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1114", "更新is_require成功:", res);
               resolve(res);
             },
             fail: (err) => {
-              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1106", "更新is_require失败:", err);
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1118", "更新is_require失败:", err);
               reject(err);
             }
           });
@@ -298,7 +306,7 @@ const _sfc_main = {
           throw new Error(((_a = response.data) == null ? void 0 : _a.message) || "更新失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1126", "切换复选框失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1138", "切换复选框失败:", error);
         common_vendor.index.hideLoading();
         item.required = !item.required;
         common_vendor.index.showToast({
@@ -458,7 +466,7 @@ const _sfc_main = {
           });
         },
         fail: (err) => {
-          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1408", "选择文件失败:", err);
+          common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1420", "选择文件失败:", err);
           common_vendor.index.showToast({
             title: "选择文件失败",
             icon: "none"
@@ -521,7 +529,7 @@ const _sfc_main = {
                 throw new Error(((_a = response.data) == null ? void 0 : _a.message) || "删除失败");
               }
             } catch (error) {
-              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1483", "删除文件失败:", error);
+              common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1495", "删除文件失败:", error);
               common_vendor.index.showToast({
                 title: `删除失败: ${error.message}`,
                 icon: "none"
@@ -547,11 +555,11 @@ const _sfc_main = {
               project_id
             },
             success: (res) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1512", "请求成功:", res);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1524", "请求成功:", res);
               resolve(res);
             },
             fail: (err) => {
-              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1516", "请求失败:", err);
+              common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1528", "请求失败:", err);
               reject(err);
             }
           });
@@ -562,7 +570,7 @@ const _sfc_main = {
             throw new Error("数据格式不正确: items 不存在或不是数组");
           }
           tizidanItems.value = data.items;
-          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1532", "提资单数据加载完成:", tizidanItems.value);
+          common_vendor.index.__f__("log", "at pages/reports/acceptance/index.vue:1544", "提资单数据加载完成:", tizidanItems.value);
           common_vendor.index.showToast({
             title: "数据加载成功",
             icon: "success"
@@ -571,7 +579,7 @@ const _sfc_main = {
           throw new Error(`请求失败，状态码：${(response == null ? void 0 : response.statusCode) || "未知"}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1542", "获取提资单数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1554", "获取提资单数据失败:", error);
         common_vendor.index.showToast({
           title: "加载失败，请重新刷新！",
           icon: "none",
@@ -619,7 +627,7 @@ const _sfc_main = {
           throw new Error(response.message || "文件上传失败");
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1597", `文件上传失败:`, error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1609", `文件上传失败:`, error);
         common_vendor.index.showToast({
           title: `文件上传失败: ${error.message}`,
           icon: "none",
@@ -700,7 +708,7 @@ const _sfc_main = {
           throw new Error(`服务器错误: ${response.statusCode}`);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1694", "提交失败:", error);
+        common_vendor.index.__f__("error", "at pages/reports/acceptance/index.vue:1706", "提交失败:", error);
         common_vendor.index.showToast({
           title: `提交失败: ${error.message}`,
           icon: "none",

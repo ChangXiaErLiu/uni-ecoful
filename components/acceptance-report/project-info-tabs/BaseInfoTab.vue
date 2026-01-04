@@ -397,7 +397,7 @@
 	.form-grid {
 		display: flex;
 		flex-direction: column;
-		gap: 32rpx;
+		gap: 16rpx;
 	}
 
 	.form-item {

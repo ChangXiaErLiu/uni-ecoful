@@ -34,7 +34,7 @@ const _sfc_main = {
     const props = __props;
     const searchKeyword = common_vendor.ref("");
     function onSearchInput() {
-      common_vendor.index.__f__("log", "at components/field-survey/tabs/MainContentTab.vue:216", "搜索关键词:", searchKeyword.value);
+      common_vendor.index.__f__("log", "at components/field-survey/tabs/MainContentTab.vue:224", "搜索关键词:", searchKeyword.value);
     }
     const displayItems = common_vendor.computed(() => {
       return props.baseTable.filter((item) => item.id !== "pollutants_emission");
@@ -211,32 +211,39 @@ const _sfc_main = {
               modelValue: item.name
             }),
             g: "3191804b-13-" + i0,
-            h: common_vendor.o(($event) => item.content = $event, item.id),
+            h: common_vendor.o(($event) => item.location = $event, item.id),
             i: common_vendor.p({
+              placeholder: "位置",
+              clearable: true,
+              modelValue: item.location
+            }),
+            j: "3191804b-14-" + i0,
+            k: common_vendor.o(($event) => item.content = $event, item.id),
+            l: common_vendor.p({
               placeholder: "请输入工程内容",
               clearable: true,
               modelValue: item.content
             }),
-            j: "3191804b-14-" + i0,
-            k: common_vendor.o(($event) => item.remark = $event, item.id),
-            l: common_vendor.p({
-              placeholder: "备注信息",
+            m: "3191804b-15-" + i0,
+            n: common_vendor.o(($event) => item.remark = $event, item.id),
+            o: common_vendor.p({
+              placeholder: "请填写备注信息",
               clearable: true,
               modelValue: item.remark
             }),
-            m: "3191804b-15-" + i0,
-            n: common_vendor.o(($event) => item.images = $event, item.id),
-            o: common_vendor.p({
+            p: "3191804b-16-" + i0,
+            q: common_vendor.o(($event) => item.images = $event, item.id),
+            r: common_vendor.p({
               fileMediatype: "image",
               mode: "grid",
               limit: 7,
               ["auto-upload"]: false,
               modelValue: item.images
             }),
-            p: "3191804b-16-" + i0,
-            q: common_vendor.o(() => common_vendor.unref(removeConstruction)(index), item.id),
-            r: item.id,
-            s: index % 2 === 0 ? 1 : ""
+            s: "3191804b-17-" + i0,
+            t: common_vendor.o(() => common_vendor.unref(removeConstruction)(index), item.id),
+            v: item.id,
+            w: index % 2 === 0 ? 1 : ""
           };
         }),
         N: common_vendor.p({

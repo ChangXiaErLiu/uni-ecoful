@@ -99,7 +99,7 @@
 .form-grid.data-v-fe6d06f0 {
   display: flex;
   flex-direction: column;
-  gap: 32rpx;
+  gap: 16rpx;
 }
 .form-item.data-v-fe6d06f0 {
   width: 100%;

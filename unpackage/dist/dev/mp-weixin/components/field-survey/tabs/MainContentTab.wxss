@@ -407,7 +407,10 @@ to {
 			flex: 0.8;
 }
 .header-name.data-v-3191804b {
-			flex: 1.5;
+			flex: 1.2;
+}
+.header-location.data-v-3191804b {
+			flex: 0.8;
 }
 .header-content.data-v-3191804b {
 			flex: 2.5;
@@ -438,7 +441,10 @@ to {
 			flex: 0.8;
 }
 .cell-name.data-v-3191804b {
-			flex: 1.5;
+			flex: 1.2;
+}
+.cell-location.data-v-3191804b {
+			flex: 0.8;
 }
 .cell-content.data-v-3191804b {
 			flex: 2.5;

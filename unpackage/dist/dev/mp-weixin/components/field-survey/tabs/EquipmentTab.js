@@ -127,7 +127,7 @@ const _sfc_main = {
             h: "52feeb38-8-" + i0,
             i: common_vendor.o(($event) => item.remark = $event, item.id),
             j: common_vendor.p({
-              placeholder: "备注信息",
+              placeholder: "请填写备注信息",
               clearable: true,
               modelValue: item.remark
             }),

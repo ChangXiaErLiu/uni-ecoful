@@ -114,8 +114,11 @@ function useAcceptanceReport() {
           updateProgressSmooth(progress, statusText);
         }
       });
+      common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:170", "🎉 竣工验收报告生成成功，设置 reportGenerated.value = true");
       reportGenerated.value = true;
       previewTitle.value = reportType.value === "withoutData" ? "无监测数据的竣工验收报告已生成，请点击下载！" : "有监测数据的竣工验收报告已生成，请点击下载！";
+      common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:176", "📊 当前 reportGenerated.value:", reportGenerated.value);
+      common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:177", "📊 当前 canDownloadReport.value:", canDownloadReport.value);
       saveReportCache(projectId, {
         generated: true,
         type: reportType.value,
@@ -135,7 +138,7 @@ function useAcceptanceReport() {
       if (modalRef) {
         modalRef.close();
       }
-      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:201", "生成报告失败", error, (_a = error.response) == null ? void 0 : _a.data);
+      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:205", "生成报告失败", error, (_a = error.response) == null ? void 0 : _a.data);
       let msg = error.message || "请稍后重试";
       if (Array.isArray((_c = (_b = error.response) == null ? void 0 : _b.data) == null ? void 0 : _c.detail)) {
         msg = error.response.data.detail.map((d) => d.msg).join("；");
@@ -205,9 +208,9 @@ function useAcceptanceReport() {
         generatedAt: Date.now()
       };
       common_vendor.index.setStorageSync(cacheKey, JSON.stringify(cacheData));
-      common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:324", `✅ 项目 ${projectId} 的竣工验收报告已缓存`);
+      common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:328", `✅ 项目 ${projectId} 的竣工验收报告已缓存`);
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:326", "保存竣工验收报告缓存失败:", error);
+      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:330", "保存竣工验收报告缓存失败:", error);
     }
   }
   function loadReportCache(projectId) {
@@ -219,15 +222,15 @@ function useAcceptanceReport() {
         reportGenerated.value = cacheData.generated || false;
         reportType.value = cacheData.type || "withoutData";
         previewTitle.value = cacheData.previewTitle || "";
-        common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:344", `✅ 已加载项目 ${projectId} 的竣工验收报告缓存`);
+        common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:348", `✅ 已加载项目 ${projectId} 的竣工验收报告缓存`);
       } else {
         reportGenerated.value = false;
         reportType.value = "withoutData";
         previewTitle.value = "";
-        common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:349", `ℹ️ 项目 ${projectId} 暂无竣工验收报告缓存`);
+        common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:353", `ℹ️ 项目 ${projectId} 暂无竣工验收报告缓存`);
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:352", "加载竣工验收报告缓存失败:", error);
+      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:356", "加载竣工验收报告缓存失败:", error);
       reportGenerated.value = false;
       reportType.value = "withoutData";
       previewTitle.value = "";
@@ -241,9 +244,9 @@ function useAcceptanceReport() {
       reportType.value = "withoutData";
       previewTitle.value = "";
       testReportFiles.value = [];
-      common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:371", `✅ 已清除项目 ${projectId} 的竣工验收报告缓存`);
+      common_vendor.index.__f__("log", "at composables/useAcceptanceReport.js:375", `✅ 已清除项目 ${projectId} 的竣工验收报告缓存`);
     } catch (error) {
-      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:373", "清除竣工验收报告缓存失败:", error);
+      common_vendor.index.__f__("error", "at composables/useAcceptanceReport.js:377", "清除竣工验收报告缓存失败:", error);
     }
   }
   function resetState() {

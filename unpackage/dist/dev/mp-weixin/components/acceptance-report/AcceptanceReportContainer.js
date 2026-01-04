@@ -57,6 +57,8 @@ const _sfc_main = {
         taskProgressModal.value
       );
       emit("report-generated");
+      await common_vendor.nextTick$1();
+      common_vendor.index.__f__("log", "at components/acceptance-report/AcceptanceReportContainer.vue:144", "🔄 UI 更新后 - reportGenerated:", reportGenerated.value, "canDownloadReport:", canDownloadReport.value);
     }
     async function handleDownload() {
       await downloadReport(props.projectId);
